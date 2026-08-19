@@ -27,13 +27,18 @@ namespace katha
 
 		void* context = nullptr;
 
+		// framebuffers must be created after gl_t::init returns by caller
 		framebuffer_t left = {}; // main framebuffer for non-vr mode
 		framebuffer_t right = {};
 
 		int32_t max_texture_size = 0;
 
+		uint32_t ext_debug:1 = 0;
+
 		result_e init(const config_t& config, SDL_Window* window);
 		void clear();
+
+		void check_extensions();
 
 		void clear_screen(const vec4& color);
 

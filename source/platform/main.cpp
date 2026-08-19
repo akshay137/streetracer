@@ -175,6 +175,8 @@ void gl_scene_t::draw(const katha::transform_t& camera, const katha::vec2& size)
 	gl->draw_arrays(36);
 }
 
+#include "file.hpp"
+
 int main(int argc, char** args)
 {
 	char* locale = setlocale(LC_ALL, nullptr);
@@ -189,14 +191,6 @@ int main(int argc, char** args)
 		return static_cast<int>(result);
 	}
 
-	const auto drawable_size = platform.get_drawable_size();
-	const float aspect = drawable_size.x / (float)drawable_size.y;
-
-	log_line("window size: {iv2}, drawable size: {iv2}",
-		platform.get_window_size().array(),
-		drawable_size.array()
-	);
-
 	gl_scene_t scene = {};
 	if (!scene.create())
 	{
@@ -206,19 +200,9 @@ int main(int argc, char** args)
 		return 0;
 	}
 
-	if (platform.config.enable_xr)
-	{
-#if KATHA_XR
-		gl->left = gl->create_framebuffer(xr->get_swapchain_size(xr_t::EYE_LEFT), format_e::rgba8, format_e::depth24_stencil8);
-		gl->right = gl->create_framebuffer(xr->get_swapchain_size(xr_t::EYE_RIGHT), format_e::rgba8, format_e::depth24_stencil8);
-#endif
-	}
-	else
-	{
-		gl->left = gl->create_framebuffer(platform.get_drawable_size(), format_e::rgba8, format_e::depth24_stencil8);
-	}
+	transform_t camera = { .orientation = quat_t::identity(), .position = vec3(0, -2, 5) };
+	camera = camera.look_at(vec3(0));
 
-	transform_t camera = { .orientation = quat_t::identity(), .position = vec3(0, 0, 5) };
 	bool running = true;
 	while (running)
 	{
@@ -295,8 +279,6 @@ int main(int argc, char** args)
 		}
 	}
 
-	gl->delete_framebuffer(gl->left);
-	gl->delete_framebuffer(gl->right);
 	scene.clear();
 	platform.clear();
 	return 0;

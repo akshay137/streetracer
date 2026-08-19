@@ -17,7 +17,7 @@ namespace katha
 		// snorm_vec2 tangent;
 		// snorm_vec2 bi_tangent;
 
-		// `v` must be normalized
+		// `v` must be in range 0, 1
 		static constexpr unorm_vec2 unorm(const vec2 v)
 		{
 			unorm_vec2 result(
@@ -27,7 +27,7 @@ namespace katha
 			return result;
 		}
 
-		// `v` must be normalized
+		// `v` must be in range -1, 1
 		static constexpr snorm_vec2 snorm(const vec2 v)
 		{
 			snorm_vec2 result(

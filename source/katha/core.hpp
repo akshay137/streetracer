@@ -6,6 +6,7 @@
 #include "core/types.hpp"
 #include "core/constants.hpp"
 #include "core/string.hpp"
+#include "core/stream.hpp"
 
 namespace katha
 {

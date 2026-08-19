@@ -122,8 +122,6 @@ namespace katha
 	using ivec4 = vector4_t<int32_t>;
 	using uvec4 = vector4_t<uint32_t>;
 
-	// this is a template because then it allows for
-	// data & operations to live in separate files
 	template <typename T>
 	struct quaternion_t
 	{
@@ -139,6 +137,10 @@ namespace katha
 		constexpr quaternion_t(
 			const T& x, const T& y, const T& z, const T& w
 		) : x{x}, y{y}, z{z}, w{w}
+		{}
+
+		constexpr quaternion_t(const vector3_t<T> v, const T& w)
+			: x{v.x}, y{v.y}, z{v.z}, w{w}
 		{}
 
 		static quaternion_t<T> identity()

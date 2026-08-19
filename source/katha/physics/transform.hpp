@@ -14,6 +14,12 @@ namespace katha
 		mat4 calculate_view_matrix() const;
 
 		transform_t offset_by(const transform_t& t) const;
+		
+		transform_t look_at(const vec3& point) const;
+		transform_t look_at(const transform_t& transform) const
+		{
+			return look_at(transform.position);
+		}
 	};
 }
 

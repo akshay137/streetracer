@@ -92,7 +92,9 @@ katha::result_e katha::gl_t::init(const config_t& config, SDL_Window* window)
 		}
 	}
 
-	if (config.debug_graphics_api)
+	check_extensions();
+
+	if (ext_debug && config.debug_graphics_api)
 	{
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -120,8 +122,33 @@ katha::result_e katha::gl_t::init(const config_t& config, SDL_Window* window)
 void katha::gl_t::clear()
 {
 	log_line("gl::clear()");
+
+	delete_framebuffer(left);
+	delete_framebuffer(right);
+
 	SDL_GL_DeleteContext(context);
 	context = nullptr;
+}
+
+void katha::gl_t::check_extensions()
+{
+	GLint count = 0;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &count);
+
+	if (0 == count)
+	{
+		return;
+	}
+
+	for (GLint i = 0; i < count; i++)
+	{
+		const string_t extension = (const char*)glGetStringi(GL_EXTENSIONS, i);
+
+		if (extension.equals("GL_KHR_debug"))
+		{
+			ext_debug = 1;
+		}
+	}
 }
 
 void katha::gl_t::clear_screen(const vec4& color)
@@ -239,6 +266,11 @@ katha::gl_t::framebuffer_t katha::gl_t::create_framebuffer(
 
 void katha::gl_t::delete_framebuffer(const framebuffer_t& framebuffer)
 {
+	if (0 == framebuffer.framebuffer)
+	{
+		return;
+	}
+
 	log_line("gl: deleting framebuffer {u}, color_texture {u}, depth_texture {u}",
 		framebuffer.framebuffer,
 		framebuffer.color_texture,

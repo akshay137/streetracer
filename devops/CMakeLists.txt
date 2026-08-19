@@ -11,7 +11,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 option(KATHA_XR "Enable OpenXR support" ON)
 option(KATHA_PRINT_LOG_DIAGNOSTICS "Appends profiling data for each log_line" ON)
-option(KATHA_PORTMASTER "Portmaster build" OFF)
 
 set(BUILD_ROOT "..")
 get_filename_component(BUILD_ROOT "${BUILD_ROOT}" ABSOLUTE)
@@ -40,21 +39,8 @@ else()
 	target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_PRINT_LOG_DIAGNOSTICS=0)
 endif()
 
-if (KATHA_PORTMASTER)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_PORTMASTER=1)
-else()
-	target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_PORTMASTER=0)
-endif()
-
 if (KATHA_XR)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_XR=1)
-	# target_compile_definitions(${PROJECT_NAME} PUBLIC XR_USE_GRAPHICS_API_OPENGL=1)
-	# target_compile_definitions(${PROJECT_NAME} PUBLIC XR_USE_GRAPHICS_API_VULKAN=1)
-
-	# if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	# 	# target_compile_definitions(${PROJECT_NAME} PUBLIC XR_USE_PLATFORM_XLIB=1)
-	# 	# target_compile_definitions(${PROJECT_NAME} PUBLIC XR_USE_PLATFORM_WAYLAND=1)
-	# endif()
 	target_link_libraries(${PROJECT_NAME} PUBLIC openxr_loader)
 	target_sources(${PROJECT_NAME} PUBLIC
 		${BUILD_ROOT}/source/platform/xr/xr.hpp
@@ -65,14 +51,6 @@ else()
 	target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_XR=0)
 endif()
 
-# source list
-# file(GLOB_RECURSE KATHA_SOURCE
-# 	"${BUILD_ROOT}/source/**.hpp"
-# 	"${BUILD_ROOT}/source/**.cpp"
-# 	"${BUILD_ROOT}/source/**.h"
-# 	"${BUILD_ROOT}/source/**.c"
-# )
-# target_sources(${PROJECT_NAME} PUBLIC ${KATHA_SOURCE})
 target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/platform/main.cpp
 	${BUILD_ROOT}/source/platform/platform.hpp
@@ -82,6 +60,8 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/platform/input.hpp
 	${BUILD_ROOT}/source/platform/log.cpp
 	${BUILD_ROOT}/source/platform/memory.cpp
+	${BUILD_ROOT}/source/platform/file.hpp
+	${BUILD_ROOT}/source/platform/file.cpp
 	${BUILD_ROOT}/source/platform/glad.c
 
 	${BUILD_ROOT}/source/platform/gl/gl.hpp
@@ -95,6 +75,7 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/katha/core/config.cpp
 	${BUILD_ROOT}/source/katha/core/enums.hpp
 	${BUILD_ROOT}/source/katha/core/enums.cpp
+	${BUILD_ROOT}/source/katha/core/stream.hpp
 	${BUILD_ROOT}/source/katha/core/string.hpp
 	${BUILD_ROOT}/source/katha/core/string.cpp
 	${BUILD_ROOT}/source/katha/core/types.hpp

@@ -53,13 +53,6 @@ namespace katha
 	}
 
 	template <typename T>
-	vector3_t<T> operator - (const vector3_t<T>& v)
-	{
-		vector3_t<T> result(-v.x, -v.y, -v.z);
-		return result;
-	}
-
-	template <typename T>
 	vector3_t<T> operator + (const vector3_t<T>& v1, const vector3_t<T>& v2)
 	{
 		const vector3_t<T> result(
@@ -68,6 +61,30 @@ namespace katha
 			v1.z + v2.z
 		);
 		return result;
+	}
+
+	template <typename T>
+	vector3_t<T> operator - (const vector3_t<T>& v)
+	{
+		vector3_t<T> result(-v.x, -v.y, -v.z);
+		return result;
+	}
+
+	template <typename T>
+	vector3_t<T>& operator -= (vector3_t<T>& v1, const vector3_t<T>& v2)
+	{
+		v1.x -= v2.x;
+		v1.y -= v2.y;
+		v1.z -= v2.z;
+		return v1;
+	}
+
+	template <typename T>
+	vector3_t<T> operator - (const vector3_t<T>& v1, const vector3_t<T>& v2)
+	{
+		vector3_t<T> temp = v1;
+		temp -= v2;
+		return temp;
 	}
 
 	template <typename T>
