@@ -244,7 +244,7 @@ int64_t katha::xr_t::get_opengl_swapchain_format() const
 	}
 
 	release(formats);
-	log_line("xr: opengl swapchain format {x64}", selected_format);
+	log_line("xr: opengl swapchain format {i64:x}", selected_format);
 	return selected_format;
 }
 

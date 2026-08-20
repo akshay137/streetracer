@@ -21,11 +21,21 @@ namespace katha
 	extern const char* result_to_cstring(const result_e result);
 	extern bool check_result(const result_e result, const char* message);
 
+	enum class base_e : int
+	{
+		binary = 2,
+		octal = 8,
+		decimal = 10,
+		hex = 16
+	};
+
 	enum class graphics_api_e : int
 	{
 		gl,
 		vulkan,
 	};
+
+	extern const char* graphics_api_to_cstring(const graphics_api_e api);
 
 	enum class format_e : int
 	{

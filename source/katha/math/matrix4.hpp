@@ -55,6 +55,20 @@ namespace katha
 		matrix4_t<T> result = m * t;
 		return result;
 	}
+
+	template <typename T>
+	matrix4_t<T> scale(const matrix4_t<T>& m, const vector3_t<T>& v)
+	{
+		matrix4_t<T> s = matrix4_t<T>::from_columns(
+			vector4_t<T>(v.x, 0, 0, 0),
+			vector4_t<T>(0, v.y, 0, 0),
+			vector4_t<T>(0, 0, v.z, 0),
+			vector4_t<T>(0, 0, 0, 1)
+		);
+
+		matrix4_t<T> result = m * s;
+		return result;
+	}
 }
 
 #endif

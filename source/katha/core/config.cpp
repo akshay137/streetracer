@@ -1,19 +1,9 @@
 #include "config.hpp"
 #include "../core.hpp"
 
-const char* graphics_api_str(const katha::graphics_api_e api)
-{
-	switch (api)
-	{
-		case katha::graphics_api_e::vulkan: return "vulkan";
-		case katha::graphics_api_e::gl: return "gl";
-		default: return "unknown graphics api";
-	}
-}
-
 void katha::config_t::log() const
 {
-	log_line("graphics_api: {s}", graphics_api_str(graphics_api));
+	log_line("graphics_api: {s}", graphics_api_to_cstring(graphics_api));
 	log_line("preferred gpu: {i}", preferred_gpu_index);
 	log_line("preferred display: {i}", preferred_display_index);
 	

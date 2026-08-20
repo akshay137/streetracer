@@ -11,6 +11,9 @@
 #include "xr/xr.hpp"
 #endif
 
+#include "../game/action_map.hpp"
+#include "../game/highway.hpp"
+
 #include <clocale>
 
 #include <SDL2/SDL.h>
@@ -102,7 +105,11 @@ struct gl_scene_t
 	bool create();
 	void clear();
 
-	void draw(const katha::transform_t& camera, const katha::vec2& size);
+	void draw(
+		const highway_t& highway,
+		const katha::transform_t& camera,
+		const katha::vec2& size
+	);
 };
 
 bool gl_scene_t::create()
@@ -149,39 +156,84 @@ void gl_scene_t::clear()
 	gl->delete_shader_program(shader_program);
 }
 
-void gl_scene_t::draw(const katha::transform_t& camera, const katha::vec2& size)
+void gl_scene_t::draw(
+	const highway_t& highway,
+	const katha::transform_t& camera,
+	const katha::vec2& size
+)
 {
 	const katha::mat4 perspective = gl->perspective_matrix(
-		radians(90), size, vec2(0.01, 100)
+		radians(90), size, vec2(0.01, 500)
 	);
 	const katha::mat4 view = camera.calculate_view_matrix();
 
 	katha::mat4 model = katha::mat4(1.0f);
-	model = katha::translate(model, katha::vec3(0, 0, 1));
-	const float s = sin(angle * 0.5f);
-	const float c = cos(angle * 0.5f);
-	model = model * to_mat4(quat_t(0, s, 0, c));
+	model = katha::translate(model, highway.player);
+	model = katha::scale(model, vec3(1, 0.5, 1));
 	
 	katha::mat4 mvp = perspective * view * model;
 
 	gl->use_shader_program(shader_program);
 	gl->bind_texture(checker_board_texture);
 	gl->set_uniform_texture_unit(1, 0);
-	gl->set_uniform_mat4(0, mvp.array());
-
+	
 	gl->bind_vao(vao);
 	gl->bind_vertex_buffer(0, vertex_buffer, 0, sizeof(vertex_t));
-
+	
+	// player
+	gl->set_uniform_mat4(0, mvp.array());
 	gl->draw_arrays(36);
+
+	for (int i = 0; i < highway.traffic_count; i++)
+	{
+		const highway_t::traffic_t& t = highway.traffic[i];
+		if (highway_t::traffic_e::none == t.type)
+		{
+			continue;
+		}
+
+		mat4 tm(1.0f);
+		tm = translate(tm, t.position);
+		tm = scale(tm, katha::highway_t::get_bb(t.type));
+		mvp = perspective * view * tm;
+
+		gl->set_uniform_mat4(0, mvp.array());
+		gl->draw_arrays(36);
+	}
 }
 
-#include "file.hpp"
+void time_printf(const float v)
+{
+	const uint64_t start = katha::now();
+	printf("hello, %f\n", v);
+	const uint64_t end = katha::now();
+	log_line("printf took {td}", end - start);
+}
+
+void time_printf(const char* message)
+{
+	const uint64_t start = katha::now();
+	printf("%s\n", message);
+	const uint64_t end = katha::now();
+	log_line("printf took {td}", end - start);
+}
 
 int main(int argc, char** args)
 {
 	char* locale = setlocale(LC_ALL, nullptr);
 	log_line("current locale: {s}", locale);
 	log_line("unicode test: {s}", ENGINE_NAME_UTF8);
+
+	log_line("argc: {i}", -argc);
+	log_line("squared_distance: {i}", squared_length(ivec3(0, 1, 3)));
+	log_line("i_min: {i}", INT32_MIN);
+	log_line("i_max: {i}", INT32_MAX);
+	log_line("i64_max: {i64}", INT64_MAX);
+
+	time_printf(argc);
+	time_printf(1.37);
+	time_printf(length(vec3(1, 10, argc)));
+	time_printf("current locale: C");
 
 	platform_t platform = {};
 	result_e result = platform.init(argc, args);
@@ -200,13 +252,25 @@ int main(int argc, char** args)
 		return 0;
 	}
 
-	transform_t camera = { .orientation = quat_t::identity(), .position = vec3(0, -2, 5) };
-	camera = camera.look_at(vec3(0));
+	highway_t highway = {};
+
+	transform_t camera = { .orientation = quat_t::identity(), .position = vec3(0, 3, 9) };
 
 	bool running = true;
+	uint64_t last = 0;
 	while (running)
 	{
 		const uint64_t start = now();
+		float delta = 0.016f;
+		if (last)
+		{
+			delta = 0.016f;
+		}
+		else
+		{
+			delta = last / static_cast<double>(1e12);
+		}
+
 		result = platform.poll_events();
 		if (result_e::request_exit == result)
 		{
@@ -214,7 +278,22 @@ int main(int argc, char** args)
 			break;
 		}
 
-		scene.update();
+		const gamepad_t& gp = platform.current_input_state.gamepad;
+		action_map_t action_map = {};
+		action_map.movement = gp.stick_left;
+		if (gp.dpad_left)
+		{
+			action_map.movement.x -= 1;
+		}
+		if (gp.dpad_right)
+		{
+			action_map.movement.x += 1;
+		}
+
+		highway.update(action_map, delta);
+
+		camera.position.x = lerp(camera.position.x, highway.player.x, 5 * delta);
+		camera = camera.look_at(highway.player + vec3(0, 3, 0));
 
 		if (platform.config.enable_xr)
 		{
@@ -235,12 +314,18 @@ int main(int argc, char** args)
 			// render begin
 			gl->bind_framebuffer(gl->left);
 			gl->clear_screen(vec4(0.1, 0.1, 0.1, 1));
-			scene.draw(camera.offset_by(xr_frame.get_transform(xr_t::EYE_LEFT)), (vec2)gl->left.size);
+			scene.draw(highway,
+				camera.offset_by(xr_frame.get_transform(xr_t::EYE_LEFT)),
+				(vec2)gl->left.size
+			);
 			gl->blit_to_framebuffer(gl->left, xr->get_gl_framebuffer(xr_t::EYE_LEFT, xr_frame));
 
 			gl->bind_framebuffer(gl->right);
 			gl->clear_screen(vec4(0.1, 0.1, 0.1, 1));
-			scene.draw(camera.offset_by(xr_frame.get_transform(xr_t::EYE_RIGHT)), (vec2)gl->right.size);
+			scene.draw(highway,
+				camera.offset_by(xr_frame.get_transform(xr_t::EYE_RIGHT)),
+				(vec2)gl->right.size
+			);
 			gl->blit_to_framebuffer(gl->right, xr->get_gl_framebuffer(xr_t::EYE_RIGHT, xr_frame));
 			// render end
 
@@ -264,7 +349,7 @@ int main(int argc, char** args)
 			vec2 size = (vec2)platform.get_drawable_size();
 			gl->bind_framebuffer(gl->left);
 			gl->clear_screen(vec4(0.1, 0.1, 0.1, 1));
-			scene.draw(camera, size);
+			scene.draw(highway, camera, size);
 
 			gl->bind_framebuffer(0);
 			gl->set_viewport((ivec2)size);
@@ -273,9 +358,10 @@ int main(int argc, char** args)
 			SDL_GL_SwapWindow(platform.window);
 		}
 
+		last = now() - start;
 		if (platform.config.log_frame_time)
 		{
-			log_line("frame_time: {td}", now() - start);
+			log_line("frame_time: {td}", last);
 		}
 	}
 

@@ -3,6 +3,7 @@
 #define KATHA_FORMAT_STRING_H__ 1
 
 #include "../core/string.hpp"
+#include "../core/stack_string.hpp"
 
 #include <cstdarg>
 
@@ -13,13 +14,12 @@ namespace katha
 		string_t format = {};
 		va_list args;
 		
-		uint32_t format_index = 0;
+		uint16_t format_index = 0;
 
 		static constexpr uint32_t PARAM_BUFFER_SIZE = 256;
+		uint16_t pbuffer_index = 0;
 		const char* param_str = nullptr;
-		char param_buffer[PARAM_BUFFER_SIZE] = {};
-		uint32_t pbuffer_index = 0;
-		uint32_t pbuffer_length = 0;
+		stack_string_t<PARAM_BUFFER_SIZE> param_buffer = {};
 
 		int32_t next();
 
@@ -37,8 +37,6 @@ namespace katha
 		int32_t parse_next_vec2(const string_t& props);
 		int32_t parse_next_mat4(const string_t& props);
 		int32_t parse_next_timediff(const string_t& props);
-		int32_t parse_next_hex32(const string_t& props);
-		int32_t parse_next_hex64(const string_t& props);
 
 		static inline constexpr string_t SPEC_INT = "i";
 		static inline constexpr string_t SPEC_UINT = "u";
@@ -54,8 +52,6 @@ namespace katha
 		static inline constexpr string_t SPEC_VEC2 = "v2";
 		static inline constexpr string_t SPEC_MAT4 = "m4";
 		static inline constexpr string_t SPEC_TIMEDIFF = "td";
-		static inline constexpr string_t SPEC_HEX32 = "x32";
-		static inline constexpr string_t SPEC_HEX64 = "x64";
 	};
 }
 

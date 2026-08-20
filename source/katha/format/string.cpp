@@ -1,12 +1,14 @@
 #include "string.hpp"
+#include "types.hpp"
 #include "../core/types.hpp"
 
 #include <cinttypes>
+#include <cstring>
 #include <cstdio>
 
 inline int32_t read_next_code(
 	const char* str,
-	uint32_t* out_index,
+	uint16_t* out_index,
 	uint32_t* out_bytes_read = nullptr
 )
 {
@@ -18,6 +20,29 @@ inline int32_t read_next_code(
 	*out_index += bytes_read;
 	katha::write_checked<uint32_t>(out_bytes_read, bytes_read);
 	return code;
+}
+
+inline katha::base_e specifier_properties_to_base(const katha::string_t& props)
+{
+	if (0 == props.size) // common case
+	{
+		return katha::base_e::decimal;
+	}
+
+	if ('b' == props[0])
+	{
+		return katha::base_e::binary;
+	}
+	if ('o' == props[0])
+	{
+		return katha::base_e::octal;
+	}
+	if ('x' == props[0])
+	{
+		return katha::base_e::hex;
+	}
+
+	return katha::base_e::decimal;
 }
 
 int32_t katha::string_format_t::next()
@@ -33,16 +58,15 @@ int32_t katha::string_format_t::next()
 		param_str = nullptr;
 		pbuffer_index = 0;
 	}
-	if (pbuffer_length)
+	if (param_buffer.size)
 	{
-		const int32_t code = read_next_code(param_buffer, &pbuffer_index);
-		if (code)
+		const int32_t code = read_next_code(param_buffer.buffer, &pbuffer_index);
+		if (pbuffer_index >= param_buffer.size)
 		{
-			return code;
+			param_buffer.size = 0;
+			pbuffer_index = 0;
 		}
-
-		pbuffer_length = 0;
-		pbuffer_index = 0;
+		return code;
 	}
 
 	if (format_index >= format.size)
@@ -104,6 +128,7 @@ int32_t katha::string_format_t::next()
 		format.buffer + prop_start,
 		prop_start ? (full_spec_length - spec_id_length - 1) : 0
 	);
+
 	if (spec_id.equals(SPEC_INT))
 	{
 		return parse_next_int(spec_props);
@@ -160,71 +185,58 @@ int32_t katha::string_format_t::next()
 	{
 		return parse_next_timediff(spec_props);
 	}
-	if (spec_id.equals(SPEC_HEX32))
-	{
-		return parse_next_hex32(spec_props);
-	}
-	if (spec_id.equals(SPEC_HEX64))
-	{
-		return parse_next_hex64(spec_props);
-	}
-	
-	pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-		"{unknown specifier: %.*s}",
-		spec_id.size, spec_id.buffer
-	);
+
+	param_buffer.append("{unknown specifier: ");
+	param_buffer.append(spec_id);
+	param_buffer.append(" }");
 	return next(); // unknown specifier, return next token
 }
 
 int32_t katha::string_format_t::parse_next_int(const string_t& props)
 {
 	const int32_t value = va_arg(args, int32_t);
-	pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-		"%" PRIi32, value
-	);
+	const base_e base = specifier_properties_to_base(props);
+	param_buffer.size = int_to_string(value, param_buffer.buffer, base);
 	return next();
 }
 
 int32_t katha::string_format_t::parse_next_uint(const string_t& props)
 {
 	const uint32_t value = va_arg(args, uint32_t);
-	pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-		"%" PRIu32, value
-	);
+	const base_e base = specifier_properties_to_base(props);
+	param_buffer.size = uint_to_string(value, param_buffer.buffer, base);
 	return next();
 }
 
 int32_t katha::string_format_t::parse_next_float(const string_t& props)
 {
 	const double value = va_arg(args, double);
-	pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-		"%g", value
-	);
+	param_buffer.size = float_to_string(value, param_buffer.buffer);
 	return next();
 }
 
 int32_t katha::string_format_t::parse_next_int64(const string_t& props)
 {
 	const int64_t value = va_arg(args, int64_t);
-	pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-		"%" PRIi64, value
-	);
+	const base_e base = specifier_properties_to_base(props);
+	param_buffer.size = int64_to_string(value, param_buffer.buffer, base);
 	return next();
 }
 int32_t katha::string_format_t::parse_next_uint64(const string_t& props)
 {
 	const uint64_t value = va_arg(args, uint64_t);
-	pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-		"%" PRIu64, value
-	);
+	const base_e base = specifier_properties_to_base(props);
+	param_buffer.size = uint64_to_string(value, param_buffer.buffer, base);
 	return next();
 }
 
 int32_t katha::string_format_t::parse_next_pointer(const string_t& props)
 {
 	const uintptr_t value = va_arg(args, uintptr_t);
-	pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-		"ptr:%" PRIxPTR, value
+	param_buffer.size = uint64_to_string(
+		value,
+		param_buffer.tail(),
+		base_e::hex
 	);
 	return next();
 }
@@ -232,14 +244,7 @@ int32_t katha::string_format_t::parse_next_pointer(const string_t& props)
 int32_t katha::string_format_t::parse_next_cstring(const string_t& props)
 {
 	const char* str = va_arg(args, const char*);
-	if (nullptr == str)
-	{
-		param_str = "{null_string}";
-	}
-	else
-	{
-		param_str = str;
-	}
+	param_str = (nullptr != str) ? str : "{null_string}";
 	return next();
 }
 
@@ -255,10 +260,13 @@ int32_t katha::string_format_t::parse_next_vec3(const string_t& props)
 	const vec3* value = va_arg(args, vec3*);
 	if (value)
 	{
-		pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-			"{ .x = %g, .y = %g, .z = %g }",
-			value->x, value->y, value->z
-		);
+		param_buffer.append("(");
+		param_buffer.size += float_to_string(value->x, param_buffer.tail());
+		param_buffer.append(", ");
+		param_buffer.size += float_to_string(value->y, param_buffer.tail());
+		param_buffer.append(", ");
+		param_buffer.size += float_to_string(value->z, param_buffer.tail());
+		param_buffer.append(")");
 	}
 	return next();
 }
@@ -268,10 +276,11 @@ int32_t katha::string_format_t::parse_next_ivec2(const string_t& props)
 	const ivec2* value = va_arg(args, ivec2*);
 	if (value)
 	{
-		pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-			"{ .x = %" PRIi32 ", .y = %" PRIi32 " }",
-			value->x, value->y
-		);
+		param_buffer.append("(");
+		param_buffer.size += int_to_string(value->x, param_buffer.tail());
+		param_buffer.append(", ");
+		param_buffer.size += int_to_string(value->y, param_buffer.tail());
+		param_buffer.append(")");
 	}
 
 	return next();
@@ -282,10 +291,11 @@ int32_t katha::string_format_t::parse_next_uvec2(const string_t& props)
 	const uvec2* value = va_arg(args, uvec2*);
 	if (value)
 	{
-		pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-			"{ .x = %" PRIu32 ", .y = %" PRIu32 " }",
-			value->x, value->y
-		);
+		param_buffer.append("(");
+		param_buffer.size += uint_to_string(value->x, param_buffer.tail());
+		param_buffer.append(", ");
+		param_buffer.size += uint_to_string(value->y, param_buffer.tail());
+		param_buffer.append(")");
 	}
 
 	return next();
@@ -296,10 +306,11 @@ int32_t katha::string_format_t::parse_next_vec2(const string_t& props)
 	const vec2* value = va_arg(args, vec2*);
 	if (value)
 	{
-		pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-			"{ .x = %g, .y = %g  }",
-			value->x, value->y
-		);
+		param_buffer.append("(");
+		param_buffer.size += float_to_string(value->x, param_buffer.tail());
+		param_buffer.append(", ");
+		param_buffer.size += float_to_string(value->y, param_buffer.tail());
+		param_buffer.append(")");
 	}
 
 	return next();
@@ -313,23 +324,75 @@ int32_t katha::string_format_t::parse_next_mat4(const string_t& props)
 		const bool row_major = props.size && props[0] == 'r';
 		if (row_major)
 		{
-			pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-				"mat4-rm: [ [ %g, %g, %g, %g ], [ %g, %g, %g, %g ], [ %g, %g, %g, %g ], [ %g, %g, %g, %g ] ]",
-				m[0], m[4], m[8], m[12],
-				m[1], m[5], m[9], m[13],
-				m[2], m[6], m[10], m[14],
-				m[3], m[7], m[11], m[15]
-			);
+			param_buffer.append("mat4-rm: [ [");
+			param_buffer.size += float_to_string(m[0], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[4], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[8], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[12], param_buffer.tail());
+			param_buffer.append("], [ ");
+			param_buffer.size += float_to_string(m[1], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[5], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[9], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[13], param_buffer.tail());
+			param_buffer.append("], [ ");
+			param_buffer.size += float_to_string(m[2], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[6], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[10], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[14], param_buffer.tail());
+			param_buffer.append("], [ ");
+			param_buffer.size += float_to_string(m[3], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[7], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[11], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[15], param_buffer.tail());
+			param_buffer.append("] ]");
 		}
 		else
 		{
-			pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-				"mat4-cm: [ [ %g, %g, %g, %g ], [ %g, %g, %g, %g ], [ %g, %g, %g, %g ], [ %g, %g, %g, %g ] ]",
-				m[0], m[1], m[2], m[3],
-				m[4], m[5], m[6], m[7],
-				m[8], m[9], m[10], m[11],
-				m[12], m[13], m[14], m[15]
-			);
+			param_buffer.append("mat4-cm: [ [");
+			param_buffer.size += float_to_string(m[0], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[1], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[2], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[3], param_buffer.tail());
+			param_buffer.append("], [ ");
+			param_buffer.size += float_to_string(m[4], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[5], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[6], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[7], param_buffer.tail());
+			param_buffer.append("], [ ");
+			param_buffer.size += float_to_string(m[8], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[9], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[10], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[11], param_buffer.tail());
+			param_buffer.append("], [ ");
+			param_buffer.size += float_to_string(m[12], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[13], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[14], param_buffer.tail());
+			param_buffer.append(", ");
+			param_buffer.size += float_to_string(m[15], param_buffer.tail());
+			param_buffer.append("] ]");
 		}
 	}
 
@@ -341,52 +404,41 @@ int32_t katha::string_format_t::parse_next_timediff(const string_t& props)
 	const uint64_t value = va_arg(args, uint64_t);
 	if (value < 1000ull) // nanoseconds
 	{
-		pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-			"%" PRIu64 " ns", value
-		);
+		param_buffer.size = uint64_to_string(value, param_buffer.buffer);
+		param_buffer.append(" ns");
 	}
 	else if (value < 1000000ull) // microseconds
 	{
-		pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-			"%.3f \xce\xbcs", value / 1000.0
+		param_buffer.size = float_to_string(
+			value / 1000.0f,
+			param_buffer.buffer
 		);
+		param_buffer.append(" \xce\xbcs");
 	}
 	else if (value < 1000000000ull) // milliseconds
 	{
-		pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-			"%.3f ms", value / 1000000.0
+		param_buffer.size = float_to_string(
+			value / 1000000.0f,
+			param_buffer.buffer
 		);
+		param_buffer.append(" ms");
 	}
 	else if (value < 1000000000000ull) // seconds
 	{
-		pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-			"%.3f s", value / 1000000000.0
+		param_buffer.size = float_to_string(
+			value / 1000000000.0,
+			param_buffer.buffer
 		);
+		param_buffer.append(" s");
 	}
 	else // just log raw value at this point
 	{
-		pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-			"%" PRIu64 " ns", value
+		param_buffer.size = uint64_to_string(
+			value,
+			param_buffer.buffer
 		);
+		param_buffer.append(" ns");
 	}
 
-	return next();
-}
-
-int32_t katha::string_format_t::parse_next_hex32(const string_t& props)
-{
-	const uint32_t value = va_arg(args, uint32_t);
-	pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-		"hex:%" PRIX32, value
-	);
-	return next();
-}
-
-int32_t katha::string_format_t::parse_next_hex64(const string_t& props)
-{
-	const uint64_t value = va_arg(args, uint64_t);
-	pbuffer_length = snprintf(param_buffer, PARAM_BUFFER_SIZE,
-		"hex:%" PRIX64, value
-	);
 	return next();
 }

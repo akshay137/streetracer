@@ -262,6 +262,12 @@ namespace katha
 	}
 
 	template <typename T>
+	static constexpr T abs(const T& v)
+	{
+		return (v < 0) ? -v : v;
+	}
+
+	template <typename T>
 	static constexpr T min(const T& lhs, const T& rhs)
 	{
 		return lhs < rhs ? lhs : rhs;
@@ -277,6 +283,14 @@ namespace katha
 	static constexpr T clamp(const T& value, const T& lower, const T& upper)
 	{
 		return max(lower, min(value, upper));
+	}
+
+	template <typename T>
+	static constexpr T lerp(const T& source, const T& target, const float step)
+	{
+		const T diff = target - source;
+		const T result = source + diff * step;
+		return result;
 	}
 
 	constexpr static inline float radians(const float angle_in_degrees)

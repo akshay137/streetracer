@@ -76,12 +76,15 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/katha/core/enums.hpp
 	${BUILD_ROOT}/source/katha/core/enums.cpp
 	${BUILD_ROOT}/source/katha/core/stream.hpp
+	${BUILD_ROOT}/source/katha/core/stack_string.hpp
 	${BUILD_ROOT}/source/katha/core/string.hpp
 	${BUILD_ROOT}/source/katha/core/string.cpp
 	${BUILD_ROOT}/source/katha/core/types.hpp
 	
 	${BUILD_ROOT}/source/katha/format/string.hpp
 	${BUILD_ROOT}/source/katha/format/string.cpp
+	${BUILD_ROOT}/source/katha/format/types.hpp
+	${BUILD_ROOT}/source/katha/format/types.cpp
 
 	${BUILD_ROOT}/source/katha/graphics/vertex.hpp
 	
@@ -96,4 +99,8 @@ target_sources(${PROJECT_NAME} PUBLIC
 
 	${BUILD_ROOT}/source/katha/time/time.hpp
 	${BUILD_ROOT}/source/katha/time/time.cpp
+
+	${BUILD_ROOT}/source/game/action_map.hpp
+	${BUILD_ROOT}/source/game/highway.hpp
+	${BUILD_ROOT}/source/game/highway.cpp
 )

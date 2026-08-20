@@ -31,6 +31,16 @@ bool katha::check_result(const result_e result, const char* message)
 	return true;
 }
 
+const char* katha::graphics_api_to_cstring(const katha::graphics_api_e api)
+{
+	switch (api)
+	{
+		case katha::graphics_api_e::vulkan: return "vulkan";
+		case katha::graphics_api_e::gl: return "gl";
+		default: return "unknown graphics api";
+	}
+}
+
 const char* katha::format_to_cstring(const format_e format)
 {
 	switch (format)

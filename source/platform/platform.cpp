@@ -289,9 +289,9 @@ katha::result_e katha::platform_t::init_with_gl()
 		return result;
 	}
 
+#if KATHA_XR
 	if (config.enable_xr)
 	{
-#if KATHA_XR
 		// This piggy backs on existing OpenGL context
 		result = xr->init(config, window);
 		if (!check_result(result, "xr::init"))
@@ -300,29 +300,32 @@ katha::result_e katha::platform_t::init_with_gl()
 			config.enable_xr = 0;
 			log_line("error: xr disabled");
 		}
-
-		gl->left = gl->create_framebuffer(
-			xr->get_swapchain_size(xr_t::EYE_LEFT),
-			format_e::rgba8,
-			format_e::depth24_stencil8
-		);
-		if (0 == gl->left.framebuffer)
+		else
 		{
-			return result_e::error_gl;
-		}
 
-		gl->right = gl->create_framebuffer(
-			xr->get_swapchain_size(xr_t::EYE_RIGHT),
-			format_e::rgba8,
-			format_e::depth24_stencil8
-		);
-		if (0 == gl->right.framebuffer)
-		{
-			return result_e::error_gl;
+			gl->left = gl->create_framebuffer(
+				xr->get_swapchain_size(xr_t::EYE_LEFT),
+				format_e::rgba8,
+				format_e::depth24_stencil8
+			);
+			if (0 == gl->left.framebuffer)
+			{
+				return result_e::error_gl;
+			}
+	
+			gl->right = gl->create_framebuffer(
+				xr->get_swapchain_size(xr_t::EYE_RIGHT),
+				format_e::rgba8,
+				format_e::depth24_stencil8
+			);
+			if (0 == gl->right.framebuffer)
+			{
+				return result_e::error_gl;
+			}
 		}
-#endif
 	}
-	else
+#endif
+	if (0 == config.enable_xr)
 	{
 		gl->left = gl->create_framebuffer(
 			get_drawable_size(),

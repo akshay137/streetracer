@@ -120,6 +120,17 @@ namespace katha
 		return result;
 	}
 
+	template <typename T>
+	vector3_t<T> clamp(const vector3_t<T>& v, const T& lower, const T& upper)
+	{
+		vector3_t<T> result(
+			clamp<T>(v.x, lower, upper),
+			clamp<T>(v.y, lower, upper),
+			clamp<T>(v.z, lower, upper)
+		);
+		return result;
+	}
+
 	// x + y + z
 	template <typename T>
 	T horizontal_sum(const vector3_t<T>& v)
