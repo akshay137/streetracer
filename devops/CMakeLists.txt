@@ -12,6 +12,14 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 option(KATHA_XR "Enable OpenXR support" ON)
 option(KATHA_PRINT_LOG_DIAGNOSTICS "Appends profiling data for each log_line" ON)
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	option(KATHA_LINUX "Linux Platform" ON)
+	option(KATHA_WINDOWS "Windows Platform" OFF)
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	option(KATHA_WINDOWS "Windows Platform" ON)
+	option(KATHA_LINUX "Linux Platform" OFF)
+endif()
+
 set(BUILD_ROOT "..")
 get_filename_component(BUILD_ROOT "${BUILD_ROOT}" ABSOLUTE)
 
@@ -22,16 +30,32 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${BUILD_ROOT}/ext")
 target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_LINUX=0)
 target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_WINDOWS=2)
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if (KATHA_LINUX)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_PLATFORM=KATHA_LINUX)
+elseif(KATHA_WINDOWS)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_PLATFORM=KATHA_WINDOWS)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC m)
 
 set(SDL_TEST_LIBRARY OFF)
 set(SDL_CAMERA OFF)
+set(SDL_STATIC ON)
 add_subdirectory("${BUILD_ROOT}/ext/SDL2" "${CMAKE_BINARY_DIR}/ext" EXCLUDE_FROM_ALL)
+if (KATHA_WINDOWS)
+	target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2main)
+endif()
 target_link_libraries(${PROJECT_NAME} PUBLIC SDL2::SDL2)
+
+if (KATHA_WINDOWS)
+	target_link_libraries(${PROJECT_NAME} PRIVATE -static-libstdc++)
+	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		$<TARGET_RUNTIME_DLLS:${PROJECT_NAME}>
+		$<TARGET_FILE_DIR:${PROJECT_NAME}>
+		COMMAND_EXPAND_LISTS
+	)
+endif()
 
 if (KATHA_PRINT_LOG_DIAGNOSTICS)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_PRINT_LOG_DIAGNOSTICS=1)

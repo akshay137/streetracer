@@ -89,6 +89,11 @@ void katha::highway_t::update(const action_map_t& action_map, const float delta)
 	}
 }
 
+void katha::highway_t::spawn_traffic(const int index)
+{
+	//
+}
+
 katha::vec3 katha::highway_t::get_bb(const traffic_e traffic)
 {
 	switch (traffic)

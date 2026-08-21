@@ -279,16 +279,7 @@ int main(int argc, char** args)
 		}
 
 		const gamepad_t& gp = platform.current_input_state.gamepad;
-		action_map_t action_map = {};
-		action_map.movement = gp.stick_left;
-		if (gp.dpad_left)
-		{
-			action_map.movement.x -= 1;
-		}
-		if (gp.dpad_right)
-		{
-			action_map.movement.x += 1;
-		}
+		action_map_t action_map = platform.get_action_map();
 
 		highway.update(action_map, delta);
 

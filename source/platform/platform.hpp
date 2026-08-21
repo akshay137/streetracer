@@ -7,6 +7,8 @@
 #include "input.hpp"
 #include "gamepad.hpp"
 
+#include "../game/action_map.hpp"
+
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_gamecontroller.h>
 
@@ -50,9 +52,16 @@ namespace katha
 		result_e poll_events();
 		gamepad_t get_gamepad_state(const int32_t index) const;
 
+		action_map_t get_action_map() const;
+
 		ivec2 get_cursor_position() const
 		{
 			return current_input_state.cursor;
+		}
+
+		bool get_key(const int key) const
+		{
+			return current_input_state.get_key(key);
 		}
 
 		bool is_key_pressed(const int key) const

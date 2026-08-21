@@ -36,6 +36,8 @@ namespace katha
 
 		void update(const action_map_t& action_map, const float delta);
 
+		void spawn_traffic(const int index);
+
 		static vec3 get_bb(const traffic_e traffic);
 	};
 }

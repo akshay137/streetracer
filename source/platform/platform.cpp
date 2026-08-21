@@ -241,18 +241,18 @@ katha::result_e katha::platform_t::query_controllers()
 katha::result_e katha::platform_t::init_with_gl()
 {
 	// nothing to do xr specific
-	if (config.enable_xr)
-	{
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
-	}
-	else
-	{
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-	}
+	// if (config.enable_xr)
+	// {
+	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+	// }
+	// else
+	// {
+	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	// }
 	SDL_GL_SetSwapInterval(config.enable_vsync);
 
 	const int32_t position = SDL_WINDOWPOS_UNDEFINED_DISPLAY(
@@ -523,4 +523,24 @@ katha::gamepad_t katha::platform_t::get_gamepad_state(const int32_t index) const
 	gamepad.start = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_START);
 
 	return gamepad;
+}
+
+katha::action_map_t katha::platform_t::get_action_map() const
+{
+	action_map_t map = {};
+	const gamepad_t& gp = current_input_state.gamepad;
+
+	map.movement = gp.stick_left;
+	if (gp.dpad_left || get_key(SDL_SCANCODE_A))
+	{
+		map.movement.x -= 1;
+	}
+	if (gp.dpad_right || get_key(SDL_SCANCODE_D))
+	{
+		map.movement.x += 1;
+	}
+
+	map.movement.x = clamp(map.movement.x, -1.0f, 1.0f);
+
+	return map;
 }
