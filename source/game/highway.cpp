@@ -31,14 +31,15 @@ katha::vec3 get_random_traffic_spawn_position()
 {
 	static float last_z = -200;
 	static int last_lane = 0;
-	int lane = random_range<int>(0, 7);
-	// while (abs(last_lane - lane) < 2)
-	// {
-	// 	lane = random_range<int>(0, 6);
-	// }
+	constexpr int MAX_LANES = 4;
+	int lane = random_range<int>(0, MAX_LANES);
+	while (abs(last_lane - lane) < 2)
+	{
+		lane = random_range<int>(0, MAX_LANES);
+	}
 	last_lane = lane;
 	const int dist = random_range<int>(0, 5);
-	const katha::vec3 position(-8.34 + lane, 0, -300 + dist * 10);
+	const katha::vec3 position(-7.5 + lane * 5, 0, -300 + lane * 30);
 	katha::log_line("spawn: {v3}", position.array());
 	return position;
 }
@@ -79,10 +80,10 @@ void katha::highway_t::update(const action_map_t& action_map, const float delta)
 		{
 			t.position.z += TRAFFIC_SPEED * delta;
 	
-			if (t.position.z >= 20)
+			if (t.position.z >= 5)
 			{
 				t.type = traffic_e::none;
-				spawn_delay_seconds[i] = random_range(3, 10);
+				spawn_delay_seconds[i] = random_range(0, 3);
 				despawn_time[i] = game_time;
 			}
 		}
@@ -99,9 +100,9 @@ katha::vec3 katha::highway_t::get_bb(const traffic_e traffic)
 	switch (traffic)
 	{
 		case traffic_e::none: return vec3(1);
-		case traffic_e::car: return vec3(1, 0.5, 1);
+		case traffic_e::car: return vec3(0.8, 0.5, 1);
 		case traffic_e::truck: return vec3(0.8, 1.5, 2);
-		case traffic_e::bike: return vec3(0.25, 0.4, 0.4);
+		case traffic_e::bike: return vec3(0.15, 0.4, 0.4);
 	}
 
 	return vec3(1);

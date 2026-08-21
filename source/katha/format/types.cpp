@@ -69,7 +69,7 @@ uint32_t katha::uint_to_string(const uint32_t number, char* buffer, const base_e
 	char temp[BUFFER_SIZE] = {};
 	uint32_t index = BUFFER_SIZE; // start writing from end
 
-	const uint32_t FACTOR = static_cast<int>(base);
+	const uint32_t FACTOR = static_cast<uint32_t>(base);
 	uint32_t v = number;
 	while (v)
 	{
@@ -105,7 +105,7 @@ uint32_t katha::int64_to_string(const int64_t number, char* buffer, const base_e
 	char temp[BUFFER_SIZE] = {};
 	uint32_t index = BUFFER_SIZE; // start writing from end
 
-	const int64_t FACTOR = static_cast<int>(base);
+	const int64_t FACTOR = static_cast<int64_t>(base);
 	int64_t v = number;
 	while (v)
 	{
@@ -141,7 +141,7 @@ uint32_t katha::uint64_to_string(const uint64_t number, char* buffer, const base
 		return 1;
 	}
 
-	const uint64_t FACTOR = static_cast<int>(base);
+	const uint64_t FACTOR = static_cast<uint64_t>(base);
 	constexpr uint32_t BUFFER_SIZE = 72;
 	char temp[BUFFER_SIZE] = {};
 	uint32_t index = BUFFER_SIZE; // start writing from end

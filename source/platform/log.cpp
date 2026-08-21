@@ -22,15 +22,15 @@ uint32_t katha::log_line(const string_t format, ...)
 
 	for (int32_t code = formatter.next(); code != 0; code = formatter.next())
 	{
-		uint32_t bytes = string_t::write_utf8(code, buffer + buffer_index);
-		buffer_index += bytes;
-
 		if ((buffer_index + 4) >= BUFFER_SIZE)
 		{
 			fwrite(buffer, 1, buffer_index, stdout);
 			bytes_written += buffer_index;
 			buffer_index = 0;
 		}
+		
+		uint32_t bytes = string_t::write_utf8(code, buffer + buffer_index);
+		buffer_index += bytes;
 	}
 	va_end(formatter.args);
 

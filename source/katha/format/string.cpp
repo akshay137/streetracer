@@ -235,7 +235,7 @@ int32_t katha::string_format_t::parse_next_pointer(const string_t& props)
 	const uintptr_t value = va_arg(args, uintptr_t);
 	param_buffer.size = uint64_to_string(
 		value,
-		param_buffer.tail(),
+		param_buffer.buffer,
 		base_e::hex
 	);
 	return next();
