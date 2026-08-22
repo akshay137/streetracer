@@ -51,8 +51,8 @@ katha::result_e katha::xr_t::init(
 		.engineVersion = ENGINE_VERSION.major,
 		.apiVersion = XR_CURRENT_API_VERSION
 	};
-	string_t::copy(GAME_NAME, app_info.applicationName, XR_MAX_APPLICATION_NAME_SIZE);
-	string_t::copy(ENGINE_NAME, app_info.engineName, XR_MAX_ENGINE_NAME_SIZE);
+	string_t::cstring_copy(GAME_NAME, app_info.applicationName, XR_MAX_APPLICATION_NAME_SIZE);
+	string_t::cstring_copy(ENGINE_NAME, app_info.engineName, XR_MAX_ENGINE_NAME_SIZE);
 
 	const char** extensions = get_instance_extensions();
 	XrInstanceCreateInfo instance_info = {

@@ -530,17 +530,17 @@ katha::action_map_t katha::platform_t::get_action_map() const
 	action_map_t map = {};
 	const gamepad_t& gp = current_input_state.gamepad;
 
-	map.movement = gp.stick_left;
-	if (gp.dpad_left || get_key(SDL_SCANCODE_A))
+	map.movement = gp.stick_left.x;
+	if (gp.dpad_left || get_key(SDL_SCANCODE_A) || get_key(SDL_SCANCODE_LEFT))
 	{
-		map.movement.x -= 1;
+		map.movement -= 1;
 	}
-	if (gp.dpad_right || get_key(SDL_SCANCODE_D))
+	if (gp.dpad_right || get_key(SDL_SCANCODE_D) || get_key(SDL_SCANCODE_RIGHT))
 	{
-		map.movement.x += 1;
+		map.movement += 1;
 	}
 
-	map.movement.x = clamp(map.movement.x, -1.0f, 1.0f);
+	map.movement = clamp(map.movement, -1.0f, 1.0f);
 
 	return map;
 }

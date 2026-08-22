@@ -1,6 +1,6 @@
 #include "gl.hpp"
 #include "../../katha/core/config.hpp"
-#include "../../katha/graphics/vertex.hpp"
+#include "../../katha/physics/vertex.hpp"
 #include "../../katha/math/vector2.hpp"
 
 #include <SDL2/SDL_opengles.h>
@@ -80,14 +80,25 @@ katha::result_e katha::gl_t::init(const config_t& config, SDL_Window* window)
 	int32_t version_minor = 0;
 	glGetIntegerv(GL_MAJOR_VERSION, &version_major);
 	glGetIntegerv(GL_MINOR_VERSION, &version_minor);
+	version.major = static_cast<uint32_t>(version_major);
+	version.minor = static_cast<uint32_t>(version_minor);
 
-	// OpenXR needs Desktop GL, so ES 3.1 check is not necessary there
-	if (!config.enable_xr)
+	const char* version_string = (const char*)glGetString(GL_VERSION);
+	if (string_t::cstring_starts_with(version_string, "OpenGL ES"))
 	{
-		const bool ES_3_1 = (version_major >= 3) && (version_minor >= 1);
-		if (!ES_3_1)
+		es_context = 1;
+		if (!version.is_at_least(version_t(3, 1, 0)))
 		{
 			log_line("error-gl: failed to create OpenGL ES 3.1 context");
+			return result_e::error_gl;
+		}
+	}
+	else
+	{
+		es_context = 0;
+		if (!version.is_at_least(version_t(4, 5, 0)))
+		{
+			log_line("error-gl: failed to create OpenGL 4.5 context");
 			return result_e::error_gl;
 		}
 	}

@@ -26,6 +26,14 @@ namespace katha
 			const uint32_t patch
 		): major{major}, minor{minor}, patch{patch}
 		{}
+
+		bool is_at_least(const version_t& v) const
+		{
+			if (major < v.major) return false;
+			if (minor < v.minor) return false;
+			if (patch < v.patch) return false;
+			return true;
+		}
 	};
 
 	template <typename T>

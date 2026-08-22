@@ -3,6 +3,7 @@ project(sracer)
 
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_C_STANDAR 17)
 
 set(CMAKE_BUILD_RPATH_USE_ORIGIN true)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "dist")
@@ -110,14 +111,14 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/katha/format/types.hpp
 	${BUILD_ROOT}/source/katha/format/types.cpp
 
-	${BUILD_ROOT}/source/katha/graphics/vertex.hpp
 	
 	${BUILD_ROOT}/source/katha/math/vector2.hpp
 	${BUILD_ROOT}/source/katha/math/vector3.hpp
 	${BUILD_ROOT}/source/katha/math/vector3.hpp
 	${BUILD_ROOT}/source/katha/math/quaternion.hpp
 	${BUILD_ROOT}/source/katha/math/matrix4.hpp
-
+	
+	${BUILD_ROOT}/source/katha/physics/vertex.hpp
 	${BUILD_ROOT}/source/katha/physics/transform.hpp
 	${BUILD_ROOT}/source/katha/physics/transform.cpp
 
@@ -128,3 +129,29 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/game/highway.hpp
 	${BUILD_ROOT}/source/game/highway.cpp
 )
+
+# exclude c++ runtime
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+	target_compile_options(${PROJECT_NAME} PUBLIC
+		-fno-exceptions
+		-fno-rtti
+		-fno-threadsafe-statics
+		-fno-use-cxa-atexit
+	)
+
+	target_link_options(${PROJECT_NAME} PUBLIC
+		"-Wl,-Map=${CMAKE_CURRENT_BINARY_DIR}/linker.map"
+		"-Wl,--cref"
+	)
+
+	set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE C)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	target_compile_options(${PROJECT_NAME} PUBLIC
+		-fno-exceptions
+		-fno-rtti
+		-fno-threadsafe-statics
+		-fno-use-cxa-atexit
+	)
+	
+	target_link_options(${PROJECT_NAME} PUBLIC -nostdlibc++)
+endif()

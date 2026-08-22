@@ -8,7 +8,7 @@ namespace katha
 {
 	struct action_map_t
 	{
-		vec2 movement = {};
+		float movement = {};
 	};
 }
 

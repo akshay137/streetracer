@@ -52,10 +52,17 @@ namespace katha
 		static int32_t read_utf8(const char* buffer, uint32_t* out_bytes);
 		static uint32_t write_utf8(const int32_t code, char* buffer);
 
-		static void copy(
+		// some cstring function helpers
+
+		static void cstring_copy(
 			const char* source,
 			char* destination,
 			const uint32_t max_bytes
+		);
+
+		static bool cstring_starts_with(
+			const char* source,
+			const char* prefix
 		);
 	};
 }

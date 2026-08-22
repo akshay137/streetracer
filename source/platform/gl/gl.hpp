@@ -26,6 +26,7 @@ namespace katha
 		};
 
 		void* context = nullptr;
+		version_t version = {};
 
 		// framebuffers must be created after gl_t::init returns by caller
 		framebuffer_t left = {}; // main framebuffer for non-vr mode
@@ -33,6 +34,7 @@ namespace katha
 
 		int32_t max_texture_size = 0;
 
+		uint32_t es_context:1 = 0;
 		uint32_t ext_debug:1 = 0;
 
 		result_e init(const config_t& config, SDL_Window* window);

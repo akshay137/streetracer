@@ -113,11 +113,33 @@ uint32_t katha::string_t::write_utf8(const int32_t code, char* buffer)
 	return 0;
 }
 
-void katha::string_t::copy(
+void katha::string_t::cstring_copy(
 	const char* source,
 	char* destination,
 	const uint32_t max_bytes
 )
 {
 	strncpy(destination, source, static_cast<size_t>(max_bytes));
+}
+
+bool katha::string_t::cstring_starts_with(
+	const char* source,
+	const char* prefix
+)
+{
+	if ((nullptr == source) || (nullptr == prefix))
+	{
+		return false;
+	}
+
+	const char* s = source;
+	const char* p = prefix;
+
+	while ((*s && *p) && (*s == *p))
+	{
+		s++;
+		p++;
+	}
+
+	return 0 == *p;
 }

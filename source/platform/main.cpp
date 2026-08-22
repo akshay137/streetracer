@@ -1,7 +1,7 @@
 #include "platform.hpp"
 #include "gl/gl.hpp"
-#include "../katha/graphics/vertex.hpp"
 #include "../katha/time/time.hpp"
+#include "../katha/physics/vertex.hpp"
 #include "../katha/physics/transform.hpp"
 #include "../katha/math/vector2.hpp"
 #include "../katha/math/quaternion.hpp"
@@ -202,38 +202,15 @@ void gl_scene_t::draw(
 	}
 }
 
-void time_printf(const float v)
-{
-	const uint64_t start = katha::now();
-	printf("hello, %f\n", v);
-	const uint64_t end = katha::now();
-	log_line("printf took {td}", end - start);
-}
-
-void time_printf(const char* message)
-{
-	const uint64_t start = katha::now();
-	printf("%s\n", message);
-	const uint64_t end = katha::now();
-	log_line("printf took {td}", end - start);
-}
-
 int main(int argc, char** args)
 {
-	char* locale = setlocale(LC_ALL, nullptr);
+	char* locale = setlocale(LC_ALL, "");
 	log_line("current locale: {s}", locale);
 	log_line("unicode test: {s}", ENGINE_NAME_UTF8);
 
-	log_line("argc: {i}", -argc);
-	log_line("squared_distance: {i}", squared_length(ivec3(0, 1, 3)));
-	log_line("i_min: {i}", INT32_MIN);
-	log_line("i_max: {i}", INT32_MAX);
-	log_line("i64_max: {i64}", INT64_MAX);
-
-	time_printf(argc);
-	time_printf(1.37);
-	time_printf(length(vec3(1, 10, argc)));
-	time_printf("current locale: C");
+	log_line("now: {td}", now());
+	log_line("now: {td}", now());
+	return 0;
 
 	platform_t platform = {};
 	result_e result = platform.init(argc, args);
@@ -264,11 +241,7 @@ int main(int argc, char** args)
 		float delta = 0.016f;
 		if (last)
 		{
-			delta = 0.016f;
-		}
-		else
-		{
-			delta = last / static_cast<double>(1e12);
+			delta = last / static_cast<double>(1e9);
 		}
 
 		result = platform.poll_events();
@@ -352,7 +325,7 @@ int main(int argc, char** args)
 		last = now() - start;
 		if (platform.config.log_frame_time)
 		{
-			log_line("frame_time: {td}", last);
+			log_line("frame_time: {td}, delta: {f}", last, delta);
 		}
 	}
 

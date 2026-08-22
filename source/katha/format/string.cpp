@@ -402,6 +402,7 @@ int32_t katha::string_format_t::parse_next_mat4(const string_t& props)
 int32_t katha::string_format_t::parse_next_timediff(const string_t& props)
 {
 	const uint64_t value = va_arg(args, uint64_t);
+
 	if (value < 1000ull) // nanoseconds
 	{
 		param_buffer.size = uint64_to_string(value, param_buffer.buffer);

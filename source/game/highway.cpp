@@ -31,7 +31,8 @@ katha::vec3 get_random_traffic_spawn_position()
 {
 	static float last_z = -200;
 	static int last_lane = 0;
-	constexpr int MAX_LANES = 4;
+	constexpr int MAX_LANES = 5;
+	constexpr float FIRST_LANE = (20.0f / MAX_LANES) * 0.5f;
 	int lane = random_range<int>(0, MAX_LANES);
 	while (abs(last_lane - lane) < 2)
 	{
@@ -39,8 +40,8 @@ katha::vec3 get_random_traffic_spawn_position()
 	}
 	last_lane = lane;
 	const int dist = random_range<int>(0, 5);
-	const katha::vec3 position(-7.5 + lane * 5, 0, -300 + lane * 30);
-	katha::log_line("spawn: {v3}", position.array());
+	const katha::vec3 position((-10 + FIRST_LANE) + lane * (MAX_LANES - 1), 0, -300 + lane * 50);
+	katha::log_line("spawn: {i} {v3}", lane, position.array());
 	return position;
 }
 
@@ -48,7 +49,9 @@ katha::highway_t::highway_t()
 {
 	for (int i = 0; i < traffic_count; i++)
 	{
-		spawn_delay_seconds[i] = random_range(2, 6);
+		spawn_delay_seconds[i] = random_range(1, 6);
+		despawn_time[i] = 0;
+		log_line("spawn_delay[{i}] = {i}", i, spawn_delay_seconds[i]);
 	}
 }
 
@@ -57,9 +60,9 @@ void katha::highway_t::update(const action_map_t& action_map, const float delta)
 	game_time += delta;
 
 	constexpr float PLAYER_SPEED = 10.0f;
-	if (squared_length(action_map.movement))
+	if (action_map.movement)
 	{
-		player.x += action_map.movement.x * PLAYER_SPEED * delta;
+		player.x += action_map.movement * PLAYER_SPEED * delta;
 	}
 	player = clamp(player, -10.0f, 10.0f);
 
@@ -71,8 +74,7 @@ void katha::highway_t::update(const action_map_t& action_map, const float delta)
 		{
 			if (game_time - despawn_time[i] > spawn_delay_seconds[i])
 			{
-				t.type = get_random_traffic();
-				t.position = get_random_traffic_spawn_position();
+				spawn_traffic(i);
 			}
 		}
 
@@ -92,7 +94,8 @@ void katha::highway_t::update(const action_map_t& action_map, const float delta)
 
 void katha::highway_t::spawn_traffic(const int index)
 {
-	//
+	traffic[index].position = get_random_traffic_spawn_position();
+	traffic[index].type = get_random_traffic();
 }
 
 katha::vec3 katha::highway_t::get_bb(const traffic_e traffic)

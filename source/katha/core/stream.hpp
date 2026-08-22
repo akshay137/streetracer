@@ -6,9 +6,10 @@
 
 namespace katha
 {
+	// strictly used as a parameter for some functions
 	struct stream_i
 	{
-		virtual ~stream_i() {};
+		~stream_i() {};
 
 		virtual uint32_t read(void* buffer, const uint32_t bytes) = 0;
 		virtual uint32_t write(const void* buffer, const uint32_t bytes) = 0;
@@ -20,7 +21,7 @@ namespace katha
 			uint32_t br = read(&value, sizeof(T));
 			if (sizeof(T) == br)
 			{
-				write_checked(out_value);
+				write_checked(out_value, value);
 				return true;
 			}
 
