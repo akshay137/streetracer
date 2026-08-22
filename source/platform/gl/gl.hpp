@@ -3,16 +3,13 @@
 #define KATHA_GRAPHICS_GL_H__ 1
 
 #include "../../katha/core.hpp"
-#include "../../katha/graphics/buffer.hpp"
-#include "../../katha/graphics/framebuffer.hpp"
-#include "../../katha/graphics/pso.hpp"
-#include "../../katha/graphics/texture.hpp"
+#include "../../katha/graphics/graphics.hpp"
 
 #include <SDL2/SDL_video.h>
 
 namespace katha
 {
-	struct gl_t
+	struct gl_t : public graphics_i
 	{
 		struct format_t
 		{
@@ -44,15 +41,16 @@ namespace katha
 			framebuffer_t* out_framebuffer,
 			const texture_t& color_0,
 			const texture_t& depth_stencil
-		);
+		) override;
 
 		result_e create_framebuffer(
 			framebuffer_t* out_framebuffer,
 			const uvec2 size,
-			const format_e color_texture_format,
-			const format_e depth_texture_format
-		);
-		void delete_framebuffer(framebuffer_t* framebuffer);
+			const format_e color_format,
+			const format_e depth_stencil_format
+		) override;
+		void delete_framebuffer(framebuffer_t* framebuffer) override;
+
 		void bind_framebuffer(const framebuffer_t& framebuffer);
 		void blit_to_screen(
 			const framebuffer_t& framebuffer,
@@ -69,10 +67,9 @@ namespace katha
 			texture_t* out_texture,
 			const uvec2 size,
 			const format_e format,
-			const void* data = nullptr,
-			const bool generate_mipmaps = false
-		);
-		void delete_texture(texture_t* texture);
+			const void* data = nullptr
+		) override;
+		void delete_texture(texture_t* texture) override;
 		void bind_texture(const texture_t& texture, const uint32_t slot = 0);
 
 		bool set_blend_mode(const blend_mode_e mode);
@@ -85,8 +82,8 @@ namespace katha
 			const char* fragment_shader_source,
 			const blend_mode_e blend_mode,
 			const depth_mode_e depth_mode
-		);
-		void delete_pso(pso_t* pso);
+		) override;
+		void delete_pso(pso_t* pso) override;
 		void use_pso(const pso_t& pso);
 
 		void set_uniform_texture_unit(const int32_t location, const uint32_t unit);
@@ -97,10 +94,10 @@ namespace katha
 		result_e create_array_buffer(
 			buffer_t* out_buffer,
 			const uint32_t size, const void* data = nullptr
-		);
-		void delete_buffer(buffer_t* buffer);
+		) override;
+		void delete_buffer(buffer_t* buffer) override;
 
-		void bind_vertex_buffer(
+		void set_vertex_buffer(
 			const buffer_t& buffer,
 			const uint32_t index,
 			const uint32_t offset = 0,
@@ -115,11 +112,11 @@ namespace katha
 
 		static format_t format_to_gl_format(const format_e format);
 		
-		static mat4 perspective_matrix(
+		mat4 get_perspective_projection(
 			const float vertical_fov_radians,
 			const vec2 screen_size,
 			const vec2 z_range
-		);
+		) override;
 	};
 
 	extern gl_t * const gl;

@@ -57,6 +57,7 @@ namespace katha
 		depth24_stencil8,
 	};
 	extern const char* format_to_cstring(const format_e format);
+	extern bool should_mipmap(const format_e format);
 
 	enum class blend_mode_e : uint8_t
 	{

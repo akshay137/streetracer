@@ -217,33 +217,33 @@ katha::result_e katha::gl_t::create_framebuffer_from_texture(
 katha::result_e katha::gl_t::create_framebuffer(
 	framebuffer_t* out_framebuffer,
 	const uvec2 size,
-	const format_e color_texture_format,
-	const format_e depth_texture_format
+	const format_e color_format,
+	const format_e depth_stencil_format
 )
 {
 	log_line("gl: create_framebuffer("
 		"size={iv2}, color_texture_format={s}, depth_texture_format={s}"
 		")",
 		size.array(),
-		format_to_cstring(color_texture_format),
-		format_to_cstring(depth_texture_format)
+		format_to_cstring(color_format),
+		format_to_cstring(depth_stencil_format)
 	);
 
 	framebuffer_t framebuffer = {};
 	framebuffer.size = size;
 	
 	result_e result = create_texture(
-		&(framebuffer.color_0), size, color_texture_format
+		&(framebuffer.color_0), size, color_format
 	);
 	if (!check_result(result, "gl::create_framebuffer::create_texture::color_0"))
 	{
 		return result_e::error_gl;
 	}
 
-	if (format_e::none != depth_texture_format)
+	if (format_e::none != depth_stencil_format)
 	{
 		result = create_texture(
-			&(framebuffer.depth_stencil), size, depth_texture_format
+			&(framebuffer.depth_stencil), size, depth_stencil_format
 		);
 		if (!check_result(result, "gl::create_framebuffer::create_texture::depth_stencil"))
 		{
@@ -324,8 +324,7 @@ katha::result_e katha::gl_t::create_texture(
 	texture_t* out_texture,
 	const uvec2 size,
 	const format_e format,
-	const void* data,
-	const bool generate_mipmaps
+	const void* data
 )
 {
 	if (nullptr == out_texture)
@@ -361,7 +360,7 @@ katha::result_e katha::gl_t::create_texture(
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	
-	if (generate_mipmaps)
+	if (should_mipmap(format))
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 			GL_LINEAR_MIPMAP_NEAREST
@@ -675,7 +674,7 @@ void katha::gl_t::delete_buffer(buffer_t* buffer)
 	*buffer = {};
 }
 
-void katha::gl_t::bind_vertex_buffer(
+void katha::gl_t::set_vertex_buffer(
 	const buffer_t& buffer,
 	const uint32_t index,
 	const uint32_t offset,
@@ -777,7 +776,7 @@ katha::gl_t::format_t katha::gl_t::format_to_gl_format(const format_e format)
 	return {};
 }
 
-katha::mat4 katha::gl_t::perspective_matrix(
+katha::mat4 katha::gl_t::get_perspective_projection(
 	const float vertical_fov_radians,
 	const vec2 screen_size,
 	const vec2 z_range

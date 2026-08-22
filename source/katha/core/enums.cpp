@@ -83,6 +83,18 @@ const char* katha::format_to_cstring(const format_e format)
 	return "unknown format";
 }
 
+bool katha::should_mipmap(const format_e format)
+{
+	switch (format)
+	{
+		case format_e::none:
+		case format_e::depth24_stencil8:
+			return false;
+	}
+
+	return true;
+}
+
 const char* katha::blend_mode_to_cstring(const blend_mode_e mode)
 {
 	switch (mode)

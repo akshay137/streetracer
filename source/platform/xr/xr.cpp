@@ -462,9 +462,9 @@ katha::result_e katha::xr_t::begin_frame(frame_t* out_frame)
 	};
 	uint32_t view_count = 0;
 	xr_result = xrLocateViews(session, &locate_info, &view_state,
-		2, &view_count, frame.views
+		VIEW_COUNT, &view_count, frame.views
 	);
-	if (!check_result(xr_result, "xrLocateViews"))
+	if (!check_result(xr_result, "xrLocateViews") || (VIEW_COUNT != view_count))
 	{
 		return result_e::error_xr;
 	}

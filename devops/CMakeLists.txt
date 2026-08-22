@@ -115,6 +115,7 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/katha/graphics/buffer.cpp
 	${BUILD_ROOT}/source/katha/graphics/framebuffer.hpp
 	${BUILD_ROOT}/source/katha/graphics/framebuffer.cpp
+	${BUILD_ROOT}/source/katha/graphics/graphics.hpp
 	${BUILD_ROOT}/source/katha/graphics/pso.hpp
 	${BUILD_ROOT}/source/katha/graphics/pso.cpp
 	${BUILD_ROOT}/source/katha/graphics/texture.hpp

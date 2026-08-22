@@ -101,19 +101,20 @@ struct gl_scene_t
 		}
 	}
 
-	bool create();
-	void clear();
+	bool create(graphics_i* gfx);
+	void clear(graphics_i* gfx);
 
 	void draw(
+		graphics_i* gfx,
 		const highway_t& highway,
 		const katha::transform_t& camera,
 		const katha::vec2& size
 	);
 };
 
-bool gl_scene_t::create()
+bool gl_scene_t::create(graphics_i* gfx)
 {
-	result_e result = gl->create_pso(&pso,
+	result_e result = gfx->create_pso(&pso,
 		vertex_layout_e::f3_usn2,
 		vertex_shader, fragment_shader,
 		blend_mode_e::none,
@@ -124,7 +125,7 @@ bool gl_scene_t::create()
 		return false;
 	}
 
-	result = gl->create_array_buffer(&vertex_buffer, sizeof(vertices), vertices);
+	result = gfx->create_array_buffer(&vertex_buffer, sizeof(vertices), vertices);
 	if (!check_result(result, "gl::create_array_buffer"))
 	{
 		return false;
@@ -134,10 +135,10 @@ bool gl_scene_t::create()
 		255, 255, 255, 0, 0, 0, 0, 0,
 		0, 0, 0, 255, 255, 255, 0, 0
 	};
-	result = gl->create_texture(
+	result = gfx->create_texture(
 		&checker_board_texture,
 		katha::uvec2(2), format_e::rgb8,
-		pixels, false
+		pixels
 	);
 	if (!check_result(result, "gl_scene_t::create::checker_board_texture"))
 	{
@@ -147,20 +148,21 @@ bool gl_scene_t::create()
 	return true;
 }
 
-void gl_scene_t::clear()
+void gl_scene_t::clear(graphics_i* gfx)
 {
-	gl->delete_texture(&checker_board_texture);
-	gl->delete_buffer(&vertex_buffer);
-	gl->delete_pso(&pso);
+	gfx->delete_texture(&checker_board_texture);
+	gfx->delete_buffer(&vertex_buffer);
+	gfx->delete_pso(&pso);
 }
 
 void gl_scene_t::draw(
+	graphics_i* gfx,
 	const highway_t& highway,
 	const katha::transform_t& camera,
 	const katha::vec2& size
 )
 {
-	const katha::mat4 perspective = gl->perspective_matrix(
+	const katha::mat4 perspective = gfx->get_perspective_projection(
 		radians(90), size, vec2(0.01, 500)
 	);
 	const katha::mat4 view = camera.calculate_view_matrix();
@@ -175,7 +177,7 @@ void gl_scene_t::draw(
 	gl->bind_texture(checker_board_texture);
 	gl->set_uniform_texture_unit(1, 0);
 	
-	gl->bind_vertex_buffer(vertex_buffer, 0, 0, sizeof(vertex_t));
+	gl->set_vertex_buffer(vertex_buffer, 0, 0, sizeof(vertex_t));
 	
 	// player
 	gl->set_uniform_mat4(0, mvp.array());
@@ -214,10 +216,11 @@ int main(int argc, char** args)
 	}
 
 	gl_scene_t scene = {};
-	if (!scene.create())
+	graphics_i* gfx = gl;
+	if (!scene.create(gfx))
 	{
 		log_line("error: failed to create gl_scene");
-		scene.clear();
+		scene.clear(gfx);
 		platform.clear();
 		return 0;
 	}
@@ -271,7 +274,9 @@ int main(int argc, char** args)
 			// render begin
 			gl->bind_framebuffer(gl->left);
 			gl->clear_screen(vec4(0.1, 0.1, 0.1, 1));
-			scene.draw(highway,
+			scene.draw(
+				gfx,
+				highway,
 				camera.offset_by(xr_frame.get_transform(xr_t::EYE_LEFT)),
 				(vec2)gl->left.size
 			);
@@ -279,7 +284,9 @@ int main(int argc, char** args)
 
 			gl->bind_framebuffer(gl->right);
 			gl->clear_screen(vec4(0.1, 0.1, 0.1, 1));
-			scene.draw(highway,
+			scene.draw(
+				gfx,
+				highway,
 				camera.offset_by(xr_frame.get_transform(xr_t::EYE_RIGHT)),
 				(vec2)gl->right.size
 			);
@@ -295,7 +302,9 @@ int main(int argc, char** args)
 
 			// show left eye on window
 			const uvec2 size = platform.get_drawable_size();
-			gl->bind_framebuffer(framebuffer_t::empty(size));
+			framebuffer_t screen_framebuffer = {};
+			screen_framebuffer.size = size;
+			gl->bind_framebuffer(screen_framebuffer);
 			// TODO: scale this
 			gl->blit_to_screen(gl->left, ivec4(0, 0, size.x, size.y));
 			SDL_GL_SwapWindow(platform.window);
@@ -306,9 +315,11 @@ int main(int argc, char** args)
 			uvec2 size = platform.get_drawable_size();
 			gl->bind_framebuffer(gl->left);
 			gl->clear_screen(vec4(0.1, 0.1, 0.1, 1));
-			scene.draw(highway, camera, static_cast<vec2>(size));
+			scene.draw(gfx, highway, camera, static_cast<vec2>(size));
 
-			gl->bind_framebuffer(framebuffer_t::empty(size));
+			framebuffer_t screen_framebuffer = {};
+			screen_framebuffer.size = size;
+			gl->bind_framebuffer(screen_framebuffer);
 			gl->blit_to_screen(gl->left, ivec4(0, 0, size.x, size.y));
 			
 			SDL_GL_SwapWindow(platform.window);
@@ -321,7 +332,7 @@ int main(int argc, char** args)
 		}
 	}
 
-	scene.clear();
+	scene.clear(gfx);
 	platform.clear();
 	return 0;
 }

@@ -18,13 +18,6 @@ namespace katha
 
 		framebuffer_t() = default;
 
-		static inline framebuffer_t empty(const uvec2 size)
-		{
-			framebuffer_t framebuffer = {};
-			framebuffer.size = size;
-			return framebuffer;
-		}
-
 		void log(const bool pretty_print = false) const;
 	};
 }
