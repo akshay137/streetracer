@@ -42,6 +42,7 @@ namespace katha
 			XrSwapchain swapchain = XR_NULL_HANDLE;
 			uvec2 size = {};
 
+			format_e format = format_e::none;
 			uint32_t image_count = 0;
 			framebuffer_t framebuffers[MAX_IMAGE_COUNT] = {};
 		};
@@ -69,7 +70,10 @@ namespace katha
 		result_e create_session_gl(const config_t& config, SDL_Window* window);
 		result_e create_session_vulkan(const config_t& config);
 
-		int64_t get_opengl_swapchain_format() const;
+		result_e get_opengl_swapchain_format(
+			int64_t* out_xr_format,
+			format_e* out_format
+		) const;
 		result_e create_swapchain_gl();
 
 		result_e create_space();

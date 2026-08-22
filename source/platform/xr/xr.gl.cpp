@@ -200,7 +200,10 @@ katha::result_e katha::xr_t::create_session_gl(
 	return result_e::success;
 }
 
-int64_t katha::xr_t::get_opengl_swapchain_format() const
+katha::result_e katha::xr_t::get_opengl_swapchain_format(
+	int64_t* out_xr_format,
+	format_e* out_format
+) const
 {
 	uint32_t count = 0;
 	XrResult xr_result = xrEnumerateSwapchainFormats(
@@ -208,54 +211,62 @@ int64_t katha::xr_t::get_opengl_swapchain_format() const
 	);
 	if (!check_result(xr_result, "xrEnumerateSwapchain"))
 	{
-		return 0;
+		return result_e::error_xr;
 	}
 	if (0 == count)
 	{
 		log_line("error-xr: no swapchain formats found");
-		return 0;
+		return result_e::error_xr;
 	}
 
 	int64_t* formats = alloc<int64_t>(count);
 	if (nullptr == formats)
 	{
-		return 0;
+		return result_e::error_xr;
 	}
 
 	xr_result = xrEnumerateSwapchainFormats(session, count, &count, formats);
 	if (!check_result(xr_result, "xrEnumerateSwapchainFormats"))
 	{
-		return 0;
+		return result_e::error_xr;
 	}
 
-	int64_t selected_format = formats[0];
+	int64_t xr_format = 0;
+	format_e format = format_e::none;
 	for (uint32_t i = 0; i < count; i++)
 	{
 		if (GL_SRGB8_ALPHA8 == formats[i])
 		{
-			selected_format = formats[i];
+			xr_format = formats[i];
+			format = format_e::srgba8;
 			break;
-		}
-
-		if (GL_RGBA16F == formats[i])
-		{
-			selected_format = formats[i];
 		}
 	}
 
 	release(formats);
-	log_line("xr: opengl swapchain format {i64:x}", selected_format);
-	return selected_format;
+	write_checked(out_xr_format, xr_format);
+	write_checked(out_format, format);
+	log_line("xr: opengl swapchain format {s}", format_to_cstring(format));
+	return result_e::success;
 }
 
 katha::result_e katha::xr_t::create_swapchain_gl()
 {
-	const int64_t swapchain_format = get_opengl_swapchain_format();
+	int64_t xr_format = 0;
+	format_e format = format_e::none;
+	
+	result_e result = get_opengl_swapchain_format(&xr_format, &format);
+	if (!katha::check_result(result, "xr::get_opengl_swapchain_format"))
+	{
+		return result;
+	}
+
 	for (uint32_t i = 0; i < VIEW_COUNT; i++)
 	{
 		swapchain_t& swapchain = swapchains[i];
 		const XrViewConfigurationView& view = views[i];
-
+		
+		swapchain.format = format;
 		swapchain.size = uvec2(
 			view.recommendedImageRectWidth,
 			view.recommendedImageRectHeight
@@ -267,7 +278,7 @@ katha::result_e katha::xr_t::create_swapchain_gl()
 			.createFlags = 0,
 			.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT
 				| XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT,
-			.format = swapchain_format,
+			.format = xr_format,
 			.sampleCount = view.recommendedSwapchainSampleCount,
 			.width = view.recommendedImageRectWidth,
 			.height = view.recommendedImageRectHeight,
@@ -329,7 +340,8 @@ katha::result_e katha::xr_t::create_swapchain_gl()
 		{
 			texture_t color_0 = {
 				.id = static_cast<uint64_t>(images[j].image),
-				.size = swapchain.size
+				.size = swapchain.size,
+				.format = swapchain.format
 			};
 			swapchain.framebuffers[j].size = swapchain.size;
 			result_e result = gl->create_framebuffer_from_texture(
