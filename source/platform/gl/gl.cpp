@@ -3,7 +3,7 @@
 #include "../../katha/physics/vertex.hpp"
 #include "../../katha/math/vector2.hpp"
 
-#include <SDL2/SDL_opengles.h>
+#include <SDL2/SDL_video.h>
 #include <glad/glad.h>
 
 katha::gl_t gl_global_instance = {};
@@ -134,8 +134,8 @@ void katha::gl_t::clear()
 {
 	log_line("gl::clear()");
 
-	delete_framebuffer(left);
-	delete_framebuffer(right);
+	delete_framebuffer(&left);
+	delete_framebuffer(&right);
 
 	SDL_GL_DeleteContext(context);
 	context = nullptr;
@@ -168,16 +168,33 @@ void katha::gl_t::clear_screen(const vec4& color)
 	glClearBufferfi(GL_DEPTH_STENCIL, 0, 1, 0);
 }
 
-uint32_t katha::gl_t::create_framebuffer_from_texture(const uint32_t texture_color)
+katha::result_e katha::gl_t::create_framebuffer_from_texture(
+	framebuffer_t* out_framebuffer,
+	const texture_t& color_0,
+	const texture_t& depth_stencil
+)
 {
+	if (nullptr == out_framebuffer)
+	{
+		return result_e::error_value_null;
+	}
+
 	uint32_t framebuffer = 0;
 	glGenFramebuffers(1, &framebuffer);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
 		GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-		texture_color, 0
+		static_cast<GLuint>(color_0.id), 0
 	);
+
+	if (depth_stencil.id)
+	{
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
+			GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
+			static_cast<GLuint>(depth_stencil.id), 0
+		);
+	}
 
 	GLenum gl_result = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -186,26 +203,20 @@ uint32_t katha::gl_t::create_framebuffer_from_texture(const uint32_t texture_col
 	{
 		glDeleteFramebuffers(1, &framebuffer);
 		log_line("error-gl: framebuffer is incomplete {x32}", gl_result);
-		return 0;
+		return result_e::error_gl;
 	}
 
-	log_line("gl: framebuffer {u}", framebuffer);
-	return framebuffer;
+	out_framebuffer->id = static_cast<uint64_t>(framebuffer);
+	out_framebuffer->color_0 = color_0;
+	out_framebuffer->depth_stencil = depth_stencil;
+
+	out_framebuffer->log(true);
+	return result_e::success;
 }
 
-void katha::gl_t::delete_framebuffer(const uint32_t framebuffer)
-{
-	log_line("gl: delete framebuffer {u}", framebuffer);
-	glDeleteFramebuffers(1, &framebuffer);
-}
-
-void katha::gl_t::bind_framebuffer(const uint32_t framebuffer)
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-}
-
-katha::gl_t::framebuffer_t katha::gl_t::create_framebuffer(
-	const ivec2 size,
+katha::result_e katha::gl_t::create_framebuffer(
+	framebuffer_t* out_framebuffer,
+	const uvec2 size,
 	const format_e color_texture_format,
 	const format_e depth_texture_format
 )
@@ -220,82 +231,61 @@ katha::gl_t::framebuffer_t katha::gl_t::create_framebuffer(
 
 	framebuffer_t framebuffer = {};
 	framebuffer.size = size;
-	framebuffer.color_texture = create_texture(size, color_texture_format);
-	if (0 == framebuffer.color_texture)
+	
+	result_e result = create_texture(
+		&(framebuffer.color_0), size, color_texture_format
+	);
+	if (!check_result(result, "gl::create_framebuffer::create_texture::color_0"))
 	{
-		return {};
+		return result_e::error_gl;
 	}
 
 	if (format_e::none != depth_texture_format)
 	{
-		framebuffer.depth_texture = create_texture(size, depth_texture_format);
-		if (0 == framebuffer.depth_texture)
+		result = create_texture(
+			&(framebuffer.depth_stencil), size, depth_texture_format
+		);
+		if (!check_result(result, "gl::create_framebuffer::create_texture::depth_stencil"))
 		{
-			delete_texture(framebuffer.color_texture);
-			return {};
+			delete_texture(&(framebuffer.color_0));
+			return result_e::error_gl;
 		}
 	}
 
-	glGenFramebuffers(1, &(framebuffer.framebuffer));
-	if (0 == framebuffer.framebuffer)
-	{
-		delete_texture(framebuffer.color_texture);
-		delete_texture(framebuffer.depth_texture);
-		return {};
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.framebuffer);
-	glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
-		GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-		framebuffer.color_texture, 0
+	result = create_framebuffer_from_texture(&framebuffer,
+		framebuffer.color_0,
+		framebuffer.depth_stencil
 	);
-	if (framebuffer.depth_texture)
+	if (!check_result(result, "create_framebuffer_from_texture"))
 	{
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
-			GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
-			framebuffer.depth_texture, 0
-		);
+		return result;
 	}
 
-	GLenum status = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	if (GL_FRAMEBUFFER_COMPLETE != status)
-	{
-		delete_framebuffer(framebuffer);
-		log_line("error-gl: framebuffer is not complete {x32}", status);
-		return {};
-	}
-
-	log_line("gl: framebuffer {{ .fbo = {u}, .color = {u}, .depth = {u} }",
-		framebuffer.framebuffer,
-		framebuffer.color_texture,
-		framebuffer.depth_texture
-	);
-	return framebuffer;
+	*out_framebuffer = framebuffer;
+	return result_e::success;
 }
 
-void katha::gl_t::delete_framebuffer(const framebuffer_t& framebuffer)
+void katha::gl_t::delete_framebuffer(framebuffer_t* framebuffer)
 {
-	if (0 == framebuffer.framebuffer)
+	if ((nullptr == framebuffer) || (0 == framebuffer->id))
 	{
 		return;
 	}
 
-	log_line("gl: deleting framebuffer {u}, color_texture {u}, depth_texture {u}",
-		framebuffer.framebuffer,
-		framebuffer.color_texture,
-		framebuffer.depth_texture
+	GLuint fbo = static_cast<GLuint>(framebuffer->id);
+	log_line("gl: deleting framebuffer {u:x}:{iv2}",
+		fbo,
+		framebuffer->size.array()
 	);
 
-	glDeleteFramebuffers(1, &(framebuffer.framebuffer));
-	delete_texture(framebuffer.color_texture);
-	delete_texture(framebuffer.depth_texture);
+	glDeleteFramebuffers(1, &fbo);
+	delete_texture(&(framebuffer->color_0));
+	delete_texture(&(framebuffer->depth_stencil));
 }
 
 void katha::gl_t::bind_framebuffer(const framebuffer_t& framebuffer)
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(framebuffer.id));
 	glViewport(0, 0, framebuffer.size.x, framebuffer.size.y);
 }
 
@@ -304,7 +294,7 @@ void katha::gl_t::blit_to_screen(const framebuffer_t& framebuffer,
 	const bool filter_linear
 )
 {
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer.framebuffer);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(framebuffer.id));
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
 	glBlitFramebuffer(
@@ -320,27 +310,33 @@ void katha::gl_t::blit_to_framebuffer(
 	const bool filter_linear
 )
 {
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, source.framebuffer);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target.framebuffer);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, static_cast<GLuint>(source.id));
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, static_cast<GLuint>(target.id));
 
 	glBlitFramebuffer(
-		0, 0, source.size.x, source.size.y,
-		0, 0, target.size.x, target.size.y,
+		0, 0, static_cast<GLint>(source.size.x), static_cast<GLint>(source.size.y),
+		0, 0, static_cast<GLint>(target.size.x), static_cast<GLint>(target.size.y),
 		GL_COLOR_BUFFER_BIT, filter_linear ? GL_LINEAR : GL_NEAREST
 	);
 }
 
-uint32_t katha::gl_t::create_texture(
-	const ivec2 size,
+katha::result_e katha::gl_t::create_texture(
+	texture_t* out_texture,
+	const uvec2 size,
 	const format_e format,
 	const void* data,
 	const bool generate_mipmaps
 )
 {
+	if (nullptr == out_texture)
+	{
+		return result_e::error_value_null;
+	}
+
 	format_t gl_format = format_to_gl_format(format);
 	if (0 == gl_format.internal_format)
 	{
-		return 0;
+		return result_e::error_value_unexpected;
 	}
 
 	uint32_t texture = 0;
@@ -348,7 +344,7 @@ uint32_t katha::gl_t::create_texture(
 	if (0 == texture)
 	{
 		log_line("gl: failed to create texture of size {iv2}", size.array());
-		return 0;
+		return result_e::error_gl;
 	}
 
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -377,116 +373,244 @@ uint32_t katha::gl_t::create_texture(
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	}
 
-	log_line("gl: texture {u}, {iv2}", texture, size.array());
-	return texture;
+	out_texture->id = static_cast<uint64_t>(texture);
+	out_texture->size = size;
+	out_texture->format = format;
+	out_texture->log(true);
+	return result_e::success;
 }
 
-void katha::gl_t::delete_texture(const uint32_t texture)
+void katha::gl_t::delete_texture(texture_t* texture)
 {
-	if (0 == texture)
+	if ((nullptr == texture) || (0 == texture->id))
 	{
 		return;
 	}
 
-	log_line("gl: delete texture {u}", texture);
-	glDeleteTextures(1, &texture);
+	log_line("gl: delete texture {u64:x}", texture->id);
+	GLuint gl_texture = static_cast<GLuint>(texture->id);
+	glDeleteTextures(1, &gl_texture);
+
+	*texture = {};
 }
 
-void katha::gl_t::bind_texture(const uint32_t texture, const uint32_t slot)
+void katha::gl_t::bind_texture(const texture_t& texture, const uint32_t slot)
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(texture.id));
 }
 
-uint32_t katha::gl_t::create_shader_program(
+bool katha::gl_t::set_blend_mode(const blend_mode_e mode)
+{
+	if (blend_mode_e::none == mode)
+	{
+		glDisable(GL_BLEND);
+		return true;
+	}
+
+	if (blend_mode_e::one_minus_src_alpha == mode)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		return true;
+	}
+
+	log_line("warn-gl: unknown blend mode {u}", static_cast<uint32_t>(mode));
+	return false;
+}
+
+bool katha::gl_t::set_depth_mode(const depth_mode_e mode)
+{
+	if (depth_mode_e::none == mode)
+	{
+		glDisable(GL_DEPTH_TEST);
+		return true;
+	}
+
+	if (depth_mode_e::less == mode)
+	{
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		return true;
+	}
+
+	if (depth_mode_e::greater == mode)
+	{
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_GREATER);
+		return true;
+	}
+
+	log_line("warn-gl: unknwon depth mode {u}", static_cast<uint32_t>(mode));
+	return false;
+}
+
+katha::result_e katha::gl_t::create_pso(
+	pso_t* out_pso,
+	const vertex_layout_e vertex_layout,
 	const char* vertex_shader_source,
-	const char* fragment_shader_source
+	const char* fragment_shader_source,
+	const blend_mode_e blend_mode,
+	const depth_mode_e depth_mode
 )
 {
-	constexpr GLenum SHADER_TYPES[2] = { GL_VERTEX_SHADER, GL_FRAGMENT_SHADER };
+	if (!(out_pso && vertex_shader_source && fragment_shader_source))
+	{
+		return result_e::error_value_null;
+	}
 
-	uint32_t shaders[2] = {};
+	if (vertex_layout_e::f3_usn2 == vertex_layout)
+	{
+		GLuint vao = create_vao_vertex_t(false);
+		if (0 == vao)
+		{
+			return result_e::error_gl;
+		}
+		out_pso->layout = static_cast<GLuint>(vao);
+	}
+	else
+	{
+		log_line("error-gl: unknown vertex layout {u}", static_cast<uint32_t>(vertex_layout));
+		return result_e::error_gl;
+	}
+
+	constexpr GLenum SHADER_TYPES[2] = { GL_VERTEX_SHADER, GL_FRAGMENT_SHADER };
 	const char* shader_sources[2] = {
 		vertex_shader_source,
 		fragment_shader_source
 	};
-
-	for (int i = 0; i < 2; i++)
+	uint32_t shaders[2] = {};
+	for (uint32_t i = 0; i < 2; i++)
 	{
-		const char* shader_source[] = {
+		shaders[i] = glCreateShader(SHADER_TYPES[i]);
+		if (0 == shaders[i])
+		{
+			log_line("error-gl: failed to create shader");
+			break;
+		}
+
+		// TODO: add version string based on version
+		const char* sources[] = {
 			shader_sources[i]
 		};
-		shaders[i] = glCreateShader(SHADER_TYPES[i]);
-		glShaderSource(shaders[i], 1, shader_source, nullptr);
+		glShaderSource(shaders[i], 1, sources, nullptr);
 		glCompileShader(shaders[i]);
 
-		int success = GL_TRUE;
+		GLint success = GL_TRUE;
 		glGetShaderiv(shaders[i], GL_COMPILE_STATUS, &success);
-		if (!success)
+		if (GL_TRUE == success)
 		{
-			int log_length = 0;
-			glGetShaderiv(shaders[i], GL_INFO_LOG_LENGTH, &log_length);
-			char* buffer = alloc<char>(log_length + 1);
-			if (buffer)
-			{
-				glGetShaderInfoLog(shaders[i], log_length, nullptr, buffer);
-				buffer[log_length] = 0;
-				log_line("error-gl: shader compile failed: {s}", buffer);
-				release(buffer);
-			}
-		
-			for (int j = 0; j <= i; j++)
-			{
-				glDeleteShader(shaders[j]);
-			}
-
-			return 0;
+			continue;
 		}
+		
+		// compile failed
+		GLint log_length = 0;
+		glGetShaderiv(shaders[i], GL_INFO_LOG_LENGTH, &log_length);
+		if (log_length)
+		{
+			char* log = alloc<char>(log_length);
+			if (log)
+			{
+				glGetShaderInfoLog(shaders[i], log_length, nullptr, log);
+				log_line("error-gl: shader compile error: {s}", log);
+				release(log);
+			}
+		}
+
+		glDeleteShader(shaders[i]);
+		shaders[i] = 0;
+		break;
+	}
+	if (!(shaders[0] && shaders[1]))
+	{
+		if (shaders[0]) { glDeleteShader(shaders[0]); }
+		if (shaders[1]) { glDeleteShader(shaders[1]); }
+		GLuint vao = static_cast<GLuint>(out_pso->layout);
+		glDeleteVertexArrays(1, &vao);
+		return result_e::error_gl;
 	}
 
 	uint32_t program = glCreateProgram();
+	if (0 == program)
+	{
+		log_line("error-gl: failed to create shader program");
+		glDeleteShader(shaders[0]);
+		glDeleteShader(shaders[1]);
+		GLuint vao = static_cast<GLuint>(out_pso->layout);
+		glDeleteVertexArrays(1, &vao);
+		return result_e::error_gl;
+	}
+
 	glAttachShader(program, shaders[0]);
 	glAttachShader(program, shaders[1]);
 	glLinkProgram(program);
 	
-	int success = GL_TRUE;
-	glGetProgramiv(program, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		int log_length = 0;
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
-		char* buffer = alloc<char>(log_length + 1);
-		if (buffer)
-		{
-			glGetProgramInfoLog(program, log_length, nullptr, buffer);
-			buffer[log_length] = 0;
-			log_line("error-gl: program link failed: {s}", buffer);
-			release(buffer);
-		}
-		glDeleteProgram(program);
-		program = 0;
-	}
-
 	glDeleteShader(shaders[0]);
 	glDeleteShader(shaders[1]);
 
-	if (program)
+	GLint success = GL_TRUE;
+	glGetProgramiv(program, GL_LINK_STATUS, &success);
+	if (GL_TRUE == success)
 	{
-		log_line("gl: program {u}", program);
+		out_pso->id = static_cast<GLuint>(program);
+		out_pso->blend_mode = blend_mode;
+		out_pso->depth_mode = depth_mode;
+
+		out_pso->log(true);
+		return result_e::success;
 	}
 
-	return program;
-}
-
-void katha::gl_t::delete_shader_program(const uint32_t program)
-{
-	log_line("gl: delete_program {u}", program);
+	// link failed
+	GLint log_length = 0;
+	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
+	if (log_length)
+	{
+		char* log = alloc<char>(log_length);
+		if (log)
+		{
+			glGetProgramInfoLog(program, log_length, nullptr, log);
+			log_line("error-gl: program link error: {s}", log);
+			release(log);
+		}
+	}
 	glDeleteProgram(program);
+	GLuint vao = static_cast<GLuint>(out_pso->layout);
+	glDeleteVertexArrays(1, &vao);
+
+	return result_e::error_gl;
 }
 
-void katha::gl_t::use_shader_program(const uint32_t program)
+void katha::gl_t::delete_pso(pso_t* pso)
 {
-	glUseProgram(program);
+	if ((nullptr == pso) || (0 == pso->id))
+	{
+		return;
+	}
+
+	if (pso->layout)
+	{
+		GLuint vao = static_cast<GLuint>(pso->layout);
+		glDeleteVertexArrays(1, &vao);
+	}
+
+	log_line("gl: delete_pso({u64})", pso->id);
+	glDeleteProgram(pso->id);
+	*pso = {};
+}
+
+void katha::gl_t::use_pso(const pso_t& pso)
+{
+	if (0 == pso.id)
+	{
+		log_line("warning-gl: use_pso(0)");
+		return;
+	}
+
+	glUseProgram(static_cast<GLuint>(pso.id));
+	set_blend_mode(pso.blend_mode);
+	set_depth_mode(pso.depth_mode);
+
+	glBindVertexArray(static_cast<GLuint>(pso.layout));
 }
 
 void katha::gl_t::set_uniform_texture_unit(const int32_t location, const uint32_t unit)
@@ -509,57 +633,60 @@ void katha::gl_t::set_uniform_mat4(const int32_t location, const float* m)
 	glUniformMatrix4fv(location, 1, GL_FALSE, m);
 }
 
-uint32_t katha::gl_t::create_array_buffer(const uint32_t size, const void* data)
+katha::result_e katha::gl_t::create_array_buffer(
+	buffer_t* out_buffer,
+	const uint32_t size,
+	const void* data
+)
 {
+	if (nullptr == out_buffer)
+	{
+		return result_e::error_value_null;
+	}
+
 	uint32_t buffer = 0;
 	glGenBuffers(1, &buffer);
 	if (0 == buffer)
 	{
 		log_line("error-gl: failed to create buffer of size {u}", size);
-		return 0;
+		return result_e::error_gl;
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(size), data, GL_STATIC_DRAW);
 
-	return buffer;
+	out_buffer->id = static_cast<uint64_t>(buffer);
+	out_buffer->size = size;
+
+	return result_e::success;
 }
 
-void katha::gl_t::delete_buffer(const uint32_t buffer)
+void katha::gl_t::delete_buffer(buffer_t* buffer)
 {
-	log_line("gl: delete_buffer {u}", buffer);
-	glDeleteBuffers(1, &buffer);
+	if ((nullptr == buffer) || (0 == buffer->id))
+	{
+		return;
+	}
+
+	GLuint gl_buffer = static_cast<GLuint>(buffer->id);
+	log_line("gl: delete_buffer {u:x}", gl_buffer);
+	glDeleteBuffers(1, &gl_buffer);
+
+	*buffer = {};
 }
 
 void katha::gl_t::bind_vertex_buffer(
+	const buffer_t& buffer,
 	const uint32_t index,
-	const uint32_t buffer,
 	const uint32_t offset,
 	const uint32_t stride
 )
 {
-	glBindVertexBuffer(index, buffer,
+	glBindVertexBuffer(index,
+		static_cast<GLuint>(buffer.id),
 		static_cast<GLintptr>(offset),
 		static_cast<GLsizei>(stride)
 	);
-}
-
-uint32_t katha::gl_t::create_vao(const bool bind)
-{
-	uint32_t vao = 0;
-	glGenVertexArrays(1, &vao);
-	if (0 == vao)
-	{
-		log_line("error-gl: failed to create vao");
-		return 0;
-	}
-
-	if (bind)
-	{
-		glBindVertexArray(vao);
-	}
-
-	return vao;
 }
 
 uint32_t katha::gl_t::create_vao_vertex_t(const bool bind)
@@ -591,29 +718,6 @@ uint32_t katha::gl_t::create_vao_vertex_t(const bool bind)
 	return vao;
 }
 
-void katha::gl_t::delete_vao(const uint32_t vao)
-{
-	log_line("gl: delete_vao {u}", vao);
-	glDeleteVertexArrays(1, &vao);
-}
-
-void katha::gl_t::bind_vao(const uint32_t vao)
-{
-	glBindVertexArray(vao);
-}
-
-void katha::gl_t::set_vertex_attribute_float(
-	const uint32_t attribute_index,
-	const uint32_t binding_index,
-	const uint32_t size,
-	const uint32_t offset
-)
-{
-	glVertexAttribFormat(attribute_index, size, GL_FLOAT, GL_FALSE, offset);
-	glVertexAttribBinding(attribute_index, binding_index);
-	glEnableVertexAttribArray(attribute_index);
-}
-
 void katha::gl_t::draw_arrays(uint32_t vertices)
 {
 	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices));
@@ -631,6 +735,13 @@ katha::gl_t::format_t katha::gl_t::format_to_gl_format(const format_e format)
 {
 	switch (format)
 	{
+		case format_e::rgba8:
+			return {
+				.internal_format = GL_RGBA8,
+				.channel = GL_RGBA,
+				.data_type = GL_UNSIGNED_BYTE
+			};
+
 		case format_e::rgb8:
 			return {
 				.internal_format = GL_RGB8,
@@ -638,10 +749,17 @@ katha::gl_t::format_t katha::gl_t::format_to_gl_format(const format_e format)
 				.data_type = GL_UNSIGNED_BYTE
 			};
 		
-		case format_e::rgba8:
+		case format_e::srgba8:
 			return {
-				.internal_format = GL_RGBA8,
+				.internal_format = GL_SRGB8_ALPHA8,
 				.channel = GL_RGBA,
+				.data_type = GL_UNSIGNED_BYTE
+			};
+			
+		case format_e::srgb8:
+			return {
+				.internal_format = GL_SRGB8,
+				.channel = GL_RGB,
 				.data_type = GL_UNSIGNED_BYTE
 			};
 		

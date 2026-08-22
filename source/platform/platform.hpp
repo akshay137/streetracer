@@ -46,8 +46,8 @@ namespace katha
 		result_e init_with_vulkan();
 		void clear_vulkan();
 
-		ivec2 get_window_size() const;
-		ivec2 get_drawable_size() const;
+		uvec2 get_window_size() const;
+		uvec2 get_drawable_size() const;
 
 		result_e poll_events();
 		gamepad_t get_gamepad_state(const int32_t index) const;

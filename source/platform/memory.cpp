@@ -25,6 +25,15 @@ void* katha::allocate(const size_t size, const source_t& source)
 
 void katha::release(void* memory, const source_t& source)
 {
+	if (nullptr == memory)
+	{
+		log_line("warning: release(0) called from {s}:{u}",
+			source.file_name(),
+			static_cast<uint32_t>(source.line())
+		);
+		return;
+	}
+
 	log_line("memory-free: {p}, location {s}:{u}",
 		memory,
 		source.file_name(),

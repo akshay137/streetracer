@@ -24,7 +24,8 @@ inline int32_t read_next_code(
 
 inline katha::base_e specifier_properties_to_base(const katha::string_t& props)
 {
-	if (0 == props.size) // common case
+	// default is decimal
+	if (0 == props.size)
 	{
 		return katha::base_e::decimal;
 	}
@@ -39,9 +40,10 @@ inline katha::base_e specifier_properties_to_base(const katha::string_t& props)
 	}
 	if ('x' == props[0])
 	{
-		return katha::base_e::hex;
+		return katha::base_e::hexadecimal;
 	}
 
+	// unknown, return decimal
 	return katha::base_e::decimal;
 }
 
@@ -236,7 +238,7 @@ int32_t katha::string_format_t::parse_next_pointer(const string_t& props)
 	param_buffer.size = uint64_to_string(
 		value,
 		param_buffer.buffer,
-		base_e::hex
+		base_e::hexadecimal
 	);
 	return next();
 }

@@ -256,9 +256,9 @@ katha::result_e katha::xr_t::create_swapchain_gl()
 		swapchain_t& swapchain = swapchains[i];
 		const XrViewConfigurationView& view = views[i];
 
-		swapchain.size = ivec2(
-			static_cast<int32_t>(view.recommendedImageRectWidth),
-			static_cast<int32_t>(view.recommendedImageRectHeight)
+		swapchain.size = uvec2(
+			view.recommendedImageRectWidth,
+			view.recommendedImageRectHeight
 		);
 
 		XrSwapchainCreateInfo info = {
@@ -327,17 +327,20 @@ katha::result_e katha::xr_t::create_swapchain_gl()
 
 		for (uint32_t j = 0; j < image_count; j++)
 		{
-			uint32_t framebuffer = gl->create_framebuffer_from_texture(images[j].image);
-			if (0 == framebuffer)
+			texture_t color_0 = {
+				.id = static_cast<uint64_t>(images[j].image),
+				.size = swapchain.size
+			};
+			swapchain.framebuffers[j].size = swapchain.size;
+			result_e result = gl->create_framebuffer_from_texture(
+				swapchain.framebuffers + j,
+				color_0,
+				{}
+			);
+			if (!katha::check_result(result, "xr::gl::create_framebuffer_from_texture"))
 			{
 				return result_e::error_gl;
 			}
-
-			swapchain.images[j] = static_cast<uint64_t>(images[j].image);
-			swapchain.image_views[j] = static_cast<uint64_t>(framebuffer);
-			log_line("xr: image_{u} {u64} view: {u64}",
-				j, swapchain.images[j], swapchain.image_views[j]
-			);
 		}
 	}
 

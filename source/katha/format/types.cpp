@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-constexpr const char* DIGIT_STR = "0123456789ABCDEF";
+constexpr const char* DIGIT_STRING = "0123456789ABCDEF";
 
 inline const char* get_base_prefix_reversed(const katha::base_e base)
 {
@@ -12,7 +12,7 @@ inline const char* get_base_prefix_reversed(const katha::base_e base)
 		case katha::base_e::binary: return "b0";
 		case katha::base_e::octal: return "o0";
 		case katha::base_e::decimal: return "";
-		case katha::base_e::hex: return "x0";
+		case katha::base_e::hexadecimal: return "x0";
 	}
 	return "";
 }
@@ -35,7 +35,7 @@ uint32_t katha::int_to_string(const int32_t number, char* buffer, const base_e b
 	{
 		const int digit = abs(v % FACTOR);
 		v /= FACTOR;
-		temp[--index] = DIGIT_STR[digit];
+		temp[--index] = DIGIT_STRING[digit];
 	}
 	if (number < 0)
 	{
@@ -75,7 +75,7 @@ uint32_t katha::uint_to_string(const uint32_t number, char* buffer, const base_e
 	{
 		const int digit = v % FACTOR;
 		v /= FACTOR;
-		temp[--index] = DIGIT_STR[digit];
+		temp[--index] = DIGIT_STRING[digit];
 	}
 
 	const char* prefix = get_base_prefix_reversed(base);
@@ -111,7 +111,7 @@ uint32_t katha::int64_to_string(const int64_t number, char* buffer, const base_e
 	{
 		const int digit = abs(v % FACTOR);
 		v /= FACTOR;
-		temp[--index] = DIGIT_STR[digit];
+		temp[--index] = DIGIT_STRING[digit];
 	}
 	if (number < 0)
 	{
@@ -151,7 +151,7 @@ uint32_t katha::uint64_to_string(const uint64_t number, char* buffer, const base
 	{
 		const int digit = v % FACTOR;
 		v /= FACTOR;
-		temp[--index] = DIGIT_STR[digit];
+		temp[--index] = DIGIT_STRING[digit];
 	}
 
 	const char* prefix = get_base_prefix_reversed(base);

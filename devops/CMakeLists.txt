@@ -111,6 +111,14 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/katha/format/types.hpp
 	${BUILD_ROOT}/source/katha/format/types.cpp
 
+	${BUILD_ROOT}/source/katha/graphics/buffer.hpp
+	${BUILD_ROOT}/source/katha/graphics/buffer.cpp
+	${BUILD_ROOT}/source/katha/graphics/framebuffer.hpp
+	${BUILD_ROOT}/source/katha/graphics/framebuffer.cpp
+	${BUILD_ROOT}/source/katha/graphics/pso.hpp
+	${BUILD_ROOT}/source/katha/graphics/pso.cpp
+	${BUILD_ROOT}/source/katha/graphics/texture.hpp
+	${BUILD_ROOT}/source/katha/graphics/texture.cpp
 	
 	${BUILD_ROOT}/source/katha/math/vector2.hpp
 	${BUILD_ROOT}/source/katha/math/vector3.hpp

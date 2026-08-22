@@ -86,10 +86,9 @@ constexpr vertex_t vertices[] = {
 
 struct gl_scene_t
 {
-	uint32_t shader_program = 0;
-	uint32_t vao = 0;
-	uint32_t vertex_buffer = 0;
-	uint32_t checker_board_texture = 0;
+	pso_t pso = {};
+	texture_t checker_board_texture = {};
+	buffer_t vertex_buffer = {};
 
 	float angle = 0.0f;
 
@@ -114,20 +113,19 @@ struct gl_scene_t
 
 bool gl_scene_t::create()
 {
-	shader_program = gl->create_shader_program(vertex_shader, fragment_shader);
-	if (0 == shader_program)
+	result_e result = gl->create_pso(&pso,
+		vertex_layout_e::f3_usn2,
+		vertex_shader, fragment_shader,
+		blend_mode_e::none,
+		depth_mode_e::less
+	);
+	if (!check_result(result, "gl::create_pso"))
 	{
 		return false;
 	}
 
-	vertex_buffer = gl->create_array_buffer(sizeof(vertices), vertices);
-	if (0 == vertex_buffer)
-	{
-		return false;
-	}
-
-	vao = gl->create_vao_vertex_t();
-	if (0 == vao)
+	result = gl->create_array_buffer(&vertex_buffer, sizeof(vertices), vertices);
+	if (!check_result(result, "gl::create_array_buffer"))
 	{
 		return false;
 	}
@@ -136,11 +134,12 @@ bool gl_scene_t::create()
 		255, 255, 255, 0, 0, 0, 0, 0,
 		0, 0, 0, 255, 255, 255, 0, 0
 	};
-	checker_board_texture = gl->create_texture(
-		katha::ivec2(2), format_e::rgb8,
+	result = gl->create_texture(
+		&checker_board_texture,
+		katha::uvec2(2), format_e::rgb8,
 		pixels, false
 	);
-	if (0 == checker_board_texture)
+	if (!check_result(result, "gl_scene_t::create::checker_board_texture"))
 	{
 		return false;
 	}
@@ -150,10 +149,9 @@ bool gl_scene_t::create()
 
 void gl_scene_t::clear()
 {
-	gl->delete_texture(checker_board_texture);
-	gl->delete_vao(vao);
-	gl->delete_buffer(vertex_buffer);
-	gl->delete_shader_program(shader_program);
+	gl->delete_texture(&checker_board_texture);
+	gl->delete_buffer(&vertex_buffer);
+	gl->delete_pso(&pso);
 }
 
 void gl_scene_t::draw(
@@ -173,12 +171,11 @@ void gl_scene_t::draw(
 	
 	katha::mat4 mvp = perspective * view * model;
 
-	gl->use_shader_program(shader_program);
+	gl->use_pso(pso);
 	gl->bind_texture(checker_board_texture);
 	gl->set_uniform_texture_unit(1, 0);
 	
-	gl->bind_vao(vao);
-	gl->bind_vertex_buffer(0, vertex_buffer, 0, sizeof(vertex_t));
+	gl->bind_vertex_buffer(vertex_buffer, 0, 0, sizeof(vertex_t));
 	
 	// player
 	gl->set_uniform_mat4(0, mvp.array());
@@ -207,10 +204,6 @@ int main(int argc, char** args)
 	char* locale = setlocale(LC_ALL, "");
 	log_line("current locale: {s}", locale);
 	log_line("unicode test: {s}", ENGINE_NAME_UTF8);
-
-	log_line("now: {td}", now());
-	log_line("now: {td}", now());
-	return 0;
 
 	platform_t platform = {};
 	result_e result = platform.init(argc, args);
@@ -282,7 +275,7 @@ int main(int argc, char** args)
 				camera.offset_by(xr_frame.get_transform(xr_t::EYE_LEFT)),
 				(vec2)gl->left.size
 			);
-			gl->blit_to_framebuffer(gl->left, xr->get_gl_framebuffer(xr_t::EYE_LEFT, xr_frame));
+			gl->blit_to_framebuffer(gl->left, xr_frame.framebuffer_left());
 
 			gl->bind_framebuffer(gl->right);
 			gl->clear_screen(vec4(0.1, 0.1, 0.1, 1));
@@ -290,7 +283,7 @@ int main(int argc, char** args)
 				camera.offset_by(xr_frame.get_transform(xr_t::EYE_RIGHT)),
 				(vec2)gl->right.size
 			);
-			gl->blit_to_framebuffer(gl->right, xr->get_gl_framebuffer(xr_t::EYE_RIGHT, xr_frame));
+			gl->blit_to_framebuffer(gl->right, xr_frame.framebuffer_right());
 			// render end
 
 			result = xr->end_frame(xr_frame);
@@ -301,8 +294,8 @@ int main(int argc, char** args)
 			}
 
 			// show left eye on window
-			const ivec2 size = platform.get_drawable_size();
-			gl->set_viewport(size);
+			const uvec2 size = platform.get_drawable_size();
+			gl->bind_framebuffer(framebuffer_t::empty(size));
 			// TODO: scale this
 			gl->blit_to_screen(gl->left, ivec4(0, 0, size.x, size.y));
 			SDL_GL_SwapWindow(platform.window);
@@ -310,13 +303,12 @@ int main(int argc, char** args)
 		}
 		else
 		{
-			vec2 size = (vec2)platform.get_drawable_size();
+			uvec2 size = platform.get_drawable_size();
 			gl->bind_framebuffer(gl->left);
 			gl->clear_screen(vec4(0.1, 0.1, 0.1, 1));
-			scene.draw(highway, camera, size);
+			scene.draw(highway, camera, static_cast<vec2>(size));
 
-			gl->bind_framebuffer(0);
-			gl->set_viewport((ivec2)size);
+			gl->bind_framebuffer(framebuffer_t::empty(size));
 			gl->blit_to_screen(gl->left, ivec4(0, 0, size.x, size.y));
 			
 			SDL_GL_SwapWindow(platform.window);

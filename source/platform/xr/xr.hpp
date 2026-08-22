@@ -5,6 +5,7 @@
 #if KATHA_XR
 
 #include "../../katha/core.hpp"
+#include "../../katha/graphics/framebuffer.hpp"
 #include "../../katha/physics/transform.hpp"
 
 #include "../gl/gl.hpp"
@@ -39,12 +40,10 @@ namespace katha
 			// but could get more in minimum recommended
 			constexpr static uint32_t MAX_IMAGE_COUNT = 8;
 			XrSwapchain swapchain = XR_NULL_HANDLE;
-			ivec2 size = {};
+			uvec2 size = {};
 
 			uint32_t image_count = 0;
-			uint64_t images[MAX_IMAGE_COUNT] = {};
-			// VkImageView or GL_FRAMEBUFFER
-			uint64_t image_views[MAX_IMAGE_COUNT] = {};
+			framebuffer_t framebuffers[MAX_IMAGE_COUNT] = {};
 		};
 		swapchain_t swapchains[VIEW_COUNT] = {}; // swapchain per view
 
@@ -83,8 +82,17 @@ namespace katha
 			XrFrameState state = {};
 			XrView views[VIEW_COUNT] = {};
 			XrCompositionLayerProjectionView layer_views[VIEW_COUNT] = {};
-			uint64_t images[VIEW_COUNT] = {};
-			uint64_t image_views[VIEW_COUNT] = {};
+			framebuffer_t framebuffers[VIEW_COUNT] = {};
+
+			const framebuffer_t& framebuffer_left() const
+			{
+				return framebuffers[EYE_LEFT];
+			}
+
+			const framebuffer_t& framebuffer_right() const
+			{
+				return framebuffers[EYE_RIGHT];
+			}
 
 			vec3 get_position(const uint32_t eye) const
 			{
@@ -118,22 +126,9 @@ namespace katha
 		result_e begin_frame(frame_t* out_frame);
 		result_e end_frame(const frame_t& frame);
 
-		ivec2 get_swapchain_size(const int eye) const
+		uvec2 get_swapchain_size(const int eye) const
 		{
 			return swapchains[eye].size;
-		}
-
-		gl_t::framebuffer_t get_gl_framebuffer(
-			const int eye, const frame_t& frame
-		) const
-		{
-			gl_t::framebuffer_t framebuffer = {
-				.framebuffer = (uint32_t)frame.image_views[eye],
-				.color_texture = (uint32_t)frame.images[eye],
-				.depth_texture = 0,
-				.size = swapchains[eye].size
-			};
-			return framebuffer;
 		}
 	};
 

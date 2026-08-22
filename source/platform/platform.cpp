@@ -303,22 +303,24 @@ katha::result_e katha::platform_t::init_with_gl()
 		else
 		{
 
-			gl->left = gl->create_framebuffer(
+			result = gl->create_framebuffer(
+				&(gl->left),
 				xr->get_swapchain_size(xr_t::EYE_LEFT),
 				format_e::rgba8,
 				format_e::depth24_stencil8
 			);
-			if (0 == gl->left.framebuffer)
+			if (!check_result(result, "gl::create_framebuffer->xr_left"))
 			{
 				return result_e::error_gl;
 			}
 	
-			gl->right = gl->create_framebuffer(
+			result = gl->create_framebuffer(
+				&(gl->right),
 				xr->get_swapchain_size(xr_t::EYE_RIGHT),
 				format_e::rgba8,
 				format_e::depth24_stencil8
 			);
-			if (0 == gl->right.framebuffer)
+			if (!check_result(result, "gl::create_framebuffer->xr_right"))
 			{
 				return result_e::error_gl;
 			}
@@ -327,12 +329,13 @@ katha::result_e katha::platform_t::init_with_gl()
 #endif
 	if (0 == config.enable_xr)
 	{
-		gl->left = gl->create_framebuffer(
+		result = gl->create_framebuffer(
+			&(gl->left),
 			get_drawable_size(),
 			format_e::rgba8,
 			format_e::depth24_stencil8
 		);
-		if (0 == gl->left.framebuffer)
+		if (!check_result(result, "gl::create_framebuffer::platform_main"))
 		{
 			return result_e::error_gl;
 		}
@@ -399,26 +402,31 @@ void katha::platform_t::clear_vulkan()
 	vulkan->clear();
 }
 
-katha::ivec2 katha::platform_t::get_window_size() const
+katha::uvec2 katha::platform_t::get_window_size() const
 {
-	ivec2 size = {};
-	SDL_GetWindowSize(window, &(size.x), &(size.y));
+	int width = 0;
+	int height = 0;
+	SDL_GetWindowSize(window, &width, &height);
+	
+	uvec2 size(width, height);
 	return size;
 }
 
-katha::ivec2 katha::platform_t::get_drawable_size() const
+katha::uvec2 katha::platform_t::get_drawable_size() const
 {
-	ivec2 size = {};
+	int width = 0;
+	int height = 0;
 	switch (config.graphics_api)
 	{
 		case graphics_api_e::gl:
-			SDL_GL_GetDrawableSize(window, &(size.x), &(size.y));
+			SDL_GL_GetDrawableSize(window, &width, &height);
 			break;
 		
 		default:
 			return get_window_size();
 	}
 
+	uvec2 size(width, height);
 	return size;
 }
 

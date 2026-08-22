@@ -3,6 +3,10 @@
 #define KATHA_GRAPHICS_GL_H__ 1
 
 #include "../../katha/core.hpp"
+#include "../../katha/graphics/buffer.hpp"
+#include "../../katha/graphics/framebuffer.hpp"
+#include "../../katha/graphics/pso.hpp"
+#include "../../katha/graphics/texture.hpp"
 
 #include <SDL2/SDL_video.h>
 
@@ -17,18 +21,10 @@ namespace katha
 			int32_t data_type = 0;
 		};
 
-		struct framebuffer_t
-		{
-			uint32_t framebuffer = 0;
-			uint32_t color_texture = 0;
-			uint32_t depth_texture = 0;
-			ivec2 size = {};
-		};
-
 		void* context = nullptr;
 		version_t version = {};
 
-		// framebuffers must be created after gl_t::init returns by caller
+		// framebuffers must be created by caller after gl_t::init returns
 		framebuffer_t left = {}; // main framebuffer for non-vr mode
 		framebuffer_t right = {};
 
@@ -44,16 +40,19 @@ namespace katha
 
 		void clear_screen(const vec4& color);
 
-		uint32_t create_framebuffer_from_texture(const uint32_t texture_color);
-		void delete_framebuffer(const uint32_t framebuffer);
-		void bind_framebuffer(const uint32_t framebuffer);
+		result_e create_framebuffer_from_texture(
+			framebuffer_t* out_framebuffer,
+			const texture_t& color_0,
+			const texture_t& depth_stencil
+		);
 
-		framebuffer_t create_framebuffer(
-			const ivec2 size,
+		result_e create_framebuffer(
+			framebuffer_t* out_framebuffer,
+			const uvec2 size,
 			const format_e color_texture_format,
 			const format_e depth_texture_format
 		);
-		void delete_framebuffer(const framebuffer_t& framebuffer);
+		void delete_framebuffer(framebuffer_t* framebuffer);
 		void bind_framebuffer(const framebuffer_t& framebuffer);
 		void blit_to_screen(
 			const framebuffer_t& framebuffer,
@@ -66,48 +65,49 @@ namespace katha
 			const bool filter_linear = false
 		);
 
-		uint32_t create_texture(
-			const ivec2 size,
+		result_e create_texture(
+			texture_t* out_texture,
+			const uvec2 size,
 			const format_e format,
 			const void* data = nullptr,
 			const bool generate_mipmaps = false
 		);
-		void delete_texture(const uint32_t texture);
-		void bind_texture(const uint32_t texture, const uint32_t slot = 0);
+		void delete_texture(texture_t* texture);
+		void bind_texture(const texture_t& texture, const uint32_t slot = 0);
 
-		uint32_t create_shader_program(
+		bool set_blend_mode(const blend_mode_e mode);
+		bool set_depth_mode(const depth_mode_e mode);
+
+		result_e create_pso(
+			pso_t* out_pso,
+			const vertex_layout_e vertex_layout,
 			const char* vertex_shader_source,
-			const char* fragment_shader_source
+			const char* fragment_shader_source,
+			const blend_mode_e blend_mode,
+			const depth_mode_e depth_mode
 		);
-		void delete_shader_program(const uint32_t program);
-		void use_shader_program(const uint32_t program);
+		void delete_pso(pso_t* pso);
+		void use_pso(const pso_t& pso);
 
 		void set_uniform_texture_unit(const int32_t location, const uint32_t unit);
 		void set_uniform_vec3(const int32_t location, const vec3& v);
 		void set_uniform_quat(const int32_t location, const quat_t& a);
 		void set_uniform_mat4(const int32_t location, const float* m);
 
-		uint32_t create_array_buffer(const uint32_t size, const void* data = nullptr);
-		void delete_buffer(const uint32_t buffer);
+		result_e create_array_buffer(
+			buffer_t* out_buffer,
+			const uint32_t size, const void* data = nullptr
+		);
+		void delete_buffer(buffer_t* buffer);
 
 		void bind_vertex_buffer(
+			const buffer_t& buffer,
 			const uint32_t index,
-			const uint32_t buffer,
 			const uint32_t offset = 0,
 			const uint32_t stride = 0
 		);
 
-		uint32_t create_vao(const bool bind = false);
 		uint32_t create_vao_vertex_t(const bool bind = false);
-		void delete_vao(const uint32_t vao);
-		void bind_vao(const uint32_t vao);
-
-		void set_vertex_attribute_float(
-			const uint32_t attribute_index,
-			const uint32_t binding_index,
-			const uint32_t size,
-			const uint32_t offset
-		);
 		
 		void draw_arrays(uint32_t vertices);
 

@@ -170,7 +170,10 @@ void katha::xr_t::clear()
 			// destroy framebuffers
 			for (uint32_t j = 0; j < swapchain.image_count; j++)
 			{
-				gl->delete_framebuffer(swapchain.image_views[j]);
+				framebuffer_t framebuffer = swapchain.framebuffers[j];
+				// this texture is managed by OpenXR
+				framebuffer.color_0 = {};
+				gl->delete_framebuffer(&framebuffer);
 			}
 		}
 		else if (graphics_api_e::vulkan == graphics_api)
@@ -484,8 +487,7 @@ katha::result_e katha::xr_t::begin_frame(frame_t* out_frame)
 		{
 			return result_e::error_xr;
 		}
-		frame.images[i] = swapchain.images[image_index];
-		frame.image_views[i] = swapchain.image_views[image_index];
+		frame.framebuffers[i] = swapchain.framebuffers[image_index];
 
 		XrSwapchainImageWaitInfo image_wait_info = {
 			.type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
@@ -507,8 +509,8 @@ katha::result_e katha::xr_t::begin_frame(frame_t* out_frame)
 		lview.subImage.swapchain = swapchain.swapchain;
 		lview.subImage.imageRect.offset = { .x = 0, .y = 0 };
 		lview.subImage.imageRect.extent = {
-			.width = swapchain.size.x,
-			.height = swapchain.size.y
+			.width = static_cast<int32_t>(swapchain.size.x),
+			.height = static_cast<int32_t>(swapchain.size.y)
 		};
 		lview.subImage.imageArrayIndex = 0;
 	}
