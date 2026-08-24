@@ -552,17 +552,42 @@ katha::action_map_t katha::platform_t::get_action_map() const
 	action_map_t map = {};
 	const gamepad_t& gp = current_input_state.gamepad;
 
-	map.movement = gp.stick_left.x;
+	// steering
+	map.steering_angle = gp.stick_left.x;
 	if (gp.dpad_left || get_key(SDL_SCANCODE_A) || get_key(SDL_SCANCODE_LEFT))
 	{
-		map.movement -= 1;
+		map.steering_angle -= 1.0f;
 	}
 	if (gp.dpad_right || get_key(SDL_SCANCODE_D) || get_key(SDL_SCANCODE_RIGHT))
 	{
-		map.movement += 1;
+		map.steering_angle += 1.0f;
 	}
 
-	map.movement = clamp(map.movement, -1.0f, 1.0f);
+	// throttle
+	map.throttle = gp.trigger_right;
+	if (gp.stick_right.y > 0)
+	{
+		map.throttle += gp.stick_right.y;
+	}
+	if (gp.action_down || get_key(SDL_SCANCODE_W) || get_key(SDL_SCANCODE_UP))
+	{
+		map.throttle += 1.0f;
+	}
+
+	// brake
+	map.brake = gp.trigger_left;
+	if (gp.stick_right.y < 0)
+	{
+		map.brake += gp.stick_right.y;
+	}
+	if (gp.action_right || get_key(SDL_SCANCODE_S) || get_key(SDL_SCANCODE_DOWN))
+	{
+		map.brake += 1.0f;
+	}
+
+	map.steering_angle = clamp(map.steering_angle, -1.0f, 1.0f);
+	map.throttle = clamp(map.throttle, 0.0f, 1.0f);
+	map.brake = clamp(map.brake, 0.0f, 1.0f);
 
 	return map;
 }

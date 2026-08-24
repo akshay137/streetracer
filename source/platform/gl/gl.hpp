@@ -82,11 +82,11 @@ namespace katha
 		) override;
 
 		void render(
-			const highway_t& highway,
+			const world_t& world,
 			const render_mode_e render_mode,
-			const transform_t& camera_left,
+			const transform_t& camera_left_offset,
 			const framebuffer_t& framebuffer_left,
-			const transform_t& camera_right,
+			const transform_t& camera_right_offset,
 			const framebuffer_t& framebuffer_right
 		) override;
 

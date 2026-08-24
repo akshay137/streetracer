@@ -5,34 +5,37 @@
 #include "../../katha/physics/transform.hpp"
 #include "../../katha/physics/vertex.hpp"
 
-#include "../../game/highway.hpp"
+#include "../../game/world.hpp"
 
 #include <glad/glad.h>
 #include <SDL2/SDL_video.h>
 
 void katha::gl_t::render(
-	const highway_t& highway,
+	const world_t& world,
 	const render_mode_e render_mode,
-	const transform_t& camera_left,
+	const transform_t& camera_left_offset,
 	const framebuffer_t& framebuffer_left,
-	const transform_t& camera_right,
+	const transform_t& camera_right_offset,
 	const framebuffer_t& framebuffer_right
 )
 {
+	const transform_t camera_left = world.camera.offset_by(camera_left_offset);
+	const transform_t camera_right = world.camera.offset_by(camera_right_offset);
 	const transform_t* cameras[2] = {
 		&camera_left,
 		&camera_right
 	};
-	const framebuffer_t* framebuffers[2] = {
-		&(this->framebuffers.left),
-		&(this->framebuffers.right)
+
+	const framebuffer_t* render_framebuffers[2] = {
+		&(framebuffers.left),
+		&(framebuffers.right)
 	};
 	
 	const uint32_t render_count = static_cast<uint32_t>(render_mode);
 	for (uint32_t i = 0; i < render_count; i++)
 	{
 		const transform_t& camera = *(cameras[i]);
-		const framebuffer_t& framebuffer = *(framebuffers[i]);
+		const framebuffer_t& framebuffer = *(render_framebuffers[i]);
 		const mat4 perspective = get_perspective_projection(
 			radians(90),
 			static_cast<vec2>(framebuffer.size),
@@ -44,29 +47,29 @@ void katha::gl_t::render(
 		clear_screen(vec4(0.1, 0.1, 0.1, 0));
 
 		use_pso(pso_mesh);
-		bind_texture(highway.checker_board_texture);
+		bind_texture(world.checker_board_texture);
 		set_uniform_texture_unit(1, 0);
 
-		set_vertex_buffer(highway.vertex_buffer, 0, 0, sizeof(vertex_t));
+		set_vertex_buffer(world.vertex_buffer, 0, 0, sizeof(vertex_t));
 
 		// player
-		mat4 model = translate(mat4(1.0), highway.player);
+		mat4 model = translate(mat4(1.0), world.player);
 		model = scale(model, vec3(1, 0.5, 1));
 
 		mat4 mvp = perspective * view * model;
 		set_uniform_mat4(0, mvp.array());
 		draw_arrays(36);
 
-		for (int t = 0; t < highway.traffic_count; t++)
+		for (int t = 0; t < world.traffic_count; t++)
 		{
-			const highway_t::traffic_t& traffic = highway.traffic[t];
-			if (highway_t::traffic_e::none == traffic.type)
+			const world_t::traffic_t& traffic = world.traffic[t];
+			if (world_t::traffic_e::none == traffic.type)
 			{
 				continue;
 			}
 
 			model = translate(mat4(1.0f), traffic.position);
-			model = scale(model, highway_t::get_bb(traffic.type));
+			model = scale(model, world_t::get_bb(traffic.type));
 			mvp = perspective * view * model;
 
 			set_uniform_mat4(0, mvp.array());
@@ -77,7 +80,7 @@ void katha::gl_t::render(
 	if (framebuffer_left.id)
 	{
 		blit_to_framebuffer(
-			this->framebuffers.left,
+			framebuffers.left,
 			framebuffer_left
 		);
 	}
@@ -88,7 +91,7 @@ void katha::gl_t::render(
 	)
 	{
 		blit_to_framebuffer(
-			this->framebuffers.right,
+			framebuffers.right,
 			framebuffer_right
 		);
 	}

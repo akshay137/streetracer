@@ -16,7 +16,7 @@ namespace katha
 {
 	struct transform_t;
 	
-	struct highway_t;
+	struct world_t;
 
 	// thin interface for platform agnostic code to use, e.g., load_level
 	// and some common resources used throughout
@@ -76,25 +76,21 @@ namespace katha
 			const vec2 z_range
 		) = 0;
 
-		// TODO: `highway`?
 		virtual void render(
-			const highway_t& highway,
+			const world_t& world,
 			const render_mode_e render_mode,
-			const transform_t& camera_left,
+			const transform_t& camera_left_offset,
 			const framebuffer_t& framebuffer_left,
-			const transform_t& camera_right,
+			const transform_t& camera_right_offset,
 			const framebuffer_t& framebuffer_right
 		) = 0;
 
-		void render(
-			const transform_t& camera,
-			const highway_t& highway
-		)
+		void render(const world_t& world)
 		{
 			render(
-				highway,
+				world,
 				render_mode_e::mono,
-				camera,
+				{}, // camera_left_offset
 				{}, // framebuffer_left (blit to screen)
 				{}, // camera_right
 				{} // framebuffer_right

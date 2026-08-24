@@ -8,7 +8,9 @@ namespace katha
 {
 	struct action_map_t
 	{
-		float movement = {};
+		float steering_angle = 0.0f;
+		float throttle = 0.0f;
+		float brake = 0.0f;
 	};
 }
 

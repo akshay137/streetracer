@@ -1,10 +1,11 @@
-#include "highway.hpp"
+#include "world.hpp"
 #include "../katha/graphics/graphics.hpp"
 
+#include "../katha/core.hpp"
 #include "../katha/math/vector2.hpp"
 #include "../katha/math/vector3.hpp"
 #include "../katha/physics/vertex.hpp"
-#include "../katha/core.hpp"
+#include "../katha/time/time.hpp"
 
 #include <cstdlib>
 
@@ -23,10 +24,10 @@ T random_range(const T l, const T u)
 	return result;
 }
 
-katha::highway_t::traffic_e get_random_traffic()
+katha::world_t::traffic_e get_random_traffic()
 {
 	const int traffic_type = random_range<int>(1, 4);
-	return static_cast<katha::highway_t::traffic_e>(traffic_type);
+	return static_cast<katha::world_t::traffic_e>(traffic_type);
 }
 
 katha::vec3 get_random_traffic_spawn_position()
@@ -47,8 +48,11 @@ katha::vec3 get_random_traffic_spawn_position()
 	return position;
 }
 
-katha::highway_t::highway_t()
+katha::world_t::world_t()
 {
+	camera.orientation = quat_t::identity();
+	camera.position = vec3(0, 3, 8);
+
 	for (int i = 0; i < traffic_count; i++)
 	{
 		spawn_delay_seconds[i] = random_range(1, 6);
@@ -56,8 +60,11 @@ katha::highway_t::highway_t()
 	}
 }
 
-katha::result_e katha::highway_t::load(graphics_i* gfx)
+katha::result_e katha::world_t::load(graphics_i* gfx)
 {
+	const uint64_t start = now();
+
+	log_line("world::load()");
 	constexpr vertex_t vertices[] = {
 		{ .position = vec3(-1, -1,  1), .uv = vertex_t::unorm(vec2(0, 0)) },
 		{ .position = vec3( 1, -1,  1), .uv = vertex_t::unorm(vec2(1, 0)) },
@@ -116,25 +123,31 @@ katha::result_e katha::highway_t::load(graphics_i* gfx)
 		return result;
 	}
 
+	const uint64_t end = now() - start;
+	log_line("world::load() -> time: {td}", end);
 	return result_e::success;
 }
 
-void katha::highway_t::clear(graphics_i* gfx)
+void katha::world_t::clear(graphics_i* gfx)
 {
+	log_line("world::clear()");
 	gfx->delete_texture(&checker_board_texture);
 	gfx->delete_buffer(&vertex_buffer);
 }
 
-void katha::highway_t::update(const action_map_t& action_map, const float delta)
+void katha::world_t::update(const action_map_t& action_map, const float delta)
 {
 	game_time += delta;
 
 	constexpr float PLAYER_SPEED = 10.0f;
-	if (action_map.movement)
-	{
-		player.x += action_map.movement * PLAYER_SPEED * delta;
-	}
+	// if (action_map.movement)
+	// {
+	// 	player.x += action_map.movement * PLAYER_SPEED * delta;
+	// }
 	player = clamp(player, -10.0f, 10.0f);
+
+	camera.position.x = lerp(camera.position.x, player.x, 5 * delta);
+	camera = camera.look_at(player + vec3(0, 3, 0));
 
 	constexpr float TRAFFIC_SPEED = PLAYER_SPEED * 1.75f;
 	for (int i = 0; i < traffic_count; i++)
@@ -162,13 +175,13 @@ void katha::highway_t::update(const action_map_t& action_map, const float delta)
 	}
 }
 
-void katha::highway_t::spawn_traffic(const int index)
+void katha::world_t::spawn_traffic(const int index)
 {
 	traffic[index].position = get_random_traffic_spawn_position();
 	traffic[index].type = get_random_traffic();
 }
 
-katha::vec3 katha::highway_t::get_bb(const traffic_e traffic)
+katha::vec3 katha::world_t::get_bb(const traffic_e traffic)
 {
 	switch (traffic)
 	{

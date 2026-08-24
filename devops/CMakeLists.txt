@@ -137,8 +137,8 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/katha/time/time.cpp
 
 	${BUILD_ROOT}/source/game/action_map.hpp
-	${BUILD_ROOT}/source/game/highway.hpp
-	${BUILD_ROOT}/source/game/highway.cpp
+	${BUILD_ROOT}/source/game/world.hpp
+	${BUILD_ROOT}/source/game/world.cpp
 )
 
 # exclude c++ runtime

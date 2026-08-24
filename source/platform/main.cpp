@@ -12,7 +12,7 @@
 #endif
 
 #include "../game/action_map.hpp"
-#include "../game/highway.hpp"
+#include "../game/world.hpp"
 
 #include <clocale>
 
@@ -37,16 +37,14 @@ int main(int argc, char** args)
 
 	graphics_i* gfx = platform.get_graphics();
 
-	highway_t highway = {};
-	if (!check_result(highway.load(gfx), "highway::load"))
+	world_t world = {};
+	if (!check_result(world.load(gfx), "world::load"))
 	{
 		log_line("error: failed to create gl_scene");
-		highway.clear(gfx);
+		world.clear(gfx);
 		platform.clear();
 		return 0;
 	}
-
-	transform_t camera = { .orientation = quat_t::identity(), .position = vec3(0, 3, 9) };
 
 	bool running = true;
 	uint64_t last = 0;
@@ -60,7 +58,6 @@ int main(int argc, char** args)
 			delta = last / static_cast<double>(1e9);
 		}
 
-		// frame::poll_events
 		result = platform.poll_events();
 		if (result_e::request_exit == result)
 		{
@@ -69,13 +66,8 @@ int main(int argc, char** args)
 		}
 
 		// frame::logic_tick
-		const gamepad_t& gp = platform.current_input_state.gamepad;
 		action_map_t action_map = platform.get_action_map();
-
-		highway.update(action_map, delta);
-
-		camera.position.x = lerp(camera.position.x, highway.player.x, 5 * delta);
-		camera = camera.look_at(highway.player + vec3(0, 3, 0));
+		world.update(action_map, delta);
 
 		// frame::render
 		if (platform.config.enable_xr)
@@ -95,11 +87,11 @@ int main(int argc, char** args)
 			}
 
 			gfx->render(
-				highway,
+				world,
 				render_mode_e::stereo,
-				camera.offset_by(xr_frame.get_transform(xr_t::EYE_LEFT)),
+				xr_frame.get_transform(xr_t::EYE_LEFT),
 				xr_frame.framebuffer_left(),
-				camera.offset_by(xr_frame.get_transform(xr_t::EYE_RIGHT)),
+				xr_frame.get_transform(xr_t::EYE_RIGHT),
 				xr_frame.framebuffer_right()
 			);
 
@@ -114,7 +106,7 @@ int main(int argc, char** args)
 		else
 		{
 			uvec2 size = platform.get_drawable_size();
-			gfx->render(camera, highway);
+			gfx->render(world);
 		}
 		
 		// frame::present
@@ -129,7 +121,7 @@ int main(int argc, char** args)
 		}
 	}
 
-	highway.clear(gfx);
+	world.clear(gfx);
 	platform.clear();
 	return 0;
 }

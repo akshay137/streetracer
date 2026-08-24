@@ -4,6 +4,7 @@
 
 #include "action_map.hpp"
 #include "../katha/core.hpp"
+#include "../katha/physics/transform.hpp"
 
 // TODO: add model/mesh support
 #include "../katha/graphics/buffer.hpp"
@@ -13,7 +14,7 @@ namespace katha
 {
 	struct graphics_i;
 	
-	struct highway_t
+	struct world_t
 	{
 		enum class traffic_e : int
 		{
@@ -29,6 +30,8 @@ namespace katha
 			traffic_e type = {};
 		};
 
+		transform_t camera = {};
+
 		texture_t checker_board_texture = {};
 		buffer_t vertex_buffer = {};
 
@@ -41,7 +44,7 @@ namespace katha
 
 		float game_time = 0;
 
-		highway_t();
+		world_t();
 
 		result_e load(graphics_i* gfx);
 		void clear(graphics_i* gfx);
