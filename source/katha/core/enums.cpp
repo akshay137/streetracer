@@ -51,7 +51,7 @@ const char* katha::vertex_layout_to_cstring(const vertex_layout_e vertex)
 {
 	switch (vertex)
 	{
-		case vertex_layout_e::f3_usn2: return "vertex_layout_e::f3_usn2";
+		case vertex_layout_e::mesh: return "vertex_layout_e::mesh";
 	}
 
 	return "unknown vertex";

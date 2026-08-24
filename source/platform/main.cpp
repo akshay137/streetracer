@@ -20,12 +20,12 @@
 
 using namespace katha;
 
-
 int main(int argc, char** args)
 {
 	char* locale = setlocale(LC_ALL, "");
 	log_line("current locale: {s}", locale);
-	log_line("unicode test: {s}", ENGINE_NAME_UTF8);
+	log_line("engine: {s} {version}", ENGINE_NAME_UTF8, &ENGINE_VERSION);
+	log_line("game: {s} {version}", GAME_NAME, &GAME_VERSION);
 
 	platform_t platform = {};
 	result_e result = platform.init(argc, args);
@@ -52,6 +52,7 @@ int main(int argc, char** args)
 	uint64_t last = 0;
 	while (running)
 	{
+		// frame::begin
 		const uint64_t start = now();
 		float delta = 0.016f;
 		if (last)
@@ -59,6 +60,7 @@ int main(int argc, char** args)
 			delta = last / static_cast<double>(1e9);
 		}
 
+		// frame::poll_events
 		result = platform.poll_events();
 		if (result_e::request_exit == result)
 		{
@@ -66,6 +68,7 @@ int main(int argc, char** args)
 			break;
 		}
 
+		// frame::logic_tick
 		const gamepad_t& gp = platform.current_input_state.gamepad;
 		action_map_t action_map = platform.get_action_map();
 
@@ -74,6 +77,7 @@ int main(int argc, char** args)
 		camera.position.x = lerp(camera.position.x, highway.player.x, 5 * delta);
 		camera = camera.look_at(highway.player + vec3(0, 3, 0));
 
+		// frame::render
 		if (platform.config.enable_xr)
 		{
 #if KATHA_XR
@@ -90,7 +94,6 @@ int main(int argc, char** args)
 				break;
 			}
 
-			// render begin
 			gfx->render(
 				highway,
 				render_mode_e::stereo,
@@ -99,7 +102,6 @@ int main(int argc, char** args)
 				camera.offset_by(xr_frame.get_transform(xr_t::EYE_RIGHT)),
 				xr_frame.framebuffer_right()
 			);
-			// render end
 
 			result = xr->end_frame(xr_frame);
 			if (!check_result(result, "xr::end_frame"))
@@ -107,18 +109,19 @@ int main(int argc, char** args)
 				running = false;
 				break;
 			}
-
-			// show left eye on window
-			gfx->present_to_screen();
 #endif
 		}
 		else
 		{
 			uvec2 size = platform.get_drawable_size();
 			gfx->render(camera, highway);
-			gfx->present_to_screen();
 		}
+		
+		// frame::present
+		// shows left eye in xr mode
+		gfx->present_to_screen();
 
+		// frame::end
 		last = now() - start;
 		if (platform.config.log_frame_time)
 		{

@@ -36,7 +36,7 @@ namespace katha
 
 	enum class vertex_layout_e : uint8_t
 	{
-		f3_usn2, // vertex_t { vec3, vector2<uint16_t> }
+		mesh, // vertex_t { vec3, vector2<uint16_t> }
 	};
 	extern const char* vertex_layout_to_cstring(const vertex_layout_e vertex_layout);
 

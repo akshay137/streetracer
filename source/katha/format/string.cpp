@@ -187,6 +187,10 @@ int32_t katha::string_format_t::next()
 	{
 		return parse_next_timediff(spec_props);
 	}
+	if (spec_id.equals(SPEC_VERSION))
+	{
+		return parse_next_version(spec_props);
+	}
 
 	param_buffer.append("{unknown specifier: ");
 	param_buffer.append(spec_id);
@@ -443,5 +447,19 @@ int32_t katha::string_format_t::parse_next_timediff(const string_t& props)
 		param_buffer.append(" ns");
 	}
 
+	return next();
+}
+
+int32_t katha::string_format_t::parse_next_version(const string_t& props)
+{
+	const version_t* version = va_arg(args, version_t*);
+	if (version)
+	{
+		param_buffer.size = uint_to_string(version->major, param_buffer.buffer);
+		param_buffer.append(".");
+		param_buffer.size += uint_to_string(version->minor, param_buffer.tail());
+		param_buffer.append(".");
+		param_buffer.size += uint_to_string(version->patch, param_buffer.tail());
+	}
 	return next();
 }

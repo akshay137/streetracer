@@ -8,6 +8,12 @@ katha::vulkan_t *const katha::vulkan = &vulkan_global_instance;
 
 katha::result_e katha::vulkan_t::init(const config_t& config, SDL_Window* window)
 {
+	result_e result = load_instance_proc_addresses();
+	if (!check_result(result, "vulkan::load_instance_proc_addresses"))
+	{
+		return result;
+	}
+	
 	return result_e::success;
 }
 
@@ -34,11 +40,14 @@ PFN_vkVoidFunction katha::vulkan_t::get_proc_address(const char* proc_name) cons
 
 katha::result_e katha::vulkan_t::load_instance_proc_addresses()
 {
-	#define KATHA_VK_LOAD_PROC_I(proc) if (!load_proc_addr(proc, #proc)) { return result_e::error_vulkan; }
+	#define KATHA_VK_LOAD_PROC_I(proc)\
+		if (!load_proc_addr(proc, #proc))\
+		{\
+			return result_e::error_vulkan;\
+		}
 
 	KATHA_VK_LOAD_PROC_I(vkEnumerateInstanceExtensionProperties);
 	KATHA_VK_LOAD_PROC_I(vkEnumerateInstanceLayerProperties);
-	
 
 	return result_e::success;
 }

@@ -53,7 +53,6 @@ katha::highway_t::highway_t()
 	{
 		spawn_delay_seconds[i] = random_range(1, 6);
 		despawn_time[i] = 0;
-		log_line("spawn_delay[{i}] = {i}", i, spawn_delay_seconds[i]);
 	}
 }
 

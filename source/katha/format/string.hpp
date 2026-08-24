@@ -37,6 +37,7 @@ namespace katha
 		int32_t parse_next_vec2(const string_t& props);
 		int32_t parse_next_mat4(const string_t& props);
 		int32_t parse_next_timediff(const string_t& props);
+		int32_t parse_next_version(const string_t& props);
 
 		static inline constexpr string_t SPEC_INT = "i";
 		static inline constexpr string_t SPEC_UINT = "u";
@@ -52,6 +53,7 @@ namespace katha
 		static inline constexpr string_t SPEC_VEC2 = "v2";
 		static inline constexpr string_t SPEC_MAT4 = "m4";
 		static inline constexpr string_t SPEC_TIMEDIFF = "td";
+		static inline constexpr string_t SPEC_VERSION = "version";
 	};
 }
 

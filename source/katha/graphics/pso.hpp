@@ -11,7 +11,7 @@ namespace katha
 		uint64_t id = 0;
 		uint64_t layout = 0; // GL::VetexArray, Vulkan::PipelineLayout
 		
-		vertex_layout_e vertex_layout = vertex_layout_e::f3_usn2;
+		vertex_layout_e vertex_layout = vertex_layout_e::mesh;
 		
 		blend_mode_e blend_mode = blend_mode_e::none;
 		depth_mode_e depth_mode = depth_mode_e::none;

@@ -108,10 +108,7 @@ void katha::gl_t::delete_framebuffer(framebuffer_t* framebuffer)
 	}
 
 	GLuint fbo = static_cast<GLuint>(framebuffer->id);
-	log_line("gl: deleting framebuffer {u:x}:{iv2}",
-		fbo,
-		framebuffer->size.array()
-	);
+	log_line("gl::delete_framebuffer({u:x})", fbo);
 
 	glDeleteFramebuffers(1, &fbo);
 	delete_texture(&(framebuffer->color_0));
@@ -184,7 +181,7 @@ void katha::gl_t::delete_texture(texture_t* texture)
 		return;
 	}
 
-	log_line("gl: delete_texture({u64:x})", texture->id);
+	log_line("gl::delete_texture({u64:x})", texture->id);
 	GLuint gl_texture = static_cast<GLuint>(texture->id);
 	glDeleteTextures(1, &gl_texture);
 
@@ -205,7 +202,7 @@ katha::result_e katha::gl_t::create_pso(
 		return result_e::error_value_null;
 	}
 
-	if (vertex_layout_e::f3_usn2 == vertex_layout)
+	if (vertex_layout_e::mesh == vertex_layout)
 	{
 		GLuint vao = create_vao_vertex_t(false);
 		if (0 == vao)
@@ -381,7 +378,7 @@ void katha::gl_t::delete_buffer(buffer_t* buffer)
 	}
 
 	GLuint gl_buffer = static_cast<GLuint>(buffer->id);
-	log_line("gl: delete_buffer({u:x})", gl_buffer);
+	log_line("gl::delete_buffer({u:x})", gl_buffer);
 	glDeleteBuffers(1, &gl_buffer);
 
 	*buffer = {};

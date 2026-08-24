@@ -91,6 +91,7 @@ katha::result_e katha::gl_t::init(const config_t& config, SDL_Window* window)
 	this->window = window;
 	log_line("OpenGL context: {p}", context);
 
+	// We only use what is available in both OpenGL 4.5 & OpenGL ES 3.1
 	// glad names it GLES2 but internally loads functions for ES 3.x
 	if (0 == gladLoadGLES2Loader((GLADloadproc)SDL_GL_GetProcAddress))
 	{
@@ -148,7 +149,7 @@ katha::result_e katha::gl_t::init(const config_t& config, SDL_Window* window)
 
 	result_e result = create_pso(
 		&pso_mesh,
-		vertex_layout_e::f3_usn2,
+		vertex_layout_e::mesh,
 		vertex_shader_mesh,
 		fragment_shader_mesh,
 		blend_mode_e::none,
@@ -166,7 +167,10 @@ void katha::gl_t::clear()
 {
 	log_line("gl::clear()");
 
+	delete_framebuffer(&(framebuffers.left));
+	delete_framebuffer(&(framebuffers.right));
 	delete_pso(&pso_mesh);
+
 	SDL_GL_DeleteContext(context);
 	context = nullptr;
 }
