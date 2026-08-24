@@ -3,8 +3,8 @@
 
 void katha::gamepad_t::clamp()
 {
-	stick_left = katha::clamp(stick_left, -1.0f, 1.0f);
-	stick_right = katha::clamp(stick_right, -1.0f, 1.0f);
+	stick_left = katha::clamp<vec2>(stick_left, -1.0f, 1.0f);
+	stick_right = katha::clamp<vec2>(stick_right, -1.0f, 1.0f);
 
 	trigger_left = katha::clamp(trigger_left, 0.0f, 1.0f);
 	trigger_right = katha::clamp(trigger_right, 0.0f, 1.0f);

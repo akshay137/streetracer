@@ -144,7 +144,7 @@ void katha::world_t::update(const action_map_t& action_map, const float delta)
 	// {
 	// 	player.x += action_map.movement * PLAYER_SPEED * delta;
 	// }
-	player = clamp(player, -10.0f, 10.0f);
+	player.x = clamp(player.x, -10.0f, 10.0f);
 
 	camera.position.x = lerp(camera.position.x, player.x, 5 * delta);
 	camera = camera.look_at(player + vec3(0, 3, 0));

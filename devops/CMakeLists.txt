@@ -123,9 +123,12 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/katha/graphics/texture.hpp
 	${BUILD_ROOT}/source/katha/graphics/texture.cpp
 	
+	${BUILD_ROOT}/source/katha/math/vector2.gen.hpp
 	${BUILD_ROOT}/source/katha/math/vector2.hpp
+	${BUILD_ROOT}/source/katha/math/vector3.gen.hpp
 	${BUILD_ROOT}/source/katha/math/vector3.hpp
-	${BUILD_ROOT}/source/katha/math/vector3.hpp
+	${BUILD_ROOT}/source/katha/math/vector4.gen.hpp
+	${BUILD_ROOT}/source/katha/math/vector4.hpp
 	${BUILD_ROOT}/source/katha/math/quaternion.hpp
 	${BUILD_ROOT}/source/katha/math/matrix4.hpp
 	
