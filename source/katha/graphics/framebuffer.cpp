@@ -3,7 +3,7 @@
 
 void katha::framebuffer_t::log(const bool pretty_print) const
 {
-	log_line("framebuffer::{u64:x}, .size {uv2}", id, size.array());
+	log_line("framebuffer::{u64:x}, {u}x{u}", id, size.x, size.y);
 
 	if (!pretty_print)
 	{

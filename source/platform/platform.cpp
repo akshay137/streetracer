@@ -99,6 +99,17 @@ void katha::platform_t::clear()
 	SDL_Quit();
 }
 
+katha::graphics_i* katha::platform_t::get_graphics()
+{
+	switch (config.graphics_api)
+	{
+		case graphics_api_e::gl: return gl;
+		// case graphics_api_e::vulkan: return vulkan;
+	}
+
+	return nullptr;
+}
+
 void katha::platform_t::parse_command_line(int argc, char** args)
 {
 	config.window_size = config.get_default_window_size();
@@ -137,6 +148,10 @@ void katha::platform_t::parse_command_line(int argc, char** args)
 		if (arg.equals("--debug_graphics_api"))
 		{
 			config.debug_graphics_api = 1;
+		}
+		if (arg.equals("--force_es_context"))
+		{
+			config.force_es_context = 1;
 		}
 		if (arg.equals("--vsync"))
 		{
@@ -240,19 +255,18 @@ katha::result_e katha::platform_t::query_controllers()
 
 katha::result_e katha::platform_t::init_with_gl()
 {
-	// nothing to do xr specific
-	// if (config.enable_xr)
-	// {
-	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
-	// }
-	// else
-	// {
-	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	// 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-	// }
+	if (config.enable_xr || !config.force_es_context)
+	{
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+	}
+	else
+	{
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	}
 	SDL_GL_SetSwapInterval(config.enable_vsync);
 
 	const int32_t position = SDL_WINDOWPOS_UNDEFINED_DISPLAY(
@@ -304,7 +318,7 @@ katha::result_e katha::platform_t::init_with_gl()
 		{
 
 			result = gl->create_framebuffer(
-				&(gl->left),
+				&(gl->framebuffers.left),
 				xr->get_swapchain_size(xr_t::EYE_LEFT),
 				format_e::rgba8,
 				format_e::depth24_stencil8
@@ -315,7 +329,7 @@ katha::result_e katha::platform_t::init_with_gl()
 			}
 	
 			result = gl->create_framebuffer(
-				&(gl->right),
+				&(gl->framebuffers.right),
 				xr->get_swapchain_size(xr_t::EYE_RIGHT),
 				format_e::rgba8,
 				format_e::depth24_stencil8
@@ -330,7 +344,7 @@ katha::result_e katha::platform_t::init_with_gl()
 	if (0 == config.enable_xr)
 	{
 		result = gl->create_framebuffer(
-			&(gl->left),
+			&(gl->framebuffers.left),
 			get_drawable_size(),
 			format_e::rgba8,
 			format_e::depth24_stencil8

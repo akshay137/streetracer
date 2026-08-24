@@ -5,8 +5,14 @@
 #include "action_map.hpp"
 #include "../katha/core.hpp"
 
+// TODO: add model/mesh support
+#include "../katha/graphics/buffer.hpp"
+#include "../katha/graphics/texture.hpp"
+
 namespace katha
 {
+	struct graphics_i;
+	
 	struct highway_t
 	{
 		enum class traffic_e : int
@@ -23,6 +29,9 @@ namespace katha
 			traffic_e type = {};
 		};
 
+		texture_t checker_board_texture = {};
+		buffer_t vertex_buffer = {};
+
 		vec3 player = {};
 
 		int traffic_count = 32;
@@ -33,6 +42,9 @@ namespace katha
 		float game_time = 0;
 
 		highway_t();
+
+		result_e load(graphics_i* gfx);
+		void clear(graphics_i* gfx);
 
 		void update(const action_map_t& action_map, const float delta);
 

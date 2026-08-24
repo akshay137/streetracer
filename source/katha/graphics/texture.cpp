@@ -3,12 +3,8 @@
 
 void katha::texture_t::log(const bool pretty_print) const
 {
-	log_line("texture::{u64:x}, size = {uv2}", id, size.array());
-
-	if (!pretty_print)
-	{
-		return;
-	}
-
-	log_line("\t{s}", format_to_cstring(format));
+	log_line("texture::{u64:x}, {u}x{u}, {s}",
+		id, size.x, size.y,
+		format_to_cstring(format)
+	);
 }

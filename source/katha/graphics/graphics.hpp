@@ -4,17 +4,34 @@
 
 #include "../core/enums.hpp"
 #include "../core/types.hpp"
+#include "../physics/transform.hpp"
 
 #include "buffer.hpp"
 #include "framebuffer.hpp"
 #include "pso.hpp"
 #include "texture.hpp"
 
+
 namespace katha
 {
+	struct transform_t;
+	
+	struct highway_t;
+
 	// thin interface for platform agnostic code to use, e.g., load_level
+	// and some common resources used throughout
 	struct graphics_i
 	{
+		struct
+		{
+			// `left` doubles as main framebuffer for non-xr mode
+			framebuffer_t left = {};
+			framebuffer_t right = {};
+		} framebuffers = {};
+
+		// standard mesh pso
+		pso_t pso_mesh = {};
+
 		virtual result_e create_array_buffer(
 			buffer_t* out_buffer,
 			const uint32_t size,
@@ -58,6 +75,33 @@ namespace katha
 			const vec2 screen_size,
 			const vec2 z_range
 		) = 0;
+
+		// TODO: `highway`?
+		virtual void render(
+			const highway_t& highway,
+			const render_mode_e render_mode,
+			const transform_t& camera_left,
+			const framebuffer_t& framebuffer_left,
+			const transform_t& camera_right,
+			const framebuffer_t& framebuffer_right
+		) = 0;
+
+		void render(
+			const transform_t& camera,
+			const highway_t& highway
+		)
+		{
+			render(
+				highway,
+				render_mode_e::mono,
+				camera,
+				{}, // framebuffer_left (blit to screen)
+				{}, // camera_right
+				{} // framebuffer_right
+			);
+		}
+
+		virtual result_e present_to_screen() = 0;
 	};
 }
 

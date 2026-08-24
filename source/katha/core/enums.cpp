@@ -68,6 +68,17 @@ const char* katha::graphics_api_to_cstring(const katha::graphics_api_e api)
 	return "unknown graphics api";
 }
 
+const char* katha::render_mode_to_cstring(const render_mode_e mode)
+{
+	switch (mode)
+	{
+		case render_mode_e::mono: return "render_mode_e::mono";
+		case render_mode_e::stereo: return "render_mode_e::stereo";
+	}
+
+	return "unknown render mode";
+}
+
 const char* katha::format_to_cstring(const format_e format)
 {
 	switch (format)

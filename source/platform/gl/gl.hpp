@@ -19,11 +19,8 @@ namespace katha
 		};
 
 		void* context = nullptr;
+		void* window = nullptr;
 		version_t version = {};
-
-		// framebuffers must be created by caller after gl_t::init returns
-		framebuffer_t left = {}; // main framebuffer for non-vr mode
-		framebuffer_t right = {};
 
 		int32_t max_texture_size = 0;
 
@@ -37,6 +34,9 @@ namespace katha
 
 		void clear_screen(const vec4& color);
 
+		/*
+			graphics_i overrides - begin
+		*/
 		result_e create_framebuffer_from_texture(
 			framebuffer_t* out_framebuffer,
 			const texture_t& color_0,
@@ -51,6 +51,53 @@ namespace katha
 		) override;
 		void delete_framebuffer(framebuffer_t* framebuffer) override;
 
+		result_e create_texture(
+			texture_t* out_texture,
+			const uvec2 size,
+			const format_e format,
+			const void* data = nullptr
+		) override;
+		void delete_texture(texture_t* texture) override;
+
+		result_e create_pso(
+			pso_t* out_pso,
+			const vertex_layout_e vertex_layout,
+			const char* vertex_shader_source,
+			const char* fragment_shader_source,
+			const blend_mode_e blend_mode,
+			const depth_mode_e depth_mode
+		) override;
+		void delete_pso(pso_t* pso) override;
+
+		result_e create_array_buffer(
+			buffer_t* out_buffer,
+			const uint32_t size, const void* data = nullptr
+		) override;
+		void delete_buffer(buffer_t* buffer) override;
+
+		mat4 get_perspective_projection(
+			const float vertical_fov_radians,
+			const vec2 screen_size,
+			const vec2 z_range
+		) override;
+
+		void render(
+			const highway_t& highway,
+			const render_mode_e render_mode,
+			const transform_t& camera_left,
+			const framebuffer_t& framebuffer_left,
+			const transform_t& camera_right,
+			const framebuffer_t& framebuffer_right
+		) override;
+
+		result_e present_to_screen() override;
+
+		/*
+			graphics_i overrides - end
+		*/
+
+		const char* get_shader_version_string() const;
+
 		void bind_framebuffer(const framebuffer_t& framebuffer);
 		void blit_to_screen(
 			const framebuffer_t& framebuffer,
@@ -63,39 +110,17 @@ namespace katha
 			const bool filter_linear = false
 		);
 
-		result_e create_texture(
-			texture_t* out_texture,
-			const uvec2 size,
-			const format_e format,
-			const void* data = nullptr
-		) override;
-		void delete_texture(texture_t* texture) override;
 		void bind_texture(const texture_t& texture, const uint32_t slot = 0);
 
 		bool set_blend_mode(const blend_mode_e mode);
 		bool set_depth_mode(const depth_mode_e mode);
 
-		result_e create_pso(
-			pso_t* out_pso,
-			const vertex_layout_e vertex_layout,
-			const char* vertex_shader_source,
-			const char* fragment_shader_source,
-			const blend_mode_e blend_mode,
-			const depth_mode_e depth_mode
-		) override;
-		void delete_pso(pso_t* pso) override;
 		void use_pso(const pso_t& pso);
 
 		void set_uniform_texture_unit(const int32_t location, const uint32_t unit);
 		void set_uniform_vec3(const int32_t location, const vec3& v);
 		void set_uniform_quat(const int32_t location, const quat_t& a);
 		void set_uniform_mat4(const int32_t location, const float* m);
-
-		result_e create_array_buffer(
-			buffer_t* out_buffer,
-			const uint32_t size, const void* data = nullptr
-		) override;
-		void delete_buffer(buffer_t* buffer) override;
 
 		void set_vertex_buffer(
 			const buffer_t& buffer,
@@ -111,12 +136,6 @@ namespace katha
 		void set_viewport(const ivec2 size);
 
 		static format_t format_to_gl_format(const format_e format);
-		
-		mat4 get_perspective_projection(
-			const float vertical_fov_radians,
-			const vec2 screen_size,
-			const vec2 z_range
-		) override;
 	};
 
 	extern gl_t * const gl;

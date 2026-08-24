@@ -47,6 +47,13 @@ namespace katha
 	};
 	extern const char* graphics_api_to_cstring(const graphics_api_e api);
 
+	enum class render_mode_e : uint8_t
+	{
+		mono = 1,
+		stereo = 2,
+	};
+	extern const char* render_mode_to_cstring(const render_mode_e mode);
+
 	enum class format_e : uint8_t
 	{
 		none = 0, // to specify no texture in some functions

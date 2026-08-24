@@ -9,6 +9,7 @@ void katha::config_t::log() const
 	
 	log_line("enable_xr: {u}", enable_xr);
 	log_line("debug_graphics_api: {u}", debug_graphics_api);
+	log_line("force_es_context: {u}", force_es_context);
 	log_line("vsync: {u}", enable_vsync);
 	log_line("windowed: {u}", windowed);
 	log_line("log_frame_time: {u}", log_frame_time);

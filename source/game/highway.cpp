@@ -1,7 +1,9 @@
 #include "highway.hpp"
+#include "../katha/graphics/graphics.hpp"
 
 #include "../katha/math/vector2.hpp"
 #include "../katha/math/vector3.hpp"
+#include "../katha/physics/vertex.hpp"
 #include "../katha/core.hpp"
 
 #include <cstdlib>
@@ -53,6 +55,75 @@ katha::highway_t::highway_t()
 		despawn_time[i] = 0;
 		log_line("spawn_delay[{i}] = {i}", i, spawn_delay_seconds[i]);
 	}
+}
+
+katha::result_e katha::highway_t::load(graphics_i* gfx)
+{
+	constexpr vertex_t vertices[] = {
+		{ .position = vec3(-1, -1,  1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3( 1, -1,  1), .uv = vertex_t::unorm(vec2(1, 0)) },
+		{ .position = vec3( 1,  1,  1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3(-1, -1,  1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3( 1,  1,  1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3(-1,  1,  1), .uv = vertex_t::unorm(vec2(0, 1)) },
+		{ .position = vec3( 1, -1, -1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3(-1, -1, -1), .uv = vertex_t::unorm(vec2(1, 0)) },
+		{ .position = vec3(-1,  1, -1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3( 1, -1, -1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3(-1,  1, -1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3( 1,  1, -1), .uv = vertex_t::unorm(vec2(0, 1)) },
+		{ .position = vec3( 1, -1,  1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3( 1, -1, -1), .uv = vertex_t::unorm(vec2(1, 0)) },
+		{ .position = vec3( 1,  1, -1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3( 1, -1,  1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3( 1,  1, -1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3( 1,  1,  1), .uv = vertex_t::unorm(vec2(0, 1)) },
+		{ .position = vec3(-1, -1, -1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3(-1, -1,  1), .uv = vertex_t::unorm(vec2(1, 0)) },
+		{ .position = vec3(-1,  1,  1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3(-1, -1, -1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3(-1,  1,  1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3(-1,  1, -1), .uv = vertex_t::unorm(vec2(0, 1)) },
+		{ .position = vec3(-1,  1,  1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3( 1,  1,  1), .uv = vertex_t::unorm(vec2(1, 0)) },
+		{ .position = vec3( 1,  1, -1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3(-1,  1,  1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3( 1,  1, -1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3(-1,  1, -1), .uv = vertex_t::unorm(vec2(0, 1)) },
+		{ .position = vec3(-1, -1, -1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3( 1, -1, -1), .uv = vertex_t::unorm(vec2(1, 0)) },
+		{ .position = vec3( 1, -1,  1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3(-1, -1, -1), .uv = vertex_t::unorm(vec2(0, 0)) },
+		{ .position = vec3( 1, -1,  1), .uv = vertex_t::unorm(vec2(1, 1)) },
+		{ .position = vec3(-1, -1,  1), .uv = vertex_t::unorm(vec2(0, 1)) }
+	};
+	result_e result = gfx->create_array_buffer(&vertex_buffer, sizeof(vertices), vertices);
+	if (!check_result(result, "gl::create_array_buffer"))
+	{
+		return result;
+	}
+
+	constexpr uint8_t pixels[] = {
+		255, 255, 255, 0, 0, 0, 0, 0,
+		0, 0, 0, 255, 255, 255, 0, 0
+	};
+	result = gfx->create_texture(
+		&checker_board_texture,
+		katha::uvec2(2), format_e::rgb8,
+		pixels
+	);
+	if (!check_result(result, "gl_scene_t::create::checker_board_texture"))
+	{
+		return result;
+	}
+
+	return result_e::success;
+}
+
+void katha::highway_t::clear(graphics_i* gfx)
+{
+	gfx->delete_texture(&checker_board_texture);
+	gfx->delete_buffer(&vertex_buffer);
 }
 
 void katha::highway_t::update(const action_map_t& action_map, const float delta)

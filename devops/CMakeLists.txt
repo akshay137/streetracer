@@ -91,6 +91,8 @@ target_sources(${PROJECT_NAME} PUBLIC
 
 	${BUILD_ROOT}/source/platform/gl/gl.hpp
 	${BUILD_ROOT}/source/platform/gl/gl.cpp
+	${BUILD_ROOT}/source/platform/gl/gl.graphics.cpp
+	${BUILD_ROOT}/source/platform/gl/gl.graphics.render.cpp
 
 	${BUILD_ROOT}/source/platform/vulkan/vulkan_context.hpp
 	${BUILD_ROOT}/source/platform/vulkan/vulkan_context.cpp

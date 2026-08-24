@@ -47,7 +47,7 @@ namespace katha
 		constexpr vector2_t(const T& x, const T& y): x{x}, y{y} {}
 
 		template <typename RT>
-		explicit operator vector2_t<RT>()
+		explicit operator vector2_t<RT>() const
 		{
 			vector2_t<RT> v(
 				static_cast<RT>(x),

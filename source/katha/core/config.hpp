@@ -15,6 +15,7 @@ namespace katha
 
 		uint32_t enable_xr:1 = 0; // vr
 		uint32_t debug_graphics_api:1 = 0;
+		uint32_t force_es_context:1 = 0; // force OpenGL ES context
 		uint32_t enable_vsync:1 = 0;
 		uint32_t windowed:1 = 0;
 		uint32_t log_frame_time:1 = 0;

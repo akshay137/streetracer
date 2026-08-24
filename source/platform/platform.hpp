@@ -14,6 +14,8 @@
 
 namespace katha
 {
+	struct graphics_i;
+
 	struct platform_t
 	{
 		const char* base_path = nullptr;
@@ -33,6 +35,8 @@ namespace katha
 
 		result_e init(int argc, char** args);
 		void clear();
+
+		graphics_i* get_graphics();
 
 		void parse_command_line(int argc, char** args);
 
