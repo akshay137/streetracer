@@ -2,12 +2,11 @@
 #ifndef KATHA_PLATFORM_DESKTOP_H__
 #define KATHA_PLATFORM_DESKTOP_H__ 1
 
-#include "../katha/core.hpp"
-#include "../katha/core/config.hpp"
+#include "../config.hpp"
+#include "../enum/result.hpp"
+#include "../type/gamepad.hpp"
+#include "../type/action_map.hpp"
 #include "input.hpp"
-#include "gamepad.hpp"
-
-#include "../game/action_map.hpp"
 
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_gamecontroller.h>
@@ -37,8 +36,6 @@ namespace katha
 		void clear();
 
 		graphics_i* get_graphics();
-
-		void parse_command_line(int argc, char** args);
 
 		result_e query_displays();
 		result_e query_controllers();

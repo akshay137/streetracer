@@ -148,7 +148,8 @@ def generate_vector_operations(n: int, root: str):
 	found at {{root}}/tools/vector_op_gen.py
 */
 
-#include "../core/types.hpp"
+#include "../type/vector.hpp"
+#include "utility.hpp"
 
 #include <cmath>
 
@@ -223,7 +224,7 @@ namespace katha
 
 if '__main__' == __name__:
 	base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../'))
-	source = os.path.join(base, 'source/katha/math')
+	source = os.path.join(base, 'source/math')
 	print(f'base_dir: {source}')
 
 	generate_vector_operations(2, source)

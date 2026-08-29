@@ -68,80 +68,100 @@ if (KATHA_XR)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_XR=1)
 	target_link_libraries(${PROJECT_NAME} PUBLIC openxr_loader)
 	target_sources(${PROJECT_NAME} PUBLIC
-		${BUILD_ROOT}/source/platform/xr/xr.hpp
-		${BUILD_ROOT}/source/platform/xr/xr.cpp
-		${BUILD_ROOT}/source/platform/xr/xr.gl.cpp
+		${BUILD_ROOT}/source/graphics/xr/xr.hpp
+		${BUILD_ROOT}/source/graphics/xr/xr.cpp
+		${BUILD_ROOT}/source/graphics/xr/xr.gl.cpp
 	)
 else()
 	target_compile_definitions(${PROJECT_NAME} PUBLIC KATHA_XR=0)
 endif()
 
 target_sources(${PROJECT_NAME} PUBLIC
-	${BUILD_ROOT}/source/platform/main.cpp
-	${BUILD_ROOT}/source/platform/platform.hpp
-	${BUILD_ROOT}/source/platform/platform.cpp
-	${BUILD_ROOT}/source/platform/gamepad.hpp
-	${BUILD_ROOT}/source/platform/gamepad.cpp
-	${BUILD_ROOT}/source/platform/input.hpp
-	${BUILD_ROOT}/source/platform/log.cpp
-	${BUILD_ROOT}/source/platform/memory.cpp
-	${BUILD_ROOT}/source/platform/file.hpp
-	${BUILD_ROOT}/source/platform/file.cpp
-	${BUILD_ROOT}/source/platform/glad.c
+	${BUILD_ROOT}/source/config.cpp
+	${BUILD_ROOT}/source/config.hpp
+	${BUILD_ROOT}/source/constants.hpp
+	${BUILD_ROOT}/source/core.hpp
+	${BUILD_ROOT}/source/utility.cpp
+	${BUILD_ROOT}/source/utility.hpp
 
-	${BUILD_ROOT}/source/platform/gl/gl.hpp
-	${BUILD_ROOT}/source/platform/gl/gl.cpp
-	${BUILD_ROOT}/source/platform/gl/gl.graphics.cpp
-	${BUILD_ROOT}/source/platform/gl/gl.graphics.render.cpp
+	${BUILD_ROOT}/source/enum/base.cpp
+	${BUILD_ROOT}/source/enum/base.hpp
+	${BUILD_ROOT}/source/enum/features.hpp
+	${BUILD_ROOT}/source/enum/format.cpp
+	${BUILD_ROOT}/source/enum/format.hpp
+	${BUILD_ROOT}/source/enum/graphics.cpp
+	${BUILD_ROOT}/source/enum/graphics.hpp
+	${BUILD_ROOT}/source/enum/order.hpp
+	${BUILD_ROOT}/source/enum/result.cpp
+	${BUILD_ROOT}/source/enum/result.hpp
 
-	${BUILD_ROOT}/source/platform/vulkan/vulkan_context.hpp
-	${BUILD_ROOT}/source/platform/vulkan/vulkan_context.cpp
+	${BUILD_ROOT}/source/format/string.cpp
+	${BUILD_ROOT}/source/format/string.hpp
+	${BUILD_ROOT}/source/format/types.cpp
+	${BUILD_ROOT}/source/format/types.hpp
 
-	${BUILD_ROOT}/source/katha/core.hpp
-	${BUILD_ROOT}/source/katha/core/config.hpp
-	${BUILD_ROOT}/source/katha/core/config.cpp
-	${BUILD_ROOT}/source/katha/core/enums.hpp
-	${BUILD_ROOT}/source/katha/core/enums.cpp
-	${BUILD_ROOT}/source/katha/core/stream.hpp
-	${BUILD_ROOT}/source/katha/core/stack_string.hpp
-	${BUILD_ROOT}/source/katha/core/string.hpp
-	${BUILD_ROOT}/source/katha/core/string.cpp
-	${BUILD_ROOT}/source/katha/core/types.hpp
-	
-	${BUILD_ROOT}/source/katha/format/string.hpp
-	${BUILD_ROOT}/source/katha/format/string.cpp
-	${BUILD_ROOT}/source/katha/format/types.hpp
-	${BUILD_ROOT}/source/katha/format/types.cpp
-
-	${BUILD_ROOT}/source/katha/graphics/buffer.hpp
-	${BUILD_ROOT}/source/katha/graphics/buffer.cpp
-	${BUILD_ROOT}/source/katha/graphics/framebuffer.hpp
-	${BUILD_ROOT}/source/katha/graphics/framebuffer.cpp
-	${BUILD_ROOT}/source/katha/graphics/graphics.hpp
-	${BUILD_ROOT}/source/katha/graphics/pso.hpp
-	${BUILD_ROOT}/source/katha/graphics/pso.cpp
-	${BUILD_ROOT}/source/katha/graphics/texture.hpp
-	${BUILD_ROOT}/source/katha/graphics/texture.cpp
-	
-	${BUILD_ROOT}/source/katha/math/vector2.gen.hpp
-	${BUILD_ROOT}/source/katha/math/vector2.hpp
-	${BUILD_ROOT}/source/katha/math/vector3.gen.hpp
-	${BUILD_ROOT}/source/katha/math/vector3.hpp
-	${BUILD_ROOT}/source/katha/math/vector4.gen.hpp
-	${BUILD_ROOT}/source/katha/math/vector4.hpp
-	${BUILD_ROOT}/source/katha/math/quaternion.hpp
-	${BUILD_ROOT}/source/katha/math/matrix4.hpp
-	
-	${BUILD_ROOT}/source/katha/physics/vertex.hpp
-	${BUILD_ROOT}/source/katha/physics/transform.hpp
-	${BUILD_ROOT}/source/katha/physics/transform.cpp
-
-	${BUILD_ROOT}/source/katha/time/time.hpp
-	${BUILD_ROOT}/source/katha/time/time.cpp
-
-	${BUILD_ROOT}/source/game/action_map.hpp
-	${BUILD_ROOT}/source/game/world.hpp
+	${BUILD_ROOT}/source/game/vehicle.cpp
+	${BUILD_ROOT}/source/game/vehicle.hpp
 	${BUILD_ROOT}/source/game/world.cpp
+	${BUILD_ROOT}/source/game/world.hpp
+
+	${BUILD_ROOT}/source/graphics/buffer.hpp
+	${BUILD_ROOT}/source/graphics/framebuffer.hpp
+	${BUILD_ROOT}/source/graphics/graphics.hpp
+	${BUILD_ROOT}/source/graphics/mesh.hpp
+	${BUILD_ROOT}/source/graphics/pso.hpp
+	${BUILD_ROOT}/source/graphics/texture.hpp
+
+	${BUILD_ROOT}/source/graphics/gl/glad.c
+	${BUILD_ROOT}/source/graphics/gl/glad/glad.h
+	${BUILD_ROOT}/source/graphics/gl/gl.cpp
+	${BUILD_ROOT}/source/graphics/gl/gl.graphics.cpp
+	${BUILD_ROOT}/source/graphics/gl/gl.graphics.render.cpp
+	${BUILD_ROOT}/source/graphics/gl/gl.hpp
+	${BUILD_ROOT}/source/graphics/gl/KHR/khrplatform.h
+
+	${BUILD_ROOT}/source/graphics/vulkan/vulkan_context.cpp
+	${BUILD_ROOT}/source/graphics/vulkan/vulkan_context.hpp
+	
+	${BUILD_ROOT}/source/math/matrix4.hpp
+	${BUILD_ROOT}/source/math/quaternion.hpp
+	${BUILD_ROOT}/source/math/utility.hpp
+	${BUILD_ROOT}/source/math/vector2.gen.hpp
+	${BUILD_ROOT}/source/math/vector2.hpp
+	${BUILD_ROOT}/source/math/vector3.gen.hpp
+	${BUILD_ROOT}/source/math/vector3.hpp
+	${BUILD_ROOT}/source/math/vector4.gen.hpp
+	${BUILD_ROOT}/source/math/vector4.hpp
+
+	${BUILD_ROOT}/source/platform/input.hpp
+	${BUILD_ROOT}/source/platform/main.cpp
+	${BUILD_ROOT}/source/platform/platform.cpp
+	${BUILD_ROOT}/source/platform/platform.hpp
+
+	${BUILD_ROOT}/source/resource/resource.hpp
+	${BUILD_ROOT}/source/resource/resource.mesh.cpp
+
+	${BUILD_ROOT}/source/time/time.cpp
+	${BUILD_ROOT}/source/time/time.hpp
+
+	${BUILD_ROOT}/source/type/action_map.hpp
+	${BUILD_ROOT}/source/type/file.cpp
+	${BUILD_ROOT}/source/type/file.hpp
+	${BUILD_ROOT}/source/type/flags.hpp
+	${BUILD_ROOT}/source/type/gamepad.cpp
+	${BUILD_ROOT}/source/type/gamepad.hpp
+	${BUILD_ROOT}/source/type/matrix.hpp
+	${BUILD_ROOT}/source/type/primitive.hpp
+	${BUILD_ROOT}/source/type/quaternion.hpp
+	${BUILD_ROOT}/source/type/stack_string.hpp
+	${BUILD_ROOT}/source/type/stream.hpp
+	${BUILD_ROOT}/source/type/string.cpp
+	${BUILD_ROOT}/source/type/string.hpp
+	${BUILD_ROOT}/source/type/transform.cpp
+	${BUILD_ROOT}/source/type/transform.hpp
+	${BUILD_ROOT}/source/type/vector.hpp
+	${BUILD_ROOT}/source/type/version.hpp
+	${BUILD_ROOT}/source/type/vertex.hpp
 )
 
 # exclude c++ runtime

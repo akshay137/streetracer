@@ -2,15 +2,20 @@
 #ifndef GAME_VEHICLE_H__
 #define GAME_VEHICLE_H__ 1
 
-#include "../katha/core/types.hpp"
-#include "../katha/physics/transform.hpp"
+#include "../type/transform.hpp"
 
 namespace katha
 {
 	struct vehicle_t
 	{
 		transform_t transform = {};
-		float steering_angle = 0;
+		
+		void apply(
+			const float throttle,
+			const float brake,
+			const float steering_angle,
+			const float delta
+		);
 	};
 }
 

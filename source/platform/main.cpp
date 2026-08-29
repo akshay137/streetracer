@@ -1,17 +1,18 @@
 #include "platform.hpp"
-#include "gl/gl.hpp"
-#include "../katha/time/time.hpp"
-#include "../katha/physics/vertex.hpp"
-#include "../katha/physics/transform.hpp"
-#include "../katha/math/vector2.hpp"
-#include "../katha/math/quaternion.hpp"
-#include "../katha/math/matrix4.hpp"
+#include "../graphics/gl/gl.hpp"
+#include "../time/time.hpp"
+#include "../type/transform.hpp"
+#include "../type/action_map.hpp"
+#include "../math/vector2.hpp"
+#include "../math/quaternion.hpp"
+#include "../math/matrix4.hpp"
+#include "../utility.hpp"
+#include "../constants.hpp"
 
 #if KATHA_XR
-#include "xr/xr.hpp"
+#include "../graphics/xr/xr.hpp"
 #endif
 
-#include "../game/action_map.hpp"
 #include "../game/world.hpp"
 
 #include <clocale>
@@ -26,6 +27,13 @@ int main(int argc, char** args)
 	log_line("current locale: {s}", locale);
 	log_line("engine: {s} {version}", ENGINE_NAME_UTF8, &ENGINE_VERSION);
 	log_line("game: {s} {version}", GAME_NAME, &GAME_VERSION);
+
+	float s = std::sin(radians(45));
+	float c = std::cos(radians(45));
+	quat_t q(transform_t::UP * s, c);
+	vec3 r = rotate(q, transform_t::FORWARD);
+	log_line("r: {v3}", r.array());
+	// return 0;
 
 	platform_t platform = {};
 	result_e result = platform.init(argc, args);
@@ -70,7 +78,7 @@ int main(int argc, char** args)
 		world.update(action_map, delta);
 
 		// frame::render
-		if (platform.config.enable_xr)
+		if (platform.config.enabled(feature_e::vr))
 		{
 #if KATHA_XR
 			xr->poll_events();
@@ -115,7 +123,7 @@ int main(int argc, char** args)
 
 		// frame::end
 		last = now() - start;
-		if (platform.config.log_frame_time)
+		if (platform.config.enabled(feature_e::log_frame_time))
 		{
 			log_line("frame_time: {td}, delta: {f}", last, delta);
 		}

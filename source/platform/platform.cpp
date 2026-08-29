@@ -1,9 +1,12 @@
 #include "platform.hpp"
-#include "gl/gl.hpp"
-#include "vulkan/vulkan_context.hpp"
+#include "../graphics/gl/gl.hpp"
+#include "../graphics/vulkan/vulkan_context.hpp"
+#include "../constants.hpp"
+#include "../math/utility.hpp"
+#include "../utility.hpp"
 
 #if KATHA_XR
-#include "xr/xr.hpp"
+#include "../graphics/xr/xr.hpp"
 #endif
 
 #include <SDL2/SDL.h>
@@ -12,7 +15,7 @@
 
 katha::result_e katha::platform_t::init(int argc, char** args)
 {
-	parse_command_line(argc, args);
+	config.parse_command_line(argc, args);
 	config.log();
 
 	SDL_version version = {};
@@ -80,7 +83,7 @@ void katha::platform_t::clear()
 	}
 
 #if KATHA_XR
-	if (config.enable_xr)
+	if (config.enabled(feature_e::vr))
 	{
 		xr->clear();
 	}
@@ -108,64 +111,6 @@ katha::graphics_i* katha::platform_t::get_graphics()
 	}
 
 	return nullptr;
-}
-
-void katha::platform_t::parse_command_line(int argc, char** args)
-{
-	config.window_size = config.get_default_window_size();
-
-	for (int i = 1; i < argc; i++)
-	{
-		const bool has_next_argument = (i + 1) < argc;
-		const string_t arg(args[i]);
-
-		if (arg.equals("--gl"))
-		{
-			config.graphics_api = graphics_api_e::gl;
-		}
-		else if (arg.equals("--vulkan"))
-		{
-			config.graphics_api = graphics_api_e::vulkan;
-		}
-
-		if (arg.equals("-display") && has_next_argument)
-		{
-			int32_t display = atoi(args[i + 1]);
-			config.preferred_display_index = display;
-		}
-		if (arg.equals("-gpu") && has_next_argument)
-		{
-			int32_t gpu = atoi(args[i + i]);
-			config.preferred_gpu_index = gpu;
-		}
-
-#if KATHA_XR
-		if (arg.equals("--xr"))
-		{
-			config.enable_xr = 1;
-		}
-#endif
-		if (arg.equals("--debug_graphics_api"))
-		{
-			config.debug_graphics_api = 1;
-		}
-		if (arg.equals("--force_es_context"))
-		{
-			config.force_es_context = 1;
-		}
-		if (arg.equals("--vsync"))
-		{
-			config.enable_vsync = 1;
-		}
-		if (arg.equals("--windowed"))
-		{
-			config.windowed = 1;
-		}
-		if (arg.equals("--log_frame_time"))
-		{
-			config.log_frame_time = 1;
-		}
-	}
 }
 
 katha::result_e katha::platform_t::query_displays()
@@ -255,7 +200,7 @@ katha::result_e katha::platform_t::query_controllers()
 
 katha::result_e katha::platform_t::init_with_gl()
 {
-	if (config.enable_xr || !config.force_es_context)
+	if (config.enabled(feature_e::vr) || !config.enabled(feature_e::force_opengl_es))
 	{
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -267,7 +212,7 @@ katha::result_e katha::platform_t::init_with_gl()
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 	}
-	SDL_GL_SetSwapInterval(config.enable_vsync);
+	SDL_GL_SetSwapInterval(config.enabled(feature_e::vsync) ? 1 : 0);
 
 	const int32_t position = SDL_WINDOWPOS_UNDEFINED_DISPLAY(
 		display_index
@@ -276,7 +221,7 @@ katha::result_e katha::platform_t::init_with_gl()
 	int width = display_size.x;
 	int height = display_size.y;
 	int additional_flags = 0;
-	if (config.windowed)
+	if (config.enabled(feature_e::window_mode))
 	{
 		width = config.window_size.x;
 		height = config.window_size.y;
@@ -304,14 +249,14 @@ katha::result_e katha::platform_t::init_with_gl()
 	}
 
 #if KATHA_XR
-	if (config.enable_xr)
+	if (config.enabled(feature_e::vr))
 	{
 		// This piggy backs on existing OpenGL context
 		result = xr->init(config, window);
 		if (!check_result(result, "xr::init"))
 		{
 			xr->clear();
-			config.enable_xr = 0;
+			config.features.unset(feature_e::vr);
 			log_line("error: xr disabled");
 		}
 		else
@@ -341,7 +286,7 @@ katha::result_e katha::platform_t::init_with_gl()
 		}
 	}
 #endif
-	if (0 == config.enable_xr)
+	if (0 == config.enabled(feature_e::vr))
 	{
 		result = gl->create_framebuffer(
 			&(gl->framebuffers.left),
@@ -387,14 +332,14 @@ katha::result_e katha::platform_t::init_with_vulkan()
 		return result_e::error_sdl;
 	}
 
-	if (config.enable_xr)
+	if (config.enabled(feature_e::vr))
 	{
 #if KATHA_XR
 		// This will create Vulkan instance & select physical device
 		result_e result = xr->init(config, window);
 		if (!check_result(result, "xr::init"))
 		{
-			config.enable_xr = 0;
+			config.features.unset(feature_e::vr);
 			log_line("error: xr disabled");
 		}
 #endif
@@ -531,9 +476,9 @@ katha::gamepad_t katha::platform_t::get_gamepad_state(const int32_t index) const
 	gamepad.dpad_right = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
 
 	gamepad.action_up = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_Y);
-	gamepad.action_left = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B);
+	gamepad.action_left = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X);
 	gamepad.action_down = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_A);
-	gamepad.action_right = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_X);
+	gamepad.action_right = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_B);
 
 	gamepad.shoulder_left = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
 	gamepad.shoulder_right = SDL_GameControllerGetButton(controller, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
@@ -552,6 +497,8 @@ katha::action_map_t katha::platform_t::get_action_map() const
 	action_map_t map = {};
 	const gamepad_t& gp = current_input_state.gamepad;
 
+	constexpr float stick_dead_zone = 0.05f;
+
 	// steering
 	map.steering_angle = gp.stick_left.x;
 	if (gp.dpad_left || get_key(SDL_SCANCODE_A) || get_key(SDL_SCANCODE_LEFT))
@@ -564,10 +511,10 @@ katha::action_map_t katha::platform_t::get_action_map() const
 	}
 
 	// throttle
-	map.throttle = gp.trigger_right;
-	if (gp.stick_right.y > 0)
+	map.throttle = clamp(gp.trigger_right - stick_dead_zone, 0.0f, 1.0f);
+	if (gp.stick_right.y < 0)
 	{
-		map.throttle += gp.stick_right.y;
+		map.throttle += clamp(-gp.stick_right.y - 0.05f, 0.0f, 1.0f);
 	}
 	if (gp.action_down || get_key(SDL_SCANCODE_W) || get_key(SDL_SCANCODE_UP))
 	{
@@ -576,9 +523,9 @@ katha::action_map_t katha::platform_t::get_action_map() const
 
 	// brake
 	map.brake = gp.trigger_left;
-	if (gp.stick_right.y < 0)
+	if (gp.stick_right.y > 0)
 	{
-		map.brake += gp.stick_right.y;
+		map.brake += clamp(gp.stick_right.y - stick_dead_zone, 0.0f, 1.0f);
 	}
 	if (gp.action_right || get_key(SDL_SCANCODE_S) || get_key(SDL_SCANCODE_DOWN))
 	{

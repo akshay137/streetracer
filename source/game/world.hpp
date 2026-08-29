@@ -2,13 +2,14 @@
 #ifndef GAME_HIGHWAY_H__
 #define GAME_HIGHWAY_H__ 1
 
-#include "action_map.hpp"
-#include "../katha/core.hpp"
-#include "../katha/physics/transform.hpp"
+#include "vehicle.hpp"
+#include "../enum/result.hpp"
+#include "../type/action_map.hpp"
+#include "../type/transform.hpp"
 
 // TODO: add model/mesh support
-#include "../katha/graphics/buffer.hpp"
-#include "../katha/graphics/texture.hpp"
+#include "../graphics/mesh.hpp"
+#include "../graphics/texture.hpp"
 
 namespace katha
 {
@@ -33,14 +34,12 @@ namespace katha
 		transform_t camera = {};
 
 		texture_t checker_board_texture = {};
-		buffer_t vertex_buffer = {};
+		mesh_t vehicle_mesh = {};
 
-		vec3 player = {};
+		vehicle_t player = {};
 
-		int traffic_count = 32;
-		traffic_t traffic[32] = {};
-		float despawn_time[32] = {};
-		int spawn_delay_seconds[32] = {};
+		int traffic_count = 128;
+		traffic_t traffic[128] = {};
 
 		float game_time = 0;
 

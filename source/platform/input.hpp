@@ -2,7 +2,7 @@
 #ifndef KATHA_PLATFORM_INPUT_H__
 #define KATHA_PLATFORM_INPUT_H__ 1
 
-#include "gamepad.hpp"
+#include "../type/gamepad.hpp"
 
 #include <SDL2/SDL_scancode.h>
 

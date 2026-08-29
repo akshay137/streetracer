@@ -1,11 +1,11 @@
 #include "world.hpp"
-#include "../katha/graphics/graphics.hpp"
-
-#include "../katha/core.hpp"
-#include "../katha/math/vector2.hpp"
-#include "../katha/math/vector3.hpp"
-#include "../katha/physics/vertex.hpp"
-#include "../katha/time/time.hpp"
+#include "../graphics/graphics.hpp"
+#include "../math/vector2.hpp"
+#include "../math/vector3.hpp"
+#include "../math/quaternion.hpp"
+#include "../type/vertex.hpp"
+#include "../time/time.hpp"
+#include "../utility.hpp"
 
 #include <cstdlib>
 
@@ -32,6 +32,14 @@ katha::world_t::traffic_e get_random_traffic()
 
 katha::vec3 get_random_traffic_spawn_position()
 {
+	const float RANGE = 100;
+	katha::vec3 pos(
+		random_range<float>(-RANGE, RANGE),
+		0,
+		random_range<float>(-RANGE, RANGE)
+	);
+	return pos;
+
 	static float last_z = -200;
 	static int last_lane = 0;
 	constexpr int MAX_LANES = 5;
@@ -50,13 +58,12 @@ katha::vec3 get_random_traffic_spawn_position()
 
 katha::world_t::world_t()
 {
-	camera.orientation = quat_t::identity();
-	camera.position = vec3(0, 3, 8);
+	camera.position = player.transform.local_to_world(vec3(0, 3, -9));
+	camera = camera.look_at(player.transform.local_to_world(vec3(0, 3, 0)));
 
 	for (int i = 0; i < traffic_count; i++)
 	{
-		spawn_delay_seconds[i] = random_range(1, 6);
-		despawn_time[i] = 0;
+		spawn_traffic(i);
 	}
 }
 
@@ -103,11 +110,13 @@ katha::result_e katha::world_t::load(graphics_i* gfx)
 		{ .position = vec3( 1, -1,  1), .uv = vertex_t::unorm(vec2(1, 1)) },
 		{ .position = vec3(-1, -1,  1), .uv = vertex_t::unorm(vec2(0, 1)) }
 	};
-	result_e result = gfx->create_array_buffer(&vertex_buffer, sizeof(vertices), vertices);
-	if (!check_result(result, "gl::create_array_buffer"))
-	{
-		return result;
-	}
+	result_e result = gfx->create_mesh(
+		&vehicle_mesh,
+		vertices,
+		nullptr,
+		sizeof(vertices) / sizeof(vertices[0]),
+		0
+	);
 
 	constexpr uint8_t pixels[] = {
 		255, 255, 255, 0, 0, 0, 0, 0,
@@ -132,46 +141,40 @@ void katha::world_t::clear(graphics_i* gfx)
 {
 	log_line("world::clear()");
 	gfx->delete_texture(&checker_board_texture);
-	gfx->delete_buffer(&vertex_buffer);
+	gfx->delete_mesh(&vehicle_mesh);
 }
 
 void katha::world_t::update(const action_map_t& action_map, const float delta)
 {
 	game_time += delta;
 
-	constexpr float PLAYER_SPEED = 10.0f;
-	// if (action_map.movement)
-	// {
-	// 	player.x += action_map.movement * PLAYER_SPEED * delta;
-	// }
-	player.x = clamp(player.x, -10.0f, 10.0f);
+	player.apply(
+		action_map.throttle,
+		action_map.brake,
+		action_map.steering_angle,
+		delta
+	);
 
-	camera.position.x = lerp(camera.position.x, player.x, 5 * delta);
-	camera = camera.look_at(player + vec3(0, 3, 0));
+	camera.position = player.transform.local_to_world(vec3(0, 3, -10));
+	const vec3 target = player.transform.local_to_world(vec3(0, 1.5, 0));
+	camera = camera.look_at(target);
 
-	constexpr float TRAFFIC_SPEED = PLAYER_SPEED * 1.75f;
+	// log_line("player: {v3}, {q} | s: {f}",
+	// 	player.transform.position.array(),
+	// 	player.transform.orientation.array(),
+	// 	action_map.steering_angle
+	// );
+	// log_line("camera: {v3}, {q}",
+	// 	camera.position.array(),
+	// 	camera.orientation.array()
+	// );
+
+	// vec3 rot_right = rotate(camera.orientation, transform_t::RIGHT);
+	// log_line("right: {v3}, {f}", rot_right.array(), dot(rot_right, transform_t::RIGHT));
+
 	for (int i = 0; i < traffic_count; i++)
 	{
 		traffic_t& t = traffic[i];
-		if (traffic_e::none == t.type)
-		{
-			if (game_time - despawn_time[i] > spawn_delay_seconds[i])
-			{
-				spawn_traffic(i);
-			}
-		}
-
-		if (traffic_e::none != t.type)
-		{
-			t.position.z += TRAFFIC_SPEED * delta;
-	
-			if (t.position.z >= 5)
-			{
-				t.type = traffic_e::none;
-				spawn_delay_seconds[i] = random_range(0, 3);
-				despawn_time[i] = game_time;
-			}
-		}
 	}
 }
 
