@@ -196,6 +196,10 @@ int32_t katha::string_format_t::next()
 	{
 		return parse_next_version(spec_props);
 	}
+	if (spec_id.equals(SPEC_SOURCE))
+	{
+		return parse_next_source(spec_props);
+	}
 
 	param_buffer.append("{unknown specifier: ");
 	param_buffer.append(spec_id);
@@ -484,6 +488,37 @@ int32_t katha::string_format_t::parse_next_version(const string_t& props)
 		param_buffer.size += uint_to_string(version->minor, param_buffer.tail());
 		param_buffer.append(".");
 		param_buffer.size += uint_to_string(version->patch, param_buffer.tail());
+	}
+	return next();
+}
+
+int32_t katha::string_format_t::parse_next_source(const string_t& props)
+{
+	source_t* source = va_arg(args, source_t*);
+	if (source)
+	{
+		const char* filename = source->file_name();
+		const uint32_t line = static_cast<uint32_t>(source->line());
+
+		// FIXME
+		static uint32_t filename_offset = [](const char* filename) {
+			if (('/' == filename[0]))
+			{
+				// linux absolute path, we need path from `source/`
+				uint32_t offset = 0;
+				if (string_t(filename).find("source/", &offset))
+				{
+					return offset + 7u;
+				}
+			}
+
+			return 0u;
+		}(filename);
+		
+		param_buffer.size = 0;
+		param_buffer.append(filename + filename_offset);
+		param_buffer.append(":");
+		param_buffer.size += uint_to_string(line, param_buffer.tail());
 	}
 	return next();
 }

@@ -347,7 +347,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "glad/glad.h"
+#include <glad/glad.h>
 
 struct gladGLversionStruct GLVersion = { 0, 0 };
 
@@ -3458,9 +3458,7 @@ int gladLoadGLES2Loader(GLADloadproc load) {
 	load_GL_ES_VERSION_2_0(load);
 	load_GL_ES_VERSION_3_0(load);
 	load_GL_ES_VERSION_3_1(load);
-	// This is disabled because panfrost on RG351P only supports ES 3.1
-	// And ES 3.1 is enough for now
-	// load_GL_ES_VERSION_3_2(load);
+	load_GL_ES_VERSION_3_2(load);
 
 	if (!find_extensionsGLES2()) return 0;
 	load_GL_AMD_framebuffer_multisample_advanced(load);

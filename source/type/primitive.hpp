@@ -3,6 +3,7 @@
 #define KATHA_TYPE_PRIMITIVE_H__ 1
 
 #include <cstdint>
+#include <cstddef>
 
 #include <source_location>
 

@@ -37,11 +37,23 @@ namespace katha
 	extern void release(void* memory, const source_t& source = source_t::current());
 
 	// exits on failure
-	template <typename T>
-	T* alloc(const uint32_t count, const source_t& source = source_t::current())
+	template <typename T, bool default_init = true>
+	T* alloc(
+		const uint32_t count = 1,
+		const source_t& source = source_t::current()
+	)
 	{
 		void* memory = allocate(count * sizeof(T), source);
-		return reinterpret_cast<T*>(memory);
+		T* data = reinterpret_cast<T*>(memory);
+		T temp = {};
+		if constexpr (default_init)
+		{
+			for (uint32_t i = 0; i < count; i++)
+			{
+				data[i] = temp;
+			}
+		}
+		return data;
 	}
 }
 

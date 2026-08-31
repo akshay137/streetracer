@@ -47,6 +47,7 @@ namespace katha
 		}
 
 		bool equals(const string_t& rhs) const;
+		bool find(const string_t& pattern, uint32_t* out_index) const;
 
 		static int32_t read_utf8(const char* buffer, uint32_t* out_bytes);
 		static uint32_t write_utf8(const int32_t code, char* buffer);

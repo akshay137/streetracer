@@ -3,4 +3,4 @@ cd $ROOT
 pwd
 
 BUILD_DIR="build-desktop/host"
-cmake --build $BUILD_DIR --parallel
+cmake --build $BUILD_DIR --parallel $@

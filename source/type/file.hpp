@@ -12,6 +12,11 @@ namespace katha
 	{
 		SDL_RWops* handle = nullptr;
 
+		operator bool () const
+		{
+			return nullptr != handle;
+		}
+
 		// exits on failure
 		static file_t open_read(const char* filepath);
 

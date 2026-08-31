@@ -25,6 +25,36 @@ bool katha::string_t::equals(const string_t& rhs) const
 	return true;
 }
 
+bool katha::string_t::find(const string_t& pattern, uint32_t* out_index) const
+{
+	if (pattern.size > size)
+	{
+		return false;
+	}
+
+	const uint32_t iter_size = size - pattern.size;
+	for (uint32_t i = 0; i < iter_size; i++)
+	{
+		bool match = true;
+		for (uint32_t j = 0; j < pattern.size; j++)
+		{
+			if (buffer[i + j] != pattern.buffer[j])
+			{
+				match = false;
+				break;
+			}
+		}
+
+		if (match)
+		{
+			write_checked(out_index, i);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 int32_t katha::string_t::read_utf8(const char* buffer, uint32_t* out_bytes)
 {
 	char byte = 0;
