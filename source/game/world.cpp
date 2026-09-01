@@ -13,19 +13,22 @@ katha::result_e katha::world_t::load()
 		vertex_t(vec3(-0.5, 0.5, 0), vertex_t::unorm(vec2(0, 1))),
 		vertex_t(vec3(0.5, 0.5, 0), vertex_t::unorm(vec2(1, 1)))
 	};
-	mesh_buffer = create_buffer(
+	result_e result = create_buffer(
+		&mesh_buffer,
 		{},
 		sizeof(quad),
 		quad
 	);
-
-	result_t<texture_t> tres = load_texture("logo.kbt");
-	if (!tres)
+	if (!check_result(result, "world::create_mesh_buffer"))
 	{
-		return tres.result;
+		return result;
 	}
 
-	texture = tres.value;
+	result = load_texture(&texture, "logo.kbt");
+	if (!check_result(result, "world::load_texture"))
+	{
+		return result;
+	}
 
 	return result_e::success;
 }

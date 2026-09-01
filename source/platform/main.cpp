@@ -7,14 +7,19 @@
 
 #include <SDL2/SDL_main.h>
 
+katha::world_t world = {};
+
 int main(int argc, char** args)
 {
 	using namespace katha;
+	platform_t* platform = platform_t::get();
+	platform->set_force_exit_callback([](){
+		world.clear();
+	});
 
 	char* locale = setlocale(LC_ALL, "");
 	log_line("locale: {s}", locale);
 
-	platform_t* platform = platform_t::get();
 	result_e result = platform->init(argc, args);
 	if (!check_result(result, "platform::init"))
 	{
@@ -22,7 +27,6 @@ int main(int argc, char** args)
 		return static_cast<int>(result);
 	}
 
-	world_t world = {};
 	result = world.load();
 	if (!check_result(result, "world::load"))
 	{

@@ -10,22 +10,30 @@
 
 namespace katha
 {
-	extern buffer_t create_buffer(
+	extern result_e create_buffer(
+		buffer_t* out_buffer,
 		efield_t<buffer_usage_e> usage,
 		const uint32_t size,
 		const void* data
 	);
 	extern void delete_buffer(const buffer_t& buffer);
 
-	extern texture_t create_texture(
+	extern result_e create_texture(
+		texture_t* out_texture,
 		const format_e format,
 		const uvec2 size,
 		const void* pixels
 	);
 	extern void delete_texture(const texture_t& texture);
 
-	extern result_t<texture_t> load_texture(struct file_t& file);
-	extern result_t<texture_t> load_texture(const char* filename);
+	extern result_e load_texture(
+		texture_t* out_texture,
+		struct file_t& file
+	);
+	extern result_e load_texture(
+		texture_t* out_texture,
+		const char* filename
+	);
 }
 
 #endif

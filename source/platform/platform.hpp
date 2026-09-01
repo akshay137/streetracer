@@ -16,10 +16,13 @@
 
 namespace katha
 {
+	typedef void (*pfn_on_force_exit)();
+
 	struct platform_t
 	{
 		static platform_t* get();
 
+		pfn_on_force_exit on_force_exit = nullptr;
 		char* base_path = nullptr;
 		string_t asset_root = {};
 
@@ -30,6 +33,10 @@ namespace katha
 		void clear();
 
 		result_e init_graphics();
+
+		[[noreturn]]
+		void force_exit(const source_t& source = source_t::current());
+		void set_force_exit_callback(pfn_on_force_exit callback);
 
 		[[nodiscard]]
 		result_t<file_t> open_file_read(const char* file);

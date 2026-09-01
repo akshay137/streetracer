@@ -76,13 +76,15 @@ namespace katha
 		
 		uint32_t create_vertex_array_mesh();
 
-		buffer_t create_buffer(
+		result_e create_buffer(
+			buffer_t* out_buffer,
 			efield_t<buffer_usage_e> usage,
 			const uint32_t size,
 			const void* data
 		);
 
-		texture_t create_texture(
+		result_e create_texture(
+			texture_t* out_texture,
 			const format_e format,
 			const uvec2 size,
 			const void* pixels

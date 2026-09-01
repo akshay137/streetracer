@@ -1,4 +1,5 @@
 #include "file.hpp"
+#include "../platform/platform.hpp"
 #include "../utility.hpp"
 
 katha::file_t katha::file_t::open_read(const char* filepath)
@@ -85,7 +86,6 @@ uint32_t katha::file_t::write_all(
 )
 {
 	file_t file = file_t::open_write(filepath);
-
 	const uint32_t bw = file.write(data, length);
 	file.close();
 	return bw;
@@ -93,6 +93,11 @@ uint32_t katha::file_t::write_all(
 
 void katha::file_t::close()
 {
+	if (nullptr == handle)
+	{
+		return;
+	}
+
 	if (SDL_RWclose(handle) < 0)
 	{
 		log_line("error-sdl: SDL_RWclose {s}", SDL_GetError());

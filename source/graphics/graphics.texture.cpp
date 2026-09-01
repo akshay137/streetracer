@@ -42,10 +42,17 @@ bool read_format(katha::file_t& file, katha::format_e* out_format)
 	return true;
 }
 
-katha::result_t<katha::texture_t> katha::load_texture(struct file_t& file)
+katha::result_e katha::load_texture(texture_t* out_texture, struct file_t& file)
 {
+	if (nullptr == out_texture)
+	{
+		log_line("error: load_texture called with null `out_texture`");
+		return result_e::error_value_unexpected;
+	}
+
 	if (!check_magic_kbt(file))
 	{
+		log_line("error: not a .kbt texture");
 		return result_e::error_value_unexpected;
 	}
 
@@ -81,13 +88,13 @@ katha::result_t<katha::texture_t> katha::load_texture(struct file_t& file)
 		return result_e::error_value_null;
 	}
 
-	texture_t texture = create_texture(format, size, pixels);
+	result_e result = create_texture(out_texture, format, size, pixels);
 	release(pixels);
 
-	return texture;
+	return result;
 }
 
-katha::result_t<katha::texture_t> katha::load_texture(const char* filename)
+katha::result_e katha::load_texture(texture_t* out_texture, const char* filename)
 {
 	file_t file = platform_t::get()->open_file_read(filename);
 	if (!file)
@@ -95,9 +102,8 @@ katha::result_t<katha::texture_t> katha::load_texture(const char* filename)
 		return result_e::error;
 	}
 
-	result_t<texture_t> texture = load_texture(file);
-
+	result_e result = load_texture(out_texture, file);
 	file.close();
 
-	return texture;
+	return result;
 }

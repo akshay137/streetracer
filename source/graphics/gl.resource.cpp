@@ -265,12 +265,19 @@ uint32_t katha::gl_t::create_vertex_array_mesh()
 	return vao;
 }
 
-katha::buffer_t katha::gl_t::create_buffer(
+katha::result_e katha::gl_t::create_buffer(
+	buffer_t* out_buffer,
 	efield_t<buffer_usage_e> usage,
 	const uint32_t size,
 	const void* data
 )
 {
+	if (nullptr == out_buffer)
+	{
+		log_line("error: gl::create_buffer called with null `out_buffer`");
+		return result_e::error_value_null;
+	}
+
 	GLenum target = GL_ARRAY_BUFFER;
 	if (usage.has_enum(buffer_usage_e::element))
 	{
@@ -286,7 +293,7 @@ katha::buffer_t katha::gl_t::create_buffer(
 	}
 	if (check_error())
 	{
-		return {};
+		result_e::error_gl;
 	}
 
 	GLenum type = GL_STATIC_DRAW;
@@ -301,27 +308,32 @@ katha::buffer_t katha::gl_t::create_buffer(
 	if (check_error())
 	{
 		glDeleteBuffers(1, &gl_buffer);
-		return {};
+		result_e::error_gl;
 	}
 
-	buffer_t buffer = {
-		.handle = gl_buffer,
-		.size = size
-	};
-	log_line("gl: buffer {u:x}, {u}", buffer, size);
-	return buffer;
+	out_buffer->handle = gl_buffer;
+	out_buffer->size = size;
+	log_line("gl: buffer {u:x}, {u}", gl_buffer, size);
+	return result_e::success;
 }
 
-katha::texture_t katha::gl_t::create_texture(
+katha::result_e katha::gl_t::create_texture(
+	texture_t* out_texture,
 	const format_e format,
 	const uvec2 size,
 	const void* pixels
 )
 {
+	if (nullptr == out_texture)
+	{
+		log_line("error: gl::create_texture called with null `out_texture`");
+		return result_e::error_value_null;
+	}
+
 	const gl_format_t gl_format = format_to_gl_format(format);
 	if (0 == gl_format.internal)
 	{
-		return {};
+		return result_e::error_value_unexpected;
 	}
 
 	GLuint gl_texture = 0;
@@ -329,11 +341,11 @@ katha::texture_t katha::gl_t::create_texture(
 	if (0 == gl_texture)
 	{
 		log_line("error-gl: failed to create texture");
-		return {};
+		result_e::error_gl;
 	}
 	if (check_error())
 	{
-		return {};
+		result_e::error_gl;
 	}
 
 	glBindTexture(GL_TEXTURE_2D, gl_texture);
@@ -370,16 +382,18 @@ katha::texture_t katha::gl_t::create_texture(
 	if (check_error())
 	{
 		glDeleteTextures(1, &gl_texture);
-		return {};
+		return result_e::error_gl;
 	}
 
-	texture_t texture = {
-		.handle = gl_texture,
-		.size = size,
-		.format = format
-	};
-	texture.log("gl::texture");
-	return texture;
+	out_texture->handle = gl_texture;
+	out_texture->size = size;
+	out_texture->format = format;
+	log_line("gl: texture {u:x}, {u}x{u}, {s}",
+		gl_texture,
+		size.x, size.y,
+		format_to_cstring(format)
+	);
+	return result_e::success;
 }
 
 void katha::gl_t::bind_vertex_buffer(

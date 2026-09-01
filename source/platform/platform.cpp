@@ -90,6 +90,24 @@ katha::result_e katha::platform_t::init_graphics()
 	return result_e::success;
 }
 
+void katha::platform_t::force_exit(const source_t& source)
+{
+	log_line("force_exit called from {src}", &source);
+	
+	if (on_force_exit)
+	{
+		on_force_exit();
+	}
+
+	clear();
+	exit(0);
+}
+
+void katha::platform_t::set_force_exit_callback(pfn_on_force_exit callback)
+{
+	on_force_exit = callback;
+}
+
 katha::result_t<katha::file_t> katha::platform_t::open_file_read(const char* file)
 {
 	string_t path = string_t::join_path(asset_root, file);

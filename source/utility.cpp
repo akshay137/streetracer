@@ -1,6 +1,6 @@
 #include "utility.hpp"
-
 #include "format/string.hpp"
+#include "platform/platform.hpp"
 #include "time/time.hpp"
 
 #include <cinttypes>
@@ -69,6 +69,7 @@ void* katha::allocate(const uint32_t size, const source_t& source)
 		log_line("error: alloc({u64}) at {src}, {s}",
 			&source, SDL_GetError()
 		);
+		platform_t::get()->force_exit();
 	}
 
 	log_line("memory-allocate: {p}, {u64} bytes, in {src}",
