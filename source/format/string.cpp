@@ -516,6 +516,8 @@ int32_t katha::string_format_t::parse_next_source(const string_t& props)
 		}(filename);
 		
 		param_buffer.size = 0;
+		param_buffer.append(source->function_name());
+		param_buffer.append("; ");
 		param_buffer.append(filename + filename_offset);
 		param_buffer.append(":");
 		param_buffer.size += uint_to_string(line, param_buffer.tail());

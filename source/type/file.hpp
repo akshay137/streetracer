@@ -2,13 +2,12 @@
 #ifndef KATHA_PLATFORM_FILE_H__
 #define KATHA_PLATFORM_FILE_H__ 1
 
-#include "stream.hpp"
-
+#include "primitive.hpp"
 #include <SDL2/SDL_rwops.h>
 
 namespace katha
 {
-	struct file_t : public stream_i
+	struct file_t
 	{
 		SDL_RWops* handle = nullptr;
 
@@ -39,8 +38,22 @@ namespace katha
 
 		uint32_t length();
 
-		uint32_t read(void* buffer, const uint32_t bytes) override;
-		uint32_t write(const void* buffer, const uint32_t bytes) override;
+		uint32_t read(void* buffer, const uint32_t bytes);
+		uint32_t write(const void* buffer, const uint32_t bytes);
+
+		template <typename T>
+		bool read(T* out_value)
+		{
+			T temp;
+			uint32_t br = read(&temp, sizeof(T));
+			if (sizeof(T) != br)
+			{
+				return false;
+			}
+
+			write_checked(out_value, temp);
+			return true;
+		}
 	};
 }
 

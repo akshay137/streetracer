@@ -15,12 +15,14 @@ namespace katha
 		{
 			display_index,
 			debug_graphics,
+			asset_root,
 			force_opengl_es,
 	
 			__max
 		};
 		efield_t<command> commands = {};
 		int display_index = 0;
+		const char* asset_root = nullptr;
 
 		void parse_impl(int argc, char** args);
 		static void parse(int argc, char** args)
@@ -43,6 +45,15 @@ namespace katha
 				return __instance.display_index;
 			}
 			return default_index;
+		}
+
+		static const char* get_asset_root(const char* default_asset_root = "./")
+		{
+			if (has(command::asset_root))
+			{
+				return __instance.asset_root;
+			}
+			return default_asset_root;
 		}
 	};
 }

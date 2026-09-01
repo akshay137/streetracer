@@ -16,7 +16,7 @@ namespace katha
 
 		string_t() = default;
 
-		constexpr uint32_t length(const char* cstring)
+		constexpr static uint32_t length(const char* cstring)
 		{
 			if (nullptr == cstring)
 			{
@@ -35,6 +35,14 @@ namespace katha
 		constexpr string_t(const char* cstring, const uint32_t size)
 			: buffer{(char*)cstring}, size{size}, capacity{0}
 		{}
+
+		static string_t copy_from_cstring(
+			const char* cstring,
+			uint32_t size = 0,
+			const source_t& source = source_t::current()
+		);
+
+		void clear();
 
 		char& operator[](const uint32_t index)
 		{
@@ -63,6 +71,14 @@ namespace katha
 		static bool cstring_starts_with(
 			const char* source,
 			const char* prefix
+		);
+
+		// path helpers
+
+		static string_t join_path(
+			const string_t& base,
+			const string_t& suffix,
+			const source_t& source = source_t::current()
 		);
 	};
 }

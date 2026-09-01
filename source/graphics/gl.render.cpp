@@ -8,11 +8,14 @@
 
 void katha::gl_t::render_world(const struct world_t& world)
 {
+	glClearBufferfv(GL_COLOR, 0, vec4(0.1, 0.1, 0.1, 0).array());
+
 	glUseProgram(mesh_shader_program);
 	glBindVertexArray(mesh_vertex_array);
-	glBindVertexBuffer(0, world.mesh_buffer, 0, sizeof(vertex_t));
+	bind_vertex_buffer<vertex_t>(world.mesh_buffer, 0);
+	bind_texture(0, world.texture);
 
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	SDL_GL_SwapWindow(window);
 }

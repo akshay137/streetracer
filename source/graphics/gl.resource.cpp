@@ -10,17 +10,18 @@ constexpr const char* mesh_vertex_shader = ""
 "out vec2 uv;\n"
 "void main()\n"
 "{\n"
-	"gl_Position = vec4(position, 1);\n"
-	"uv = tex_coords;\n"
+	"gl_Position = vec4(position, 1.0);\n"
+	"uv = vec2(tex_coords.x, 1.0 - tex_coords.y);\n"
 "}"
 ;
 
 constexpr const char* mesh_fragment_shader = ""
 "in MEDIUMP vec2 uv;\n"
 "layout (location = 0) out MEDIUMP vec4 color;\n"
+"layout (binding = 0) uniform sampler2D diffuse;\n"
 "void main()\n"
 "{\n"
-	"color = vec4(uv.xy, 0, 1);"
+	"color = texture(diffuse, uv);"
 "}"
 ;
 
@@ -67,7 +68,7 @@ void katha::gl_t::delete_shader_program(const uint32_t program)
 	if (program)
 	{
 		log_line("gl: delete_program({u:x})", program);
-		glDeleteShader(program);
+		glDeleteProgram(program);
 	}
 }
 
@@ -81,12 +82,24 @@ void katha::gl_t::delete_vertex_array(const uint32_t vertex_array)
 }
 
 
-void katha::gl_t::delete_buffer(const uint32_t buffer)
+void katha::gl_t::delete_buffer(const buffer_t& buffer)
 {
-	if (buffer)
+	if (buffer.handle)
 	{
-		log_line("gl: delete_buffer({u:x})", buffer);
-		glDeleteBuffers(1, &buffer);
+		GLuint gl_buffer = static_cast<GLuint>(buffer.handle);
+		log_line("gl: delete_buffer({u:x})", gl_buffer);
+		glDeleteBuffers(1, &gl_buffer);
+	
+	}
+}
+
+void katha::gl_t::delete_texture(const texture_t& texture)
+{
+	if (texture.handle)
+	{
+		GLuint gl_texture = static_cast<GLuint>(texture.handle);
+		log_line("gl: delete_texture({u:x})", gl_texture);
+		glDeleteTextures(1, &gl_texture);
 	}
 }
 
@@ -252,48 +265,143 @@ uint32_t katha::gl_t::create_vertex_array_mesh()
 	return vao;
 }
 
-uint32_t katha::gl_t::create_buffer(
+katha::buffer_t katha::gl_t::create_buffer(
 	efield_t<buffer_usage_e> usage,
 	const uint32_t size,
 	const void* data
 )
 {
-	GLenum type = 0;
-	if (usage.has_enum(buffer_usage_e::array))
+	GLenum target = GL_ARRAY_BUFFER;
+	if (usage.has_enum(buffer_usage_e::element))
 	{
-		type = GL_ARRAY_BUFFER;
+		target = GL_ELEMENT_ARRAY_BUFFER;
 	}
-	else if (usage.has_enum(buffer_usage_e::element))
+
+	GLuint gl_buffer = 0;
+	glGenBuffers(1, &gl_buffer);
+	if (0 == gl_buffer)
 	{
-		type = GL_ELEMENT_ARRAY_BUFFER;
+		log_line("error-gl: failed to create buffer");
+		return {};
+	}
+	if (check_error())
+	{
+		return {};
+	}
+
+	GLenum type = GL_STATIC_DRAW;
+	if (usage.has_enum(buffer_usage_e::stream))
+	{
+		type = GL_STREAM_DRAW;
+	}
+
+	glBindBuffer(target, gl_buffer);
+	glBufferData(target, static_cast<GLsizeiptr>(size), data, type);
+
+	if (check_error())
+	{
+		glDeleteBuffers(1, &gl_buffer);
+		return {};
+	}
+
+	buffer_t buffer = {
+		.handle = gl_buffer,
+		.size = size
+	};
+	log_line("gl: buffer {u:x}, {u}", buffer, size);
+	return buffer;
+}
+
+katha::texture_t katha::gl_t::create_texture(
+	const format_e format,
+	const uvec2 size,
+	const void* pixels
+)
+{
+	const gl_format_t gl_format = format_to_gl_format(format);
+	if (0 == gl_format.internal)
+	{
+		return {};
+	}
+
+	GLuint gl_texture = 0;
+	glGenTextures(1, &gl_texture);
+	if (0 == gl_texture)
+	{
+		log_line("error-gl: failed to create texture");
+		return {};
+	}
+	if (check_error())
+	{
+		return {};
+	}
+
+	glBindTexture(GL_TEXTURE_2D, gl_texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, gl_format.internal,
+		static_cast<GLsizei>(size.x), static_cast<GLsizei>(size.y),
+		0,
+		gl_format.channel, gl_format.data_type,
+		pixels
+	);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	if (should_mipmap(format))
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else
 	{
-		log_line("error-gl: buffer usage must be array or element");
-		return 0;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	}
 
-	GLuint buffer = 0;
-	glGenBuffers(1, &buffer);
-	if (0 == buffer)
+	// FIXME
+	if (format_e::depth24_stencil8 != format)
 	{
-		log_line("error-gl: failed to create buffer");
-		return 0;
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, gl_format.swizzle.x);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, gl_format.swizzle.y);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, gl_format.swizzle.z);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, gl_format.swizzle.w);
 	}
-	if (check_error())
-	{
-		return 0;
-	}
-
-	glBindBuffer(type, buffer);
-	glBufferData(type, static_cast<GLsizeiptr>(size), data, GL_STATIC_DRAW);
 
 	if (check_error())
 	{
-		glDeleteBuffers(1, &buffer);
-		return 0;
+		glDeleteTextures(1, &gl_texture);
+		return {};
 	}
 
-	log_line("gl: buffer {u:x}, {u}", buffer, size);
-	return buffer;
+	texture_t texture = {
+		.handle = gl_texture,
+		.size = size,
+		.format = format
+	};
+	texture.log("gl::texture");
+	return texture;
+}
+
+void katha::gl_t::bind_vertex_buffer(
+	const buffer_t& buffer,
+	uint32_t binding,
+	uint32_t stride,
+	uint32_t offset
+)
+{
+	glBindVertexBuffer(
+		binding,
+		static_cast<GLuint>(buffer.handle),
+		static_cast<GLintptr>(offset),
+		static_cast<GLsizei>(stride)
+	);
+}
+
+void katha::gl_t::bind_texture(const uint32_t slot, const texture_t& texture)
+{
+	if (texture.handle)
+	{
+		glActiveTexture(GL_TEXTURE0 + slot);
+		glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(texture.handle));
+	}
 }

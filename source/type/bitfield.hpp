@@ -37,6 +37,14 @@ namespace katha
 		template <typename E>
 		inline bool has_enum(const E e) const { return has(static_cast<uint32_t>(e)); }
 
+		template <typename E, typename... Enums>
+		bool has_enum(const E e1, const E e2, Enums... enums)
+		{
+			const bool first = has_enum(e1);
+			const bool rest = has_enum(e2, enums...);
+			return first || rest;
+		}
+
 		void set(const uint32_t bit)
 		{
 			const uint32_t array_index = bit / (sizeof(FieldType) * 8);
@@ -51,21 +59,14 @@ namespace katha
 			bits[array_index] |= static_cast<FieldType>(1) << bit_index;
 		}
 
-		template <typename... Bits>
-		void set(const uint32_t bit, Bits... bits)
-		{
-			set(bit);
-			set(bits...);
-		}
-
 		template <typename E>
 		inline void set_enum(const E e) { set(static_cast<uint32_t>(e)); }
 
 		template <typename E, typename... Enums>
-		void set_enum(const E e, Enums... enums)
+		void set_enum(const E e1, const E e2, Enums... enums)
 		{
-			set_enum(e);
-			set_enum(enums...);
+			set_enum(e1);
+			set_enum(e2, enums...);
 		}
 
 		void unset(const uint32_t bit)

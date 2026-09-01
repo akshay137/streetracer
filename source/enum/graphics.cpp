@@ -5,6 +5,7 @@ const char* katha::format_to_cstring(const format_e format)
 	switch (format)
 	{
 		case format_e::none: return "format_e::none";
+		case format_e::greyscale8: return "format_e::greyscale8";
 		case format_e::rgba8: return "format_e::rgba8";
 		case format_e::rgb8: return "format_e::rgb8";
 		case format_e::srgba8: return "format_e::srgba8";

@@ -100,6 +100,9 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/graphics/gl.resource.cpp
 	${BUILD_ROOT}/source/graphics/gl.render.cpp
 	${BUILD_ROOT}/source/graphics/glad.c
+	${BUILD_ROOT}/source/graphics/graphics.hpp
+	${BUILD_ROOT}/source/graphics/graphics.cpp
+	${BUILD_ROOT}/source/graphics/graphics.texture.cpp
 
 	${BUILD_ROOT}/source/math/matrix4.hpp
 	${BUILD_ROOT}/source/math/quaternion.hpp
@@ -121,6 +124,7 @@ target_sources(${PROJECT_NAME} PUBLIC
 
 	${BUILD_ROOT}/source/type/action_map.hpp
 	${BUILD_ROOT}/source/type/bitfield.hpp
+	${BUILD_ROOT}/source/type/buffer.hpp
 	${BUILD_ROOT}/source/type/command_line.hpp
 	${BUILD_ROOT}/source/type/command_line.cpp
 	${BUILD_ROOT}/source/type/file.hpp
@@ -130,12 +134,14 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/type/matrix.hpp
 	${BUILD_ROOT}/source/type/primitive.hpp
 	${BUILD_ROOT}/source/type/quaternion.hpp
+	${BUILD_ROOT}/source/type/result.hpp
 	${BUILD_ROOT}/source/type/stack_string.hpp
-	${BUILD_ROOT}/source/type/stream.hpp
-	${BUILD_ROOT}/source/type/string.cpp
 	${BUILD_ROOT}/source/type/string.hpp
-	${BUILD_ROOT}/source/type/transform.cpp
+	${BUILD_ROOT}/source/type/string.cpp
+	${BUILD_ROOT}/source/type/texture.hpp
+	${BUILD_ROOT}/source/type/texture.cpp
 	${BUILD_ROOT}/source/type/transform.hpp
+	${BUILD_ROOT}/source/type/transform.cpp
 	${BUILD_ROOT}/source/type/vector.hpp
 	${BUILD_ROOT}/source/type/version.hpp
 	${BUILD_ROOT}/source/type/vertex.hpp

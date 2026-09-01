@@ -25,6 +25,12 @@ void katha::command_line::parse_impl(int argc, char** args)
 		{
 			commands.set_enum(command::debug_graphics);
 		}
+		else if (arg.equals("-asset_root") && has_next)
+		{
+			commands.set_enum(command::asset_root);
+			asset_root = args[i + 1];
+			i++;
+		}
 		else if (arg.equals("--force_opengl_es"))
 		{
 			commands.set_enum(command::force_opengl_es);

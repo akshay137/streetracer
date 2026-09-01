@@ -71,7 +71,7 @@ void* katha::allocate(const uint32_t size, const source_t& source)
 		);
 	}
 
-	log_line("memory-allocate: {p}, {u64} bytes, location {src}",
+	log_line("memory-allocate: {p}, {u64} bytes, in {src}",
 		memory, size, &source
 	);
 	return memory;
@@ -81,10 +81,10 @@ void katha::release(void* memory, const source_t& source)
 {
 	if (nullptr == memory)
 	{
-		log_line("warning: release(0) called from {src}", &source);
+		log_line("warning: release(0) called in {src}", &source);
 		return;
 	}
 
-	log_line("memory-free: {p}, location {src}", memory, &source);
+	log_line("memory-free: {p}, in {src}", memory, &source);
 	SDL_free(memory);
 }

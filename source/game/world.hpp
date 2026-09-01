@@ -3,16 +3,18 @@
 #define KATHA_GAME_WORLD_H__ 1
 
 #include "../enum/result.hpp"
-#include "../type/primitive.hpp"
+#include "../type/buffer.hpp"
+#include "../type/texture.hpp"
 
 namespace katha
 {
 	struct world_t
 	{
-		uint32_t mesh_buffer = 0;
+		buffer_t mesh_buffer = {};
+		texture_t texture = {};
 
-		result_e load(struct platform_t& platform);
-		void clear(struct platform_t& platform);
+		result_e load();
+		void clear();
 	};
 }
 

@@ -14,20 +14,20 @@ int main(int argc, char** args)
 	char* locale = setlocale(LC_ALL, "");
 	log_line("locale: {s}", locale);
 
-	platform_t platform = {};
-	result_e result = platform.init(argc, args);
+	platform_t* platform = platform_t::get();
+	result_e result = platform->init(argc, args);
 	if (!check_result(result, "platform::init"))
 	{
-		platform.clear();
+		platform->clear();
 		return static_cast<int>(result);
 	}
 
 	world_t world = {};
-	result = world.load(platform);
+	result = world.load();
 	if (!check_result(result, "world::load"))
 	{
-		world.clear(platform);
-		platform.clear();
+		world.clear();
+		platform->clear();
 		return static_cast<int>(result);
 	}
 
@@ -35,7 +35,7 @@ int main(int argc, char** args)
 	const uint64_t start = now();
 	while (running)
 	{
-		platform.gl.render_world(world);
+		platform->gl.render_world(world);
 
 		uint64_t current = now() - start;
 		if (current > 3ULL * 1000 * 1000 * 1000)
@@ -44,7 +44,7 @@ int main(int argc, char** args)
 		}
 	}
 
-	world.clear(platform);
-	platform.clear();
+	world.clear();
+	platform->clear();
 	return 0;
 }

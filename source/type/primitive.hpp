@@ -18,6 +18,29 @@ namespace katha
 		float f;
 		void* p;
 	};
+
+	template <typename T>
+	static bool write_checked(T* ptr, const T& value)
+	{
+		if (nullptr == ptr)
+		{
+			return false;
+		}
+
+		*ptr = value;
+		return true;
+	}
+
+	template <typename T>
+	static bool read_checked(const T* ptr, T* out_value)
+	{
+		if (nullptr == ptr)
+		{
+			return false;
+		}
+
+		return write_checked<T>(out_value, *ptr);
+	}
 }
 
 #endif

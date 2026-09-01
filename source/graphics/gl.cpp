@@ -215,3 +215,57 @@ void katha::gl_t::query_extensions()
 
 void katha::gl_t::query_limits()
 {}
+
+katha::gl_format_t katha::gl_t::format_to_gl_format(const format_e format)
+{
+	switch (format)
+	{
+		case format_e::none: return {};
+
+		case format_e::greyscale8:
+			return {
+				.internal = GL_R8,
+				.channel = GL_RED,
+				.data_type = GL_UNSIGNED_BYTE,
+				.swizzle = ivec4(GL_RED, GL_RED, GL_RED, GL_ONE)
+			};
+
+		case format_e::rgba8:
+			return {
+				.internal = GL_RGBA8,
+				.channel = GL_RGBA,
+				.data_type = GL_UNSIGNED_BYTE,
+				.swizzle = ivec4(GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA)
+			};
+		
+		case format_e::rgb8:
+			return {
+				.internal = GL_RGB8,
+				.channel = GL_RGB,
+				.data_type = GL_UNSIGNED_BYTE,
+				.swizzle = ivec4(GL_RED, GL_GREEN, GL_BLUE, GL_ONE)
+			};
+
+		case format_e::srgba8:
+			return {
+				.internal = GL_SRGB8_ALPHA8,
+				.channel = GL_RGBA,
+				.data_type = GL_UNSIGNED_BYTE,
+				.swizzle = ivec4(GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA)
+			};
+
+		case format_e::depth24_stencil8:
+			return {
+				.internal = GL_DEPTH24_STENCIL8,
+				.channel = GL_DEPTH_STENCIL,
+				.data_type = GL_UNSIGNED_INT_24_8,
+				.swizzle = {}
+			};
+	}
+
+	log_line("gl: unsupported format {s}|{i}",
+		format_to_cstring(format),
+		static_cast<int>(format)
+	);
+	return {};
+}

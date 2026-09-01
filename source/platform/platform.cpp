@@ -4,6 +4,12 @@
 
 #include <SDL2/SDL.h>
 
+katha::platform_t* katha::platform_t::get()
+{
+	static platform_t platform = {};
+	return &platform;
+}
+
 katha::result_e katha::platform_t::init(int argc, char** args)
 {
 	command_line::parse(argc, args);
@@ -14,6 +20,15 @@ katha::result_e katha::platform_t::init(int argc, char** args)
 		log_line("error-sdl: SDL_Init {s}", SDL_GetError());
 		return result_e::error_sdl;
 	}
+
+	base_path = SDL_GetBasePath();
+	if (nullptr == base_path)
+	{
+		log_line("error-sdl: SDL_GetBasePath {s}", SDL_GetError());
+		return result_e::error_sdl;
+	}
+	log_line("base_path: {s}", base_path);
+	asset_root = command_line::get_asset_root(base_path);
 
 	result_e result = init_graphics();
 	if (!check_result(result, "platform::init_graphics"))
@@ -33,6 +48,8 @@ void katha::platform_t::clear()
 		SDL_DestroyWindow(window);
 		window = nullptr;
 	}
+
+	SDL_free(base_path);
 	SDL_Quit();
 }
 
@@ -71,4 +88,12 @@ katha::result_e katha::platform_t::init_graphics()
 	}
 
 	return result_e::success;
+}
+
+katha::result_t<katha::file_t> katha::platform_t::open_file_read(const char* file)
+{
+	string_t path = string_t::join_path(asset_root, file);
+	file_t f = file_t::open_read(path.buffer);
+	path.clear();
+	return f;
 }

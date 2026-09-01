@@ -6,8 +6,8 @@ namespace katha
 {
 	enum class buffer_usage_e : int
 	{
-		array,
-		element,
+		element, // index buffer
+		stream,
 
 		__max
 	};
@@ -15,6 +15,7 @@ namespace katha
 	enum class format_e : int
 	{
 		none = 0, // to specify no texture in some functions
+		greyscale8,
 		rgba8,
 		rgb8,
 		srgba8,
