@@ -4,25 +4,25 @@
 
 namespace katha
 {
-	enum class result_e : int
+	enum class Result : int
 	{
-		success = 0,
-		error,
+		SUCCESS = 0,
+		ERROR, // generic error
 
-		error_sdl,
-		error_gl,
-		error_vulkan,
-		error_xr,
+		ERROR_SDL,
+		ERROR_GLES,
+		ERROR_VULKAN,
+		ERROR_XR,
 
-		error_value_null,
-		error_value_unexpected,
+		ERROR_VALUE_NULL,
+		ERROR_VALUE_UNEXPECTED,
 
-		request_skip,
-		request_exit,
+		REQUEST_SKIP,
+		REQUEST_EXIT,
 	};
 	
-	extern const char* result_to_cstring(const result_e result);
-	extern bool check_result(const result_e result, const char* message);
+	extern const char* ResultToCString(const Result result);
+	extern bool CheckResult(const Result result, const char* message);
 }
 
 #endif

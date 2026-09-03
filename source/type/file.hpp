@@ -7,7 +7,7 @@
 
 namespace katha
 {
-	struct file_t
+	struct File
 	{
 		SDL_RWops* handle = nullptr;
 
@@ -17,18 +17,18 @@ namespace katha
 		}
 
 		// exits on failure
-		static file_t open_read(const char* filepath);
+		static File OpenRead(const char* filepath);
 
 		// exits on failure
-		static file_t open_write(const char* filepath);
+		static File OpenWrite(const char* filepath);
 
 		// must release
-		[[nodiscard]] static void* read_all(
+		[[nodiscard]] static void* ReadAll(
 			const char* filepath,
 			uint32_t* out_length
 		);
 
-		static uint32_t write_all(
+		static uint32_t WriteAll(
 			const char* filepath,
 			const void* data,
 			const uint32_t length
@@ -51,7 +51,7 @@ namespace katha
 				return false;
 			}
 
-			write_checked(out_value, temp);
+			WriteChecked<T>(out_value, temp);
 			return true;
 		}
 	};

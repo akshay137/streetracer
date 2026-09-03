@@ -7,9 +7,9 @@
 namespace katha
 {
 	template <typename T>
-	vector3_t<T> cross(const vector3_t<T>& v1, const vector3_t<T>& v2)
+	Vector3<T> Cross(const Vector3<T>& v1, const Vector3<T>& v2)
 	{
-		const vector3_t<T> result(
+		const Vector3<T> result(
 			(v1.y * v2.z) - (v1.z * v2.y),
 			(v1.z * v2.x) - (v1.x * v2.z),
 			(v1.x * v2.y) - (v1.y * v2.x)

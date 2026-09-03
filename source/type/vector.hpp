@@ -7,19 +7,19 @@
 namespace katha
 {
 	template <typename T>
-	struct vector2_t
+	struct Vector2
 	{
 		T x = {};
 		T y = {};
 
-		constexpr vector2_t() = default;
-		constexpr vector2_t(const T& value): x{value}, y{value} {}
-		constexpr vector2_t(const T& x, const T& y): x{x}, y{y} {}
+		constexpr Vector2() = default;
+		constexpr Vector2(const T& value): x{value}, y{value} {}
+		constexpr Vector2(const T& x, const T& y): x{x}, y{y} {}
 
 		template <typename RT>
-		explicit operator vector2_t<RT>() const
+		explicit operator Vector2<RT>() const
 		{
-			vector2_t<RT> v(
+			Vector2<RT> v(
 				static_cast<RT>(x),
 				static_cast<RT>(y)
 			);
@@ -36,22 +36,22 @@ namespace katha
 		}
 	};
 
-	using vec2 = vector2_t<float>;
-	using ivec2 = vector2_t<int32_t>;
-	using uvec2 = vector2_t<uint32_t>;
+	using vec2 = Vector2<float>;
+	using ivec2 = Vector2<int32_t>;
+	using uvec2 = Vector2<uint32_t>;
 
 	template <typename T>
-	struct vector3_t
+	struct Vector3
 	{
 		T x = {};
 		T y = {};
 		T z = {};
 
-		constexpr vector3_t() = default;
-		constexpr vector3_t(const T& value)
+		constexpr Vector3() = default;
+		constexpr Vector3(const T& value)
 			: x{value}, y{value}, z{value}
 		{}
-		constexpr vector3_t(const T& x, const T& y, const T& z)
+		constexpr Vector3(const T& x, const T& y, const T& z)
 			: x{x}, y{y}, z{z}
 		{}
 
@@ -65,23 +65,23 @@ namespace katha
 		}
 	};
 
-	using vec3 = vector3_t<float>;
-	using ivec3 = vector3_t<int32_t>;
-	using uvec3 = vector3_t<uint32_t>;
+	using vec3 = Vector3<float>;
+	using ivec3 = Vector3<int32_t>;
+	using uvec3 = Vector3<uint32_t>;
 
 	template <typename T>
-	struct vector4_t
+	struct Vector4
 	{
 		T x = {};
 		T y = {};
 		T z = {};
 		T w = {};
 
-		constexpr vector4_t() = default;
-		constexpr vector4_t(const T& value)
+		constexpr Vector4() = default;
+		constexpr Vector4(const T& value)
 			: x{value}, y{value}, z{value}, w{value}
 		{}
-		constexpr vector4_t(
+		constexpr Vector4(
 			const T& x, const T& y, const T& z, const T& w
 		) : x{x}, y{y}, z{z}, w{w}
 		{}
@@ -96,9 +96,9 @@ namespace katha
 		}
 	};
 
-	using vec4 = vector4_t<float>;
-	using ivec4 = vector4_t<int32_t>;
-	using uvec4 = vector4_t<uint32_t>;
+	using vec4 = Vector4<float>;
+	using ivec4 = Vector4<int32_t>;
+	using uvec4 = Vector4<uint32_t>;
 }
 
 #endif

@@ -8,10 +8,10 @@ namespace katha
 {
 	constexpr static const char* ENGINE_NAME = "katha";
 	constexpr static const char* ENGINE_NAME_UTF8 = "\u0915\u0925\u093e";
-	constexpr static version_t ENGINE_VERSION = { 1, 0, 0 };
+	constexpr static Version ENGINE_VERSION = { 1, 0, 0 };
 	
 	constexpr static const char* GAME_NAME = "street racer";
-	constexpr static version_t GAME_VERSION = { 1, 0, 0 };
+	constexpr static Version GAME_VERSION = { 1, 0, 0 };
 }
 
 #endif

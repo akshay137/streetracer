@@ -7,7 +7,7 @@
 namespace katha
 {
 	// current time in nanosecods
-	extern uint64_t now();
+	extern uint64_t Now();
 }
 
 #endif

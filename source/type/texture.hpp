@@ -7,14 +7,12 @@
 
 namespace katha
 {
-	struct texture_t
+	struct Texture
 	{
 		uint64_t handle = 0;
 
 		uvec2 size = {};
-		format_e format = format_e::none;
-
-		void log(const char* prefix = nullptr) const;
+		Format format = Format::NONE;
 	};
 }
 

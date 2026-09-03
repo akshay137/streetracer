@@ -7,7 +7,7 @@
 
 namespace katha
 {
-	struct gamepad_t
+	struct GamePad
 	{
 		vec2 stick_left = {}; // left -ve, right +ve
 		vec2 stick_right = {}; // up -ve, down +ve
@@ -34,7 +34,7 @@ namespace katha
 		uint16_t start:1 = 0;
 
 		void clamp();
-		void merge(const gamepad_t& gp);
+		void merge(const GamePad& gp);
 	};
 }
 

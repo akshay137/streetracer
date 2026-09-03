@@ -2,7 +2,7 @@
 #include "../platform/platform.hpp"
 #include "../utility.hpp"
 
-bool check_magic_kbt(katha::file_t& file)
+bool CheckMagic(katha::File& file)
 {
 	constexpr const char* MAGICK = "\0KBT\0";
 	
@@ -24,7 +24,7 @@ bool check_magic_kbt(katha::file_t& file)
 	return true;
 }
 
-bool read_format(katha::file_t& file, katha::format_e* out_format)
+bool read_format(katha::File& file, katha::Format* out_format)
 {
 	uint8_t format_value = 0;
 	if (!file.read<uint8_t>(&format_value))
@@ -32,77 +32,77 @@ bool read_format(katha::file_t& file, katha::format_e* out_format)
 		return false;
 	}
 
-	if (format_value >= static_cast<uint32_t>(katha::format_e::__max))
+	if (format_value >= static_cast<uint32_t>(katha::Format::__MAX))
 	{
 		return false;
 	}
 
-	katha::format_e format = static_cast<katha::format_e>(format_value);
-	write_checked(out_format, format);
+	katha::Format format = static_cast<katha::Format>(format_value);
+	WriteChecked<katha::Format>(out_format, format);
 	return true;
 }
 
-katha::result_e katha::load_texture(texture_t* out_texture, struct file_t& file)
+katha::Result katha::LoadTexture(Texture* out_texture, File& file)
 {
 	if (nullptr == out_texture)
 	{
-		log_line("error: load_texture called with null `out_texture`");
-		return result_e::error_value_unexpected;
+		LogLine("error: load_texture called with null `out_texture`");
+		return Result::ERROR_VALUE_UNEXPECTED;
 	}
 
-	if (!check_magic_kbt(file))
+	if (!CheckMagic(file))
 	{
-		log_line("error: not a .kbt texture");
-		return result_e::error_value_unexpected;
+		LogLine("error: not a .kbt texture");
+		return Result::ERROR_VALUE_UNEXPECTED;
 	}
 
-	format_e format;
+	Format format;
 	if (!read_format(file, &format))
 	{
-		log_line("error-load_texture: failed to read format");
-		return result_e::error_value_null;
+		LogLine("error-load_texture: failed to read format");
+		return Result::ERROR_VALUE_NULL;
 	}
-	log_line("kbt::format {s}", format_to_cstring(format));
+	LogLine("kbt::format {s}", FormatToCString(format));
 
 	uvec2 size = {};
 	if (!file.read<uint32_t>(&size.x) || !file.read<uint32_t>(&size.y))
 	{
-		log_line("error-load_texture: failed to read resolution");
-		return result_e::error_value_null;
+		LogLine("error-load_texture: failed to read resolution");
+		return Result::ERROR_VALUE_NULL;
 	}
-	log_line("kbt::size {uv2}", size.array());
+	LogLine("kbt::size {uv2}", size.array());
 
 	uint32_t row_size = 0;
 	if (!file.read<uint32_t>(&row_size))
 	{
-		log_line("error-load_texture: failed to read row size");
-		return result_e::error_value_null;
+		LogLine("error-load_texture: failed to read row size");
+		return Result::ERROR_VALUE_NULL;
 	}
 
 	uint32_t pixel_size = row_size * size.y;
-	uint8_t* pixels = alloc<uint8_t>(pixel_size);
+	uint8_t* pixels = Alloc<uint8_t>(pixel_size);
 	if (!file.read(pixels, pixel_size))
 	{
-		log_line("error-load_texture: failed to read pixel data");
-		release(pixels);
-		return result_e::error_value_null;
+		LogLine("error-load_texture: failed to read pixel data");
+		Release(pixels);
+		return Result::ERROR_VALUE_NULL;
 	}
 
-	result_e result = create_texture(out_texture, format, size, pixels);
-	release(pixels);
+	Result result = CreateTexture(out_texture, format, size, pixels);
+	Release(pixels);
 
 	return result;
 }
 
-katha::result_e katha::load_texture(texture_t* out_texture, const char* filename)
+katha::Result katha::LoadTexture(Texture* out_texture, const char* filename)
 {
-	file_t file = platform_t::get()->open_file_read(filename);
+	File file = Platform::Get()->openFileRead(filename);
 	if (!file)
 	{
-		return result_e::error;
+		return Result::ERROR;
 	}
 
-	result_e result = load_texture(out_texture, file);
+	Result result = LoadTexture(out_texture, file);
 	file.close();
 
 	return result;

@@ -7,14 +7,14 @@
 
 namespace katha
 {
-	uint32_t int_to_string(const int32_t number, char* buffer, const base_e base = base_e::decimal);
-	uint32_t uint_to_string(const uint32_t number, char* buffer, const base_e base = base_e::decimal);
+	uint32_t IntToString(const int32_t number, char* buffer, const Base base = Base::DECIMAL);
+	uint32_t UIntToString(const uint32_t number, char* buffer, const Base base = Base::DECIMAL);
 
-	uint32_t int64_to_string(const int64_t number, char* buffer, const base_e base = base_e::decimal);
-	uint32_t uint64_to_string(const uint64_t number, char* buffer, const base_e base = base_e::decimal);
+	uint32_t Int64ToString(const int64_t number, char* buffer, const Base base = Base::DECIMAL);
+	uint32_t UInt64ToString(const uint64_t number, char* buffer, const Base base = Base::DECIMAL);
 
-	uint32_t float_to_string(const float number, char* buffer);
-	uint32_t double_to_string(const double number, char* buffer);
+	uint32_t FloatToString(const float number, char* buffer);
+	uint32_t DoubleToString(const double number, char* buffer);
 }
 
 #endif

@@ -3,7 +3,7 @@
 
 #include <cstring>
 
-katha::string_t katha::string_t::copy_from_cstring(
+katha::String katha::String::CopyFromCString(
 	const char* cstring,
 	uint32_t size,
 	const source_t& source
@@ -11,24 +11,24 @@ katha::string_t katha::string_t::copy_from_cstring(
 {
 	if (0 == size)
 	{
-		size = length(cstring);
+		size = Length(cstring);
 	}
 
-	char* buffer = alloc<char>(size, source);
-	cstring_copy(cstring, buffer, size);
+	char* buffer = Alloc<char>(size, source);
+	CStringCopy(cstring, buffer, size);
 
-	string_t string = {};
+	String string = {};
 	string.buffer = buffer;
 	string.size = size;
 	string.capacity = size;
 	return string;
 }
 
-void katha::string_t::clear()
+void katha::String::clear()
 {
 	if (capacity && buffer)
 	{
-		release(buffer);
+		Release(buffer);
 	}
 
 	buffer = nullptr;
@@ -36,7 +36,7 @@ void katha::string_t::clear()
 	capacity = 0;
 }
 
-bool katha::string_t::equals(const string_t& rhs) const
+bool katha::String::equals(const String& rhs) const
 {
 	if ((nullptr == buffer) || (nullptr == rhs.buffer))
 	{
@@ -58,7 +58,7 @@ bool katha::string_t::equals(const string_t& rhs) const
 	return true;
 }
 
-bool katha::string_t::find(const string_t& pattern, uint32_t* out_index) const
+bool katha::String::find(const String& pattern, uint32_t* out_index) const
 {
 	if (pattern.size > size)
 	{
@@ -80,7 +80,7 @@ bool katha::string_t::find(const string_t& pattern, uint32_t* out_index) const
 
 		if (match)
 		{
-			write_checked(out_index, i);
+			WriteChecked(out_index, i);
 			return true;
 		}
 	}
@@ -88,25 +88,25 @@ bool katha::string_t::find(const string_t& pattern, uint32_t* out_index) const
 	return false;
 }
 
-int32_t katha::string_t::read_utf8(const char* buffer, uint32_t* out_bytes)
+int32_t katha::String::ReadUTF8(const char* buffer, uint32_t* out_bytes)
 {
 	char byte = 0;
-	if (!read_checked(buffer, &byte))
+	if (!ReadChecked(buffer, &byte))
 	{
-		write_checked<uint32_t>(out_bytes, 0u);
+		WriteChecked<uint32_t>(out_bytes, 0u);
 		return 0;
 	}
 
 	if (0 == (byte & 0x80))
 	{
-		write_checked<uint32_t>(out_bytes, 1u);
+		WriteChecked<uint32_t>(out_bytes, 1u);
 		return byte;
 	}
 
 	if (0xF0 == (byte & 0xF0))
 	{
 		// 4 bytes: 11110uvv 10vvwwww 10xxxxyy 10yyzzzz
-		write_checked<uint32_t>(out_bytes, 4u);
+		WriteChecked<uint32_t>(out_bytes, 4u);
 		int32_t code = byte & 0x7;
 		code = (code << 6) | (buffer[1] & 0x3F);
 		code = (code << 6) | (buffer[2] & 0x3F);
@@ -117,7 +117,7 @@ int32_t katha::string_t::read_utf8(const char* buffer, uint32_t* out_bytes)
 	if (0xE0 == (byte & 0xE0))
 	{
 		// 3 bytes: 1110wwww 10xxxxyy 10yyzzzz
-		write_checked<uint32_t>(out_bytes, 3u);
+		WriteChecked<uint32_t>(out_bytes, 3u);
 		int32_t code = byte & 0xf;
 		code = (code << 6) | (buffer[1] & 0x3F);
 		code = (code << 6) | (buffer[2] & 0x3F);
@@ -127,7 +127,7 @@ int32_t katha::string_t::read_utf8(const char* buffer, uint32_t* out_bytes)
 	if (0xC0 == (byte & 0xC0))
 	{
 		// 2 bytes: 110xxxyy 10yyzzzz
-		write_checked<uint32_t>(out_bytes, 2u);
+		WriteChecked<uint32_t>(out_bytes, 2u);
 		int32_t code = byte & 0x1F;
 		code = (code << 6) | (buffer[1] & 0x3F);
 		return code;
@@ -136,7 +136,7 @@ int32_t katha::string_t::read_utf8(const char* buffer, uint32_t* out_bytes)
 	return 0;
 }
 
-uint32_t katha::string_t::write_utf8(const int32_t code, char* buffer)
+uint32_t katha::String::WriteUTF8(const int32_t code, char* buffer)
 {
 	if ((nullptr == buffer) || (code < 0))
 	{
@@ -176,7 +176,7 @@ uint32_t katha::string_t::write_utf8(const int32_t code, char* buffer)
 	return 0;
 }
 
-void katha::string_t::cstring_copy(
+void katha::String::CStringCopy(
 	const char* source,
 	char* destination,
 	const uint32_t max_bytes
@@ -185,7 +185,7 @@ void katha::string_t::cstring_copy(
 	strncpy(destination, source, static_cast<size_t>(max_bytes));
 }
 
-bool katha::string_t::cstring_starts_with(
+bool katha::String::CStringStartsWith(
 	const char* source,
 	const char* prefix
 )
@@ -207,33 +207,63 @@ bool katha::string_t::cstring_starts_with(
 	return 0 == *p;
 }
 
-katha::string_t katha::string_t::join_path(
-	const string_t& base,
-	const string_t& suffix,
+katha::String katha::String::JoinPath(
+	const String& base,
+	const String& suffix,
 	const source_t& source
 )
 {
-	uint32_t size = base.size + suffix.size;
+	uint32_t size = base.size + suffix.size + 1;
 	const bool base_ends_with_separator = '/' == base[base.size - 1];
 	if (!base_ends_with_separator)
 	{
 		size++;
 	}
 
-	char* path = alloc<char>(size + 1, source);
-	cstring_copy(base.buffer, path, base.size);
+	char* path = Alloc<char>(size, source);
+	CStringCopy(base.buffer, path, base.size);
 	uint32_t offset = 0;
 	if (!base_ends_with_separator)
 	{
 		path[base.size] = '/';
 		offset = 1;
 	}
-	cstring_copy(suffix.buffer, path + base.size + offset, suffix.size);
-	path[size] = 0; // QoL: null terminator for functions taking cstrings
+	CStringCopy(suffix.buffer, path + base.size + offset, suffix.size);
+	path[size - 1] = 0; // QoL: null terminator for functions taking cstrings
 
-	string_t result = {};
+	String result = {};
 	result.buffer = path;
 	result.size = size;
 	result.capacity = size;
 	return result;
+}
+
+bool katha::String::JoinPath(
+	const String& base,
+	const String& suffix,
+	char* buffer,
+	const uint32_t buffer_length
+)
+{
+	const bool base_ends_with_separator = '/' == base[base.size - 1];
+	uint32_t extra_join_size = 0;
+	if (!base_ends_with_separator)
+	{
+		extra_join_size++;
+	}
+
+	const uint32_t final_size = base.size + suffix.size + extra_join_size + 1;
+	if (buffer_length < final_size)
+	{
+		return false;
+	}
+
+	CStringCopy(base.buffer, buffer, base.size);
+	if (!base_ends_with_separator)
+	{
+		buffer[base.size] = '/';
+	}
+	CStringCopy(suffix.buffer, buffer + base.size + extra_join_size, suffix.size);
+	buffer[final_size - 1] = 0;  // QoL: null terminator for functions taking cstrings
+	return true;
 }

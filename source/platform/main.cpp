@@ -7,28 +7,28 @@
 
 #include <SDL2/SDL_main.h>
 
-katha::world_t world = {};
+katha::World world = {};
 
 int main(int argc, char** args)
 {
 	using namespace katha;
-	platform_t* platform = platform_t::get();
-	platform->set_force_exit_callback([](){
+	Platform* platform = Platform::Get();
+	platform->setForceExitCallback([](){
 		world.clear();
 	});
 
 	char* locale = setlocale(LC_ALL, "");
-	log_line("locale: {s}", locale);
+	LogLine("locale: {s}", locale);
 
-	result_e result = platform->init(argc, args);
-	if (!check_result(result, "platform::init"))
+	Result result = platform->init(argc, args);
+	if (!CheckResult(result, "platform::init"))
 	{
 		platform->clear();
 		return static_cast<int>(result);
 	}
 
 	result = world.load();
-	if (!check_result(result, "world::load"))
+	if (!CheckResult(result, "world::load"))
 	{
 		world.clear();
 		platform->clear();
@@ -36,12 +36,12 @@ int main(int argc, char** args)
 	}
 
 	bool running = true;
-	const uint64_t start = now();
+	const uint64_t start = Now();
 	while (running)
 	{
-		platform->gl.render_world(world);
+		platform->gles.renderWorld(world);
 
-		uint64_t current = now() - start;
+		uint64_t current = Now() - start;
 		if (current > 3ULL * 1000 * 1000 * 1000)
 		{
 			running = false;

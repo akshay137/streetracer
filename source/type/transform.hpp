@@ -12,27 +12,27 @@ namespace katha
 	* right handed coordinate system
 	* forward -> right -> up -> forward
 	*/
-	struct transform_t
+	struct Transform
 	{
 		static inline constexpr vec3 FORWARD = vec3(0, 0, 1);
 		static inline constexpr vec3 UP = vec3(0, 1, 0);
 		static inline constexpr vec3 RIGHT = vec3(1, 0, 0);
 
-		quat_t orientation = quat_t::identity();
+		quat orientation = quat::Identity();
 		vec3 position = {};
 
-		mat4 calculate_world_matrix() const;
-		mat4 calculate_view_matrix() const;
+		mat4 calculateWorldMatrix() const;
+		mat4 calculateViewMatrix() const;
 
-		transform_t offset_by(const transform_t& t) const;
+		Transform offsetBy(const Transform& t) const;
 		
-		transform_t look_at(const vec3& point, const vec3& up = UP) const;
-		transform_t look_at(const transform_t& transform, const vec3& up = UP) const
+		Transform lookAt(const vec3& point, const vec3& up = UP) const;
+		Transform lookAt(const Transform& transform, const vec3& up = UP) const
 		{
-			return look_at(transform.position, up);
+			return lookAt(transform.position, up);
 		}
 
-		vec3 local_to_world(const vec3 local) const;
+		vec3 localToWorld(const vec3 local) const;
 	};
 }
 

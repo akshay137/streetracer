@@ -4,29 +4,29 @@
 
 namespace katha
 {
-	enum class buffer_usage_e : int
+	enum class BufferUsage : int
 	{
-		element, // index buffer
-		stream,
+		ELEMENT, // index buffer
+		STREAM,
 
-		__max
+		__MAX
 	};
 
-	enum class format_e : int
+	enum class Format : int
 	{
-		none = 0, // to specify no texture in some functions
-		greyscale8,
-		rgba8,
-		rgb8,
-		srgba8,
-		srgb8,
-		depth24_stencil8,
+		NONE = 0, // to specify no texture in some functions
+		GREYSCALE8,
+		RGBA8,
+		RGB8,
+		SRGBA8,
+		SRGB8,
+		DEPTH24_STENCIL8,
 
-		__max
+		__MAX
 	};
 
-	extern const char* format_to_cstring(const format_e format);
-	extern bool should_mipmap(const format_e format);
+	extern const char* FormatToCString(const Format format);
+	extern bool ShouldMipmap(const Format format);
 }
 
 #endif

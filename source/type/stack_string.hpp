@@ -4,12 +4,11 @@
 
 #include "primitive.hpp"
 #include "string.hpp"
-#include "../math/utility.hpp"
 
 namespace katha
 {
 	template <uint16_t CAPACITY>
-	struct stack_string_t
+	struct StackString
 	{
 		uint32_t size = 0;
 		char buffer[CAPACITY] = {};
@@ -19,7 +18,7 @@ namespace katha
 			return CAPACITY;
 		}
 
-		bool is_full() const
+		bool isFull() const
 		{
 			return size >= CAPACITY;
 		}
@@ -35,9 +34,9 @@ namespace katha
 			return buffer + size;
 		}
 
-		uint32_t append(const string_t& suffix)
+		uint32_t append(const String& suffix)
 		{
-			uint32_t append_length = min(remaining(), suffix.size);
+			uint32_t append_length = Min(remaining(), suffix.size);
 			for (uint32_t i = 0; i < append_length; i++)
 			{
 				*tail() = suffix[i];

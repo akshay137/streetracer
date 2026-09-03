@@ -4,11 +4,11 @@
 
 namespace katha
 {
-	enum class order_e : int
+	enum class Order : int
 	{
-		less = -1,
-		equal = 0,
-		greater = 1
+		LESS = -1,
+		EQUAL = 0,
+		GREATER = 1
 	};
 }
 

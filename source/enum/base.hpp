@@ -4,15 +4,15 @@
 
 namespace katha
 {
-	enum class base_e : int
+	enum class Base : int
 	{
-		binary = 2,
-		octal = 8,
-		decimal = 10,
-		hexadecimal = 16
+		BINARY = 2,
+		OCTAL = 8,
+		DECIMAL = 10,
+		HEXADECIMAL = 16
 	};
 
-	extern const char* base_to_cstring(const base_e base);
+	extern const char* BaseToCString(const Base base);
 }
 
 #endif

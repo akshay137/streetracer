@@ -7,52 +7,45 @@
 #include <cstring>
 #include <cstdio>
 
-inline int32_t read_next_code(
+inline int32_t ReadNextCode(
 	const char* str,
 	uint16_t* out_index,
 	uint32_t* out_bytes_read = nullptr
 )
 {
 	uint32_t bytes_read = 0;
-	const int32_t code = katha::string_t::read_utf8(
-		str + *out_index,
-		&bytes_read
-	);
+	const int32_t code = katha::String::ReadUTF8(str + *out_index, &bytes_read);
 	*out_index += bytes_read;
-	katha::write_checked<uint32_t>(out_bytes_read, bytes_read);
+	katha::WriteChecked<uint32_t>(out_bytes_read, bytes_read);
 	return code;
 }
 
-inline katha::base_e specifier_properties_to_base(const katha::string_t& props)
+inline katha::Base SpecifierPropertiesToBase(const katha::String& props)
 {
 	// default is decimal
-	if (0 == props.size)
-	{
-		return katha::base_e::decimal;
+	if (0 == props.size) {
+		return katha::Base::DECIMAL;
 	}
 
-	if ('b' == props[0])
-	{
-		return katha::base_e::binary;
+	if ('b' == props[0]) {
+		return katha::Base::BINARY;
 	}
-	if ('o' == props[0])
-	{
-		return katha::base_e::octal;
+	if ('o' == props[0]) {
+		return katha::Base::OCTAL;
 	}
-	if ('x' == props[0])
-	{
-		return katha::base_e::hexadecimal;
+	if ('x' == props[0]) {
+		return katha::Base::HEXADECIMAL;
 	}
 
 	// unknown, return decimal
-	return katha::base_e::decimal;
+	return katha::Base::DECIMAL;
 }
 
-int32_t katha::string_format_t::next()
+int32_t katha::StringFormat::next()
 {
 	if (param_str)
 	{
-		const int32_t code = read_next_code(param_str, &pbuffer_index);
+		const int32_t code = ReadNextCode(param_str, &pbuffer_index);
 		if (code)
 		{
 			return code;
@@ -63,7 +56,7 @@ int32_t katha::string_format_t::next()
 	}
 	if (param_buffer.size)
 	{
-		const int32_t code = read_next_code(param_buffer.buffer, &pbuffer_index);
+		const int32_t code = ReadNextCode(param_buffer.buffer, &pbuffer_index);
 		if (pbuffer_index >= param_buffer.size)
 		{
 			param_buffer.size = 0;
@@ -78,7 +71,7 @@ int32_t katha::string_format_t::next()
 		return 0;
 	}
 
-	int32_t code = read_next_code(format.buffer, &format_index);
+	int32_t code = ReadNextCode(format.buffer, &format_index);
 	if (0 == code)
 	{
 		return 0;
@@ -89,7 +82,7 @@ int32_t katha::string_format_t::next()
 	}
 
 	const uint32_t spec_start = format_index;
-	code = read_next_code(format.buffer, &format_index);
+	code = ReadNextCode(format.buffer, &format_index);
 
 	if ((0 == code) || ('{' == code))
 	{
@@ -104,7 +97,7 @@ int32_t katha::string_format_t::next()
 	uint32_t prop_start = 0;
 	while ('}' != code)
 	{
-		code = read_next_code(format.buffer, &format_index, &bytes_read);
+		code = ReadNextCode(format.buffer, &format_index, &bytes_read);
 		if ((0 == code) || (format_index > format.size))
 		{
 			return 0;
@@ -123,82 +116,82 @@ int32_t katha::string_format_t::next()
 		spec_id_length = prop_start - spec_start - 1;
 		prop_length = full_spec_length - spec_id_length - 1;
 	}
-	const string_t spec_id(
+	const String spec_id(
 		format.buffer + spec_start,
 		spec_id_length
 	);
-	const string_t spec_props(
+	const String spec_props(
 		format.buffer + prop_start,
 		prop_start ? (full_spec_length - spec_id_length - 1) : 0
 	);
 
 	if (spec_id.equals(SPEC_INT))
 	{
-		return parse_next_int(spec_props);
+		return __parseNextInt(spec_props);
 	}
 	if (spec_id.equals(SPEC_UINT))
 	{
-		return parse_next_uint(spec_props);
+		return __parseNextUInt(spec_props);
 	}
 	if (spec_id.equals(SPEC_FLOAT))
 	{
-		return parse_next_float(spec_props);
+		return __parseNextFloat(spec_props);
 	}
 	if (spec_id.equals(SPEC_INT64))
 	{
-		return parse_next_int64(spec_props);
+		return __parseNextInt64(spec_props);
 	}
 	if (spec_id.equals(SPEC_UINT64))
 	{
-		return parse_next_uint64(spec_props);
+		return __parseNextUInt64(spec_props);
 	}
 	if (spec_id.equals(SPEC_POINTER))
 	{
-		return parse_next_pointer(spec_props);
+		return __parseNextPointer(spec_props);
 	}
 	if (spec_id.equals(SPEC_CSTRING))
 	{
-		return parse_next_cstring(spec_props);
+		return __parseNextCString(spec_props);
 	}
 	if (spec_id.equals(SPEC_BOOL))
 	{
-		return parse_next_bool(spec_props);
+		return __parseNextBool(spec_props);
 	}
 	if (spec_id.equals(SPEC_VEC3))
 	{
-		return parse_next_vec3(spec_props);
+		return __parseNextVec3(spec_props);
 	}
 	if (spec_id.equals(SPEC_IVEC2))
 	{
-		return parse_next_ivec2(spec_props);
+		return __parseNextIVec2(spec_props);
 	}
 	if (spec_id.equals(SPEC_UVEC2))
 	{
-		return parse_next_uvec2(spec_props);
+		return __parseNextUVec2(spec_props);
 	}
 	if (spec_id.equals(SPEC_VEC2))
 	{
-		return parse_next_vec2(spec_props);
+		return __parseNextVec2(spec_props);
 	}
 	if (spec_id.equals(SPEC_QUATERNION))
 	{
-		return parse_next_quaternion(spec_props);
+		return __parseNextQuaternion(spec_props);
 	}
 	if (spec_id.equals(SPEC_MAT4))
 	{
-		return parse_next_mat4(spec_props);
+		return __parseNextMat4(spec_props);
 	}
 	if (spec_id.equals(SPEC_TIMEDIFF))
 	{
-		return parse_next_timediff(spec_props);
+		return __parseNextTimeDiff(spec_props);
 	}
 	if (spec_id.equals(SPEC_VERSION))
 	{
-		return parse_next_version(spec_props);
+		return __parseNextVersion(spec_props);
 	}
 	if (spec_id.equals(SPEC_SOURCE))
 	{
-		return parse_next_source(spec_props);
+		return __parseNextSource(spec_props);
 	}
 
 	param_buffer.append("{unknown specifier: ");
@@ -207,150 +200,150 @@ int32_t katha::string_format_t::next()
 	return next(); // unknown specifier, return next token
 }
 
-int32_t katha::string_format_t::parse_next_int(const string_t& props)
+int32_t katha::StringFormat::__parseNextInt(const String& props)
 {
 	const int32_t value = va_arg(args, int32_t);
-	const base_e base = specifier_properties_to_base(props);
-	param_buffer.size = int_to_string(value, param_buffer.buffer, base);
+	const Base base = SpecifierPropertiesToBase(props);
+	param_buffer.size = IntToString(value, param_buffer.buffer, base);
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_uint(const string_t& props)
+int32_t katha::StringFormat::__parseNextUInt(const String& props)
 {
 	const uint32_t value = va_arg(args, uint32_t);
-	const base_e base = specifier_properties_to_base(props);
-	param_buffer.size = uint_to_string(value, param_buffer.buffer, base);
+	const Base base = SpecifierPropertiesToBase(props);
+	param_buffer.size = UIntToString(value, param_buffer.buffer, base);
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_float(const string_t& props)
+int32_t katha::StringFormat::__parseNextFloat(const String& props)
 {
 	const double value = va_arg(args, double);
-	param_buffer.size = double_to_string(value, param_buffer.buffer);
+	param_buffer.size = DoubleToString(value, param_buffer.buffer);
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_int64(const string_t& props)
+int32_t katha::StringFormat::__parseNextInt64(const String& props)
 {
 	const int64_t value = va_arg(args, int64_t);
-	const base_e base = specifier_properties_to_base(props);
-	param_buffer.size = int64_to_string(value, param_buffer.buffer, base);
+	const Base base = SpecifierPropertiesToBase(props);
+	param_buffer.size = Int64ToString(value, param_buffer.buffer, base);
 	return next();
 }
-int32_t katha::string_format_t::parse_next_uint64(const string_t& props)
+int32_t katha::StringFormat::__parseNextUInt64(const String& props)
 {
 	const uint64_t value = va_arg(args, uint64_t);
-	const base_e base = specifier_properties_to_base(props);
-	param_buffer.size = uint64_to_string(value, param_buffer.buffer, base);
+	const Base base = SpecifierPropertiesToBase(props);
+	param_buffer.size = UInt64ToString(value, param_buffer.buffer, base);
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_pointer(const string_t& props)
+int32_t katha::StringFormat::__parseNextPointer(const String& props)
 {
 	const uintptr_t value = va_arg(args, uintptr_t);
-	param_buffer.size = uint64_to_string(
+	param_buffer.size = UInt64ToString(
 		value,
 		param_buffer.buffer,
-		base_e::hexadecimal
+		Base::HEXADECIMAL
 	);
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_cstring(const string_t& props)
+int32_t katha::StringFormat::__parseNextCString(const String& props)
 {
 	const char* str = va_arg(args, const char*);
 	param_str = (nullptr != str) ? str : "{null_string}";
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_bool(const string_t& props)
+int32_t katha::StringFormat::__parseNextBool(const String& props)
 {
 	const int32_t value = va_arg(args, int32_t);
 	param_str = (value != 0) ? "true" : "false";
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_vec3(const string_t& props)
+int32_t katha::StringFormat::__parseNextVec3(const String& props)
 {
 	const float* value = va_arg(args, float*);
 	if (value)
 	{
 		param_buffer.append("(");
-		param_buffer.size += float_to_string(value[0], param_buffer.tail());
+		param_buffer.size += FloatToString(value[0], param_buffer.tail());
 		param_buffer.append(", ");
-		param_buffer.size += float_to_string(value[1], param_buffer.tail());
+		param_buffer.size += FloatToString(value[1], param_buffer.tail());
 		param_buffer.append(", ");
-		param_buffer.size += float_to_string(value[2], param_buffer.tail());
+		param_buffer.size += FloatToString(value[2], param_buffer.tail());
 		param_buffer.append(")");
 	}
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_ivec2(const string_t& props)
+int32_t katha::StringFormat::__parseNextIVec2(const String& props)
 {
 	const int32_t* value = va_arg(args, int32_t*);
 	if (value)
 	{
 		param_buffer.append("(");
-		param_buffer.size += int_to_string(value[0], param_buffer.tail());
+		param_buffer.size += IntToString(value[0], param_buffer.tail());
 		param_buffer.append(", ");
-		param_buffer.size += int_to_string(value[1], param_buffer.tail());
+		param_buffer.size += IntToString(value[1], param_buffer.tail());
 		param_buffer.append(")");
 	}
 
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_uvec2(const string_t& props)
+int32_t katha::StringFormat::__parseNextUVec2(const String& props)
 {
 	const uint32_t* value = va_arg(args, uint32_t*);
 	if (value)
 	{
 		param_buffer.append("(");
-		param_buffer.size += uint_to_string(value[0], param_buffer.tail());
+		param_buffer.size += UIntToString(value[0], param_buffer.tail());
 		param_buffer.append(", ");
-		param_buffer.size += uint_to_string(value[1], param_buffer.tail());
+		param_buffer.size += UIntToString(value[1], param_buffer.tail());
 		param_buffer.append(")");
 	}
 
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_vec2(const string_t& props)
+int32_t katha::StringFormat::__parseNextVec2(const String& props)
 {
 	const float* value = va_arg(args, float*);
 	if (value)
 	{
 		param_buffer.append("(");
-		param_buffer.size += float_to_string(value[0], param_buffer.tail());
+		param_buffer.size += FloatToString(value[0], param_buffer.tail());
 		param_buffer.append(", ");
-		param_buffer.size += float_to_string(value[1], param_buffer.tail());
+		param_buffer.size += FloatToString(value[1], param_buffer.tail());
 		param_buffer.append(")");
 	}
 
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_quaternion(const string_t& props)
+int32_t katha::StringFormat::__parseNextQuaternion(const String& props)
 {
 	const float* q = va_arg(args, float*);
 	if (q)
 	{
 		param_buffer.size = 0;
 		param_buffer.append("quat: ");
-		param_buffer.size += float_to_string(q[3], param_buffer.tail());
+		param_buffer.size += FloatToString(q[3], param_buffer.tail());
 		param_buffer.append(" (");
-		param_buffer.size += float_to_string(q[0], param_buffer.tail());
+		param_buffer.size += FloatToString(q[0], param_buffer.tail());
 		param_buffer.append(", ");
-		param_buffer.size += float_to_string(q[1], param_buffer.tail());
+		param_buffer.size += FloatToString(q[1], param_buffer.tail());
 		param_buffer.append(", ");
-		param_buffer.size += float_to_string(q[2], param_buffer.tail());
+		param_buffer.size += FloatToString(q[2], param_buffer.tail());
 		param_buffer.append(")");
 	}
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_mat4(const string_t& props)
+int32_t katha::StringFormat::__parseNextMat4(const String& props)
 {
 	const float* m = va_arg(args, float*);
 	if (m)
@@ -359,73 +352,73 @@ int32_t katha::string_format_t::parse_next_mat4(const string_t& props)
 		if (row_major)
 		{
 			param_buffer.append("mat4-rm: [ [");
-			param_buffer.size += float_to_string(m[0], param_buffer.tail());
+			param_buffer.size += FloatToString(m[0], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[4], param_buffer.tail());
+			param_buffer.size += FloatToString(m[4], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[8], param_buffer.tail());
+			param_buffer.size += FloatToString(m[8], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[12], param_buffer.tail());
+			param_buffer.size += FloatToString(m[12], param_buffer.tail());
 			param_buffer.append("], [ ");
-			param_buffer.size += float_to_string(m[1], param_buffer.tail());
+			param_buffer.size += FloatToString(m[1], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[5], param_buffer.tail());
+			param_buffer.size += FloatToString(m[5], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[9], param_buffer.tail());
+			param_buffer.size += FloatToString(m[9], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[13], param_buffer.tail());
+			param_buffer.size += FloatToString(m[13], param_buffer.tail());
 			param_buffer.append("], [ ");
-			param_buffer.size += float_to_string(m[2], param_buffer.tail());
+			param_buffer.size += FloatToString(m[2], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[6], param_buffer.tail());
+			param_buffer.size += FloatToString(m[6], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[10], param_buffer.tail());
+			param_buffer.size += FloatToString(m[10], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[14], param_buffer.tail());
+			param_buffer.size += FloatToString(m[14], param_buffer.tail());
 			param_buffer.append("], [ ");
-			param_buffer.size += float_to_string(m[3], param_buffer.tail());
+			param_buffer.size += FloatToString(m[3], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[7], param_buffer.tail());
+			param_buffer.size += FloatToString(m[7], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[11], param_buffer.tail());
+			param_buffer.size += FloatToString(m[11], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[15], param_buffer.tail());
+			param_buffer.size += FloatToString(m[15], param_buffer.tail());
 			param_buffer.append("] ]");
 		}
 		else
 		{
 			param_buffer.append("mat4-cm: [ [");
-			param_buffer.size += float_to_string(m[0], param_buffer.tail());
+			param_buffer.size += FloatToString(m[0], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[1], param_buffer.tail());
+			param_buffer.size += FloatToString(m[1], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[2], param_buffer.tail());
+			param_buffer.size += FloatToString(m[2], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[3], param_buffer.tail());
+			param_buffer.size += FloatToString(m[3], param_buffer.tail());
 			param_buffer.append("], [ ");
-			param_buffer.size += float_to_string(m[4], param_buffer.tail());
+			param_buffer.size += FloatToString(m[4], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[5], param_buffer.tail());
+			param_buffer.size += FloatToString(m[5], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[6], param_buffer.tail());
+			param_buffer.size += FloatToString(m[6], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[7], param_buffer.tail());
+			param_buffer.size += FloatToString(m[7], param_buffer.tail());
 			param_buffer.append("], [ ");
-			param_buffer.size += float_to_string(m[8], param_buffer.tail());
+			param_buffer.size += FloatToString(m[8], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[9], param_buffer.tail());
+			param_buffer.size += FloatToString(m[9], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[10], param_buffer.tail());
+			param_buffer.size += FloatToString(m[10], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[11], param_buffer.tail());
+			param_buffer.size += FloatToString(m[11], param_buffer.tail());
 			param_buffer.append("], [ ");
-			param_buffer.size += float_to_string(m[12], param_buffer.tail());
+			param_buffer.size += FloatToString(m[12], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[13], param_buffer.tail());
+			param_buffer.size += FloatToString(m[13], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[14], param_buffer.tail());
+			param_buffer.size += FloatToString(m[14], param_buffer.tail());
 			param_buffer.append(", ");
-			param_buffer.size += float_to_string(m[15], param_buffer.tail());
+			param_buffer.size += FloatToString(m[15], param_buffer.tail());
 			param_buffer.append("] ]");
 		}
 	}
@@ -433,18 +426,18 @@ int32_t katha::string_format_t::parse_next_mat4(const string_t& props)
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_timediff(const string_t& props)
+int32_t katha::StringFormat::__parseNextTimeDiff(const String& props)
 {
 	const uint64_t value = va_arg(args, uint64_t);
 
 	if (value < 1000ull) // nanoseconds
 	{
-		param_buffer.size = uint64_to_string(value, param_buffer.buffer);
+		param_buffer.size = UInt64ToString(value, param_buffer.buffer);
 		param_buffer.append(" ns");
 	}
 	else if (value < 1000000ull) // microseconds
 	{
-		param_buffer.size = float_to_string(
+		param_buffer.size = FloatToString(
 			value / 1000.0f,
 			param_buffer.buffer
 		);
@@ -452,7 +445,7 @@ int32_t katha::string_format_t::parse_next_timediff(const string_t& props)
 	}
 	else if (value < 1000000000ull) // milliseconds
 	{
-		param_buffer.size = float_to_string(
+		param_buffer.size = FloatToString(
 			value / 1000000.0f,
 			param_buffer.buffer
 		);
@@ -460,7 +453,7 @@ int32_t katha::string_format_t::parse_next_timediff(const string_t& props)
 	}
 	else if (value < 1000000000000ull) // seconds
 	{
-		param_buffer.size = float_to_string(
+		param_buffer.size = FloatToString(
 			value / 1000000000.0,
 			param_buffer.buffer
 		);
@@ -468,7 +461,7 @@ int32_t katha::string_format_t::parse_next_timediff(const string_t& props)
 	}
 	else // just log raw value at this point
 	{
-		param_buffer.size = uint64_to_string(
+		param_buffer.size = UInt64ToString(
 			value,
 			param_buffer.buffer
 		);
@@ -478,21 +471,21 @@ int32_t katha::string_format_t::parse_next_timediff(const string_t& props)
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_version(const string_t& props)
+int32_t katha::StringFormat::__parseNextVersion(const String& props)
 {
-	const version_t* version = va_arg(args, version_t*);
+	const Version* version = va_arg(args, Version*);
 	if (version)
 	{
-		param_buffer.size = uint_to_string(version->major, param_buffer.buffer);
+		param_buffer.size = UIntToString(version->major, param_buffer.buffer);
 		param_buffer.append(".");
-		param_buffer.size += uint_to_string(version->minor, param_buffer.tail());
+		param_buffer.size += UIntToString(version->minor, param_buffer.tail());
 		param_buffer.append(".");
-		param_buffer.size += uint_to_string(version->patch, param_buffer.tail());
+		param_buffer.size += UIntToString(version->patch, param_buffer.tail());
 	}
 	return next();
 }
 
-int32_t katha::string_format_t::parse_next_source(const string_t& props)
+int32_t katha::StringFormat::__parseNextSource(const String& props)
 {
 	source_t* source = va_arg(args, source_t*);
 	if (source)
@@ -506,7 +499,7 @@ int32_t katha::string_format_t::parse_next_source(const string_t& props)
 			{
 				// linux absolute path, we need path from `source/`
 				uint32_t offset = 0;
-				if (string_t(filename).find("source/", &offset))
+				if (String(filename).find("source/", &offset))
 				{
 					return offset + 7u;
 				}
@@ -520,7 +513,7 @@ int32_t katha::string_format_t::parse_next_source(const string_t& props)
 		param_buffer.append("; ");
 		param_buffer.append(filename + filename_offset);
 		param_buffer.append(":");
-		param_buffer.size += uint_to_string(line, param_buffer.tail());
+		param_buffer.size += UIntToString(line, param_buffer.tail());
 	}
 	return next();
 }

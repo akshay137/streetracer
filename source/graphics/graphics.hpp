@@ -3,37 +3,50 @@
 #define KATHA_GRAPHICS_H__ 1
 
 #include "../enum/graphics.hpp"
+#include "../enum/result.hpp"
 #include "../type/bitfield.hpp"
 #include "../type/buffer.hpp"
+#include "../type/mesh.hpp"
 #include "../type/texture.hpp"
-#include "../type/result.hpp"
 
 namespace katha
 {
-	extern result_e create_buffer(
-		buffer_t* out_buffer,
-		efield_t<buffer_usage_e> usage,
+	extern Result CreateBuffer(
+		Buffer* out_buffer,
+		EField<BufferUsage> usage,
 		const uint32_t size,
 		const void* data
 	);
-	extern void delete_buffer(const buffer_t& buffer);
+	extern void DeleteBuffer(const Buffer& buffer);
 
-	extern result_e create_texture(
-		texture_t* out_texture,
-		const format_e format,
+	extern Result CreateTexture(
+		Texture* out_texture,
+		const Format format,
 		const uvec2 size,
 		const void* pixels
 	);
-	extern void delete_texture(const texture_t& texture);
+	extern void DeleteTexture(const Texture& texture);
 
-	extern result_e load_texture(
-		texture_t* out_texture,
-		struct file_t& file
+	extern Result LoadTexture(
+		Texture* out_texture,
+		struct File& file
 	);
-	extern result_e load_texture(
-		texture_t* out_texture,
+	extern Result LoadTexture(
+		Texture* out_texture,
 		const char* filename
 	);
+
+	extern Result LoadMesh(
+		Mesh* out_mesh,
+		struct File& file
+	);
+
+	extern Result LoadMesh(
+		Mesh* out_mesh,
+		const char* filename
+	);
+	
+	extern void DeleteMesh(const Mesh& mesh);
 }
 
 #endif

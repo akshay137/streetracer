@@ -6,7 +6,7 @@
 
 namespace katha
 {
-	struct action_map_t
+	struct ActionMap
 	{
 		float steering_angle = 0.0f;
 		float throttle = 0.0f;

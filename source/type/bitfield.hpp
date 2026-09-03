@@ -7,7 +7,7 @@
 namespace katha
 {
 	template <uint16_t MaxBits, typename FieldType = uint8_t>
-	struct bitfield_t
+	struct BitField
 	{
 		constexpr static uint64_t calculate_bucket_size(const uint64_t quantity, const uint64_t capacity)
 		{
@@ -35,13 +35,13 @@ namespace katha
 		}
 
 		template <typename E>
-		inline bool has_enum(const E e) const { return has(static_cast<uint32_t>(e)); }
+		inline bool hasEnum(const E e) const { return has(static_cast<uint32_t>(e)); }
 
 		template <typename E, typename... Enums>
-		bool has_enum(const E e1, const E e2, Enums... enums)
+		bool hasEnum(const E e1, const E e2, Enums... enums)
 		{
-			const bool first = has_enum(e1);
-			const bool rest = has_enum(e2, enums...);
+			const bool first = hasEnum(e1);
+			const bool rest = hasEnum(e2, enums...);
 			return first || rest;
 		}
 
@@ -60,13 +60,13 @@ namespace katha
 		}
 
 		template <typename E>
-		inline void set_enum(const E e) { set(static_cast<uint32_t>(e)); }
+		inline void setEnum(const E e) { set(static_cast<uint32_t>(e)); }
 
 		template <typename E, typename... Enums>
-		void set_enum(const E e1, const E e2, Enums... enums)
+		void setEnum(const E e1, const E e2, Enums... enums)
 		{
-			set_enum(e1);
-			set_enum(e2, enums...);
+			setEnum(e1);
+			setEnum(e2, enums...);
 		}
 
 		void unset(const uint32_t bit)
@@ -84,7 +84,7 @@ namespace katha
 		}
 
 		template <typename E>
-		inline void unset_enum(const E e) { unset(static_cast<uint32_t>(e)); }
+		inline void unsetEnum(const E e) { unset(static_cast<uint32_t>(e)); }
 
 		bool toggle(const uint32_t bit)
 		{
@@ -99,23 +99,23 @@ namespace katha
 		}
 
 		template <typename E>
-		inline void toggle_enum(const E e) { toggle(static_cast<uint32_t>(e)); }
+		inline void toggleEnum(const E e) { toggle(static_cast<uint32_t>(e)); }
 
 		template <typename... Enum>
-		static bitfield_t<MaxBits, FieldType> from_enum(Enum... enums)
+		static BitField<MaxBits, FieldType> FromEnum(Enum... enums)
 		{
-			bitfield_t<MaxBits, FieldType> field = {};
-			field.set_enum(enums...);
+			BitField<MaxBits, FieldType> field = {};
+			field.setEnum(enums...);
 			return field;
 		}
 	};
 
 	// shorthand for enums,
-	// enum must have a `__max` that has highest value
+	// enum must have a `__MAX` that has highest value
 	// all values must be positive
 	// otherwise behavior is undefined
 	template <typename E, typename FieldType = uint8_t>
-	using efield_t = bitfield_t<static_cast<uint16_t>(E::__max), FieldType>;
+	using EField = BitField<static_cast<uint16_t>(E::__MAX), FieldType>;
 }
 
 #endif

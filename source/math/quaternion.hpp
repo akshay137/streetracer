@@ -10,57 +10,32 @@
 namespace katha
 {
 	template <typename T>
-	quaternion_t<T> from_euler(const vector3_t<T>& euler)
+	Quaternion<T> operator * (const Quaternion<T>& q1, const Quaternion<T>& q2)
 	{
-		const vector3_t<T> half_euler = euler * 0.5f;
-		const vector3_t<T> s = sine(half_euler);
-		const vector3_t<T> c = cosine(half_euler);
-
-		quaternion_t<T> result = {};
-		result.x = (s.x * c.y * c.z) - (c.x * s.y * s.z);
-		result.y = (c.x * s.y * c.z) + (s.x * c.y * s.z);
-		result.z = (c.x * c.y * s.z) - (s.x * s.y * c.z);
-		result.w = horizontal_product(c) + horizontal_product(s);
-		return result;
-	}
-
-	template <typename T>
-	vector3_t<T> to_euler(const quaternion_t<T>& q)
-	{
-		vector3_t<T> result;
-		result.x = std::atan2(2 * ((q.w * q.x) + (q.y * q.z)), 1 - 2 * (q.x * q.x + q.y * q.y));
-		result.y = std::asin(clamp<T>(2 * ((q.w * q.y) - (q.z * q.x)), -1, 1));
-		result.z = std::atan2(2 * ((q.w * q.z) + (q.x * q.y)), 1 - 2 * (q.y * q.y + q.z * q.z));
-		return result;
-	}
-
-	template <typename T>
-	quaternion_t<T> operator * (const quaternion_t<T>& q1, const quaternion_t<T>& q2)
-	{
-		quaternion_t<T> result = {};
-		const vector3_t<T> q1v = q1.vector();
-		const vector3_t<T> q2v = q2.vector();
-		const vector3_t<T> v
+		Quaternion<T> result = {};
+		const Vector3<T> q1v = q1.vector();
+		const Vector3<T> q2v = q2.vector();
+		const Vector3<T> v
 			= q1v * q2.w
 			+ q2v * q1.w
-			+ cross(q1v, q2v);
+			+ Cross(q1v, q2v);
 		result.vector(v);
 		
-		const T scalar = (q1.w * q2.w) - dot(q1v, q2v);
+		const T scalar = (q1.w * q2.w) - Dot(q1v, q2v);
 		result.scalar(scalar);
 
 		return result;
 	}
 
 	template <typename T>
-	quaternion_t<T> normalize(const quaternion_t<T>& q)
+	Quaternion<T> Normalize(const Quaternion<T>& q)
 	{
 		const T squared_norm = q.x * q.x
 			+ q.y * q.y
 			+ q.z * q.z
 			+ q.w * q.w;
 		const T norm = std::sqrt(squared_norm);
-		quaternion_t<T> result(
+		Quaternion<T> result(
 			q.x / norm,
 			q.y / norm,
 			q.z / norm,
@@ -70,20 +45,20 @@ namespace katha
 	}
 
 	template <typename T>
-	quaternion_t<T> conjugate(const quaternion_t<T>& q)
+	Quaternion<T> Conjugate(const Quaternion<T>& q)
 	{
-		quaternion_t<T> result(-q.x, -q.y, -q.z, q.w);
+		Quaternion<T> result(-q.x, -q.y, -q.z, q.w);
 		return result;
 	}
 
 	template <typename T>
-	quaternion_t<T> inverse(const quaternion_t<T>& q)
+	Quaternion<T> Inverse(const Quaternion<T>& q)
 	{
 		const T squared_norm = q.x * q.x
 			+ q.y * q.y
 			+ q.z * q.z
 			+ q.w * q.w;
-		quaternion_t<T> result(
+		Quaternion<T> result(
 			-q.x / squared_norm,
 			-q.y / squared_norm,
 			-q.z / squared_norm,
@@ -93,20 +68,20 @@ namespace katha
 	}
 
 	template <typename T>
-	vector3_t<T> rotate(const quaternion_t<T>& q, const vector3_t<T>& v)
+	Vector3<T> Rotate(const Quaternion<T>& q, const Vector3<T>& v)
 	{
-		vector3_t<T> qv = q.vector();
-		vector3_t<T> uv = cross(qv, v);
-		vector3_t<T> uuv = cross(qv, uv);
+		Vector3<T> qv = q.vector();
+		Vector3<T> uv = Cross(qv, v);
+		Vector3<T> uuv = Cross(qv, uv);
 
-		vector3_t<T> result = v + ((uv * q.scalar()) + uuv) * 2.0f;
+		Vector3<T> result = v + ((uv * q.scalar()) + uuv) * 2.0f;
 		return result;
 	}
 
 	template <typename T>
-	matrix4_t<T> to_mat4(const quaternion_t<T>& q)
+	Matrix4<T> ToMat4(const Quaternion<T>& q)
 	{
-		matrix4_t result(1.0f);
+		Matrix4<T> result(1.0f);
 
 		const T qxx = q.x * q.x;
 		const T qyy = q.y * q.y;

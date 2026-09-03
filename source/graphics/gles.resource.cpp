@@ -1,42 +1,45 @@
-#include "gl.hpp"
+#include "gles.hpp"
 #include "../type/vertex.hpp"
 #include "../utility.hpp"
 
 #include <glad/glad.h>
 
-constexpr const char* mesh_vertex_shader = ""
+constexpr const char* MESH_VERTEX_SHADER = ""
 "layout (location = 0) in vec3 position;\n"
-"layout (location = 1) in vec2 tex_coords;\n"
+"layout (location = 1) in vec3 tex_coords;\n"
+"layout (location = 2) in vec3 normal;\n"
 "out vec2 uv;\n"
 "void main()\n"
 "{\n"
-	"gl_Position = vec4(position, 1.0);\n"
+	"vec3 pos = position * vec3(9.0 / 16.0, -1, 1);\n"
+	"gl_Position = vec4(pos.xzy + vec3(0, -0.55, 0), 1.0);\n"
 	"uv = vec2(tex_coords.x, 1.0 - tex_coords.y);\n"
+	"uv = normal.xy;\n"
 "}"
 ;
 
-constexpr const char* mesh_fragment_shader = ""
+constexpr const char* MESH_FRAGMENT_SHADER = ""
 "in MEDIUMP vec2 uv;\n"
 "layout (location = 0) out MEDIUMP vec4 color;\n"
 "layout (binding = 0) uniform sampler2D diffuse;\n"
 "void main()\n"
 "{\n"
-	"color = texture(diffuse, uv);"
+	"color = vec4(1, 1, 1, 1);"
 "}"
 ;
 
-bool katha::gl_t::create_resources()
+bool katha::GLES::createResources()
 {
-	mesh_shader_program = create_shader_program(
-		mesh_vertex_shader,
-		mesh_fragment_shader
+	mesh_shader_program = createShaderProgram(
+		MESH_VERTEX_SHADER,
+		MESH_FRAGMENT_SHADER
 	);
 	if (0 == mesh_shader_program)
 	{
 		return false;
 	}
 
-	mesh_vertex_array = create_vertex_array_mesh();
+	mesh_vertex_array = createVertexArrayMesh();
 	if (0 == mesh_vertex_array)
 	{
 		return false;
@@ -45,65 +48,65 @@ bool katha::gl_t::create_resources()
 	return true;
 }
 
-void katha::gl_t::clear_resources()
+void katha::GLES::clearResources()
 {
-	delete_shader_program(mesh_shader_program);
-	delete_vertex_array(mesh_vertex_array);
+	deleteShaderProgram(mesh_shader_program);
+	deleteVertexArray(mesh_vertex_array);
 
 	mesh_shader_program = 0;
 	mesh_vertex_array = 0;
 }
 
-void katha::gl_t::delete_shader(const uint32_t shader)
+void katha::GLES::deleteShader(const uint32_t shader)
 {
 	if (shader)
 	{
-		log_line("gl: delete_shader({u:x})", shader);
+		LogLine("gles: deleteShader({u:x})", shader);
 		glDeleteShader(shader);
 	}
 }
 
-void katha::gl_t::delete_shader_program(const uint32_t program)
+void katha::GLES::deleteShaderProgram(const uint32_t program)
 {
 	if (program)
 	{
-		log_line("gl: delete_program({u:x})", program);
+		LogLine("gles: deleteShaderProgram({u:x})", program);
 		glDeleteProgram(program);
 	}
 }
 
-void katha::gl_t::delete_vertex_array(const uint32_t vertex_array)
+void katha::GLES::deleteVertexArray(const uint32_t vertex_array)
 {
 	if (vertex_array)
 	{
-		log_line("gl: delete_vertex_array({u:x})", vertex_array);
+		LogLine("gles: deleteVertexArray({u:x})", vertex_array);
 		glDeleteVertexArrays(1, &vertex_array);
 	}
 }
 
 
-void katha::gl_t::delete_buffer(const buffer_t& buffer)
+void katha::GLES::deleteBuffer(const Buffer& buffer)
 {
 	if (buffer.handle)
 	{
 		GLuint gl_buffer = static_cast<GLuint>(buffer.handle);
-		log_line("gl: delete_buffer({u:x})", gl_buffer);
+		LogLine("gles: deleteBuffer({u:x})", gl_buffer);
 		glDeleteBuffers(1, &gl_buffer);
 	
 	}
 }
 
-void katha::gl_t::delete_texture(const texture_t& texture)
+void katha::GLES::deleteTexture(const Texture& texture)
 {
 	if (texture.handle)
 	{
 		GLuint gl_texture = static_cast<GLuint>(texture.handle);
-		log_line("gl: delete_texture({u:x})", gl_texture);
+		LogLine("gles: deleteTexture({u:x})", gl_texture);
 		glDeleteTextures(1, &gl_texture);
 	}
 }
 
-const char* katha::gl_t::get_shader_version_cstring() const
+const char* katha::GLES::getShaderVersionCString() const
 {
 	if (is_es_context)
 	{
@@ -119,10 +122,10 @@ const char* katha::gl_t::get_shader_version_cstring() const
 		"#define HIGHP\n";
 }
 
-uint32_t katha::gl_t::create_shader(const char* source, const uint32_t type)
+uint32_t katha::GLES::createShader(const char* source, const uint32_t type)
 {
 	const char* sources[] = {
-		get_shader_version_cstring(),
+		getShaderVersionCString(),
 		source
 	};
 
@@ -131,7 +134,7 @@ uint32_t katha::gl_t::create_shader(const char* source, const uint32_t type)
 	{
 		return 0;
 	}
-	if (check_error())
+	if (checkError())
 	{
 		glDeleteShader(shader);
 		return 0;
@@ -149,7 +152,7 @@ uint32_t katha::gl_t::create_shader(const char* source, const uint32_t type)
 
 	GLint log_length = 0;
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
-	char* log = alloc<char>(static_cast<uint32_t>(log_length));
+	char* log = Alloc<char>(static_cast<uint32_t>(log_length));
 	if (log)
 	{
 		glGetShaderInfoLog(shader,
@@ -157,30 +160,30 @@ uint32_t katha::gl_t::create_shader(const char* source, const uint32_t type)
 			nullptr,
 			log
 		);
-		log_line("error-gl: failed to compile shader: {s}", log);
-		release(log);
+		LogLine("error-gles: failed to compile shader: {s}", log);
+		Release(log);
 	}
 
 	glDeleteShader(shader);
 	return 0;
 }
 
-uint32_t katha::gl_t::create_shader_program(
+uint32_t katha::GLES::createShaderProgram(
 	const char* vertex_shader_source,
 	const char* fragment_shader_source
 )
 {
-	const uint32_t vertex_shader = create_shader(vertex_shader_source, GL_VERTEX_SHADER);
+	const uint32_t vertex_shader = createShader(vertex_shader_source, GL_VERTEX_SHADER);
 	if (0 == vertex_shader)
 	{
-		log_line("error-gl: failed to create vertex shader");
+		LogLine("error-gles: failed to create vertex shader");
 		return 0;
 	}
 
-	const uint32_t fragment_shader = create_shader(fragment_shader_source, GL_FRAGMENT_SHADER);
+	const uint32_t fragment_shader = createShader(fragment_shader_source, GL_FRAGMENT_SHADER);
 	if (0 == fragment_shader)
 	{
-		log_line("error-gl: failed to create fragment shader");
+		LogLine("error-gles: failed to create fragment shader");
 		glDeleteShader(vertex_shader);
 		return 0;
 	}
@@ -190,7 +193,7 @@ uint32_t katha::gl_t::create_shader_program(
 	{
 		return 0;
 	}
-	if (check_error())
+	if (checkError())
 	{
 		glDeleteProgram(program);
 		return 0;
@@ -207,13 +210,13 @@ uint32_t katha::gl_t::create_shader_program(
 	glGetProgramiv(program, GL_LINK_STATUS, &link_status);
 	if (GL_TRUE == link_status)
 	{
-		log_line("gl: program {u:x}", program);
+		LogLine("gles: program {u:x}", program);
 		return program;
 	}
 
 	GLint log_length = 0;
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
-	char* log = alloc<char>(static_cast<uint32_t>(log_length));
+	char* log = Alloc<char>(static_cast<uint32_t>(log_length));
 	if (log)
 	{
 		glGetProgramInfoLog(program,
@@ -221,15 +224,15 @@ uint32_t katha::gl_t::create_shader_program(
 			nullptr,
 			log
 		);
-		log_line("error-gl: failed to link shader program: {s}", log);
-		release(log);
+		LogLine("error-gles: failed to link shader program: {s}", log);
+		Release(log);
 	}
 
 	glDeleteProgram(program);
 	return 0;
 }
 
-uint32_t katha::gl_t::create_vertex_array_mesh()
+uint32_t katha::GLES::createVertexArrayMesh()
 {
 	uint32_t vao = 0;
 	glGenVertexArrays(1, &vao);
@@ -237,7 +240,7 @@ uint32_t katha::gl_t::create_vertex_array_mesh()
 	{
 		return 0;
 	}
-	if (check_error())
+	if (checkError())
 	{
 		glDeleteVertexArrays(1, &vao);
 		return 0;
@@ -245,41 +248,45 @@ uint32_t katha::gl_t::create_vertex_array_mesh()
 
 	glBindVertexArray(vao);
 
-	glVertexAttribFormat(0, 3, GL_FLOAT, GL_FALSE, offsetof(vertex_t, position));
+	glVertexAttribFormat(0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position));
 	glVertexAttribBinding(0, 0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribFormat(1, 2, GL_UNSIGNED_SHORT, GL_TRUE, offsetof(vertex_t, uv));
+	glVertexAttribFormat(1, 3, GL_UNSIGNED_SHORT, GL_TRUE, offsetof(Vertex, uv));
 	glVertexAttribBinding(1, 0);
 	glEnableVertexAttribArray(1);
 
+	glVertexAttribFormat(1, 3, GL_UNSIGNED_SHORT, GL_TRUE, offsetof(Vertex, normal));
+	glVertexAttribBinding(2, 0);
+	glEnableVertexAttribArray(2);
+
 	glBindVertexArray(0);
 
-	if (check_error())
+	if (checkError())
 	{
 		glDeleteVertexArrays(1, &vao);
 		return 0;
 	}
 
-	log_line("gl: vertex_array {u:x}", vao);
+	LogLine("gles: vertex_array {u:x}", vao);
 	return vao;
 }
 
-katha::result_e katha::gl_t::create_buffer(
-	buffer_t* out_buffer,
-	efield_t<buffer_usage_e> usage,
+katha::Result katha::GLES::createBuffer(
+	Buffer* out_buffer,
+	EField<BufferUsage> usage,
 	const uint32_t size,
 	const void* data
 )
 {
 	if (nullptr == out_buffer)
 	{
-		log_line("error: gl::create_buffer called with null `out_buffer`");
-		return result_e::error_value_null;
+		LogLine("error: gles::create_buffer called with null `out_buffer`");
+		return Result::ERROR_VALUE_NULL;
 	}
 
 	GLenum target = GL_ARRAY_BUFFER;
-	if (usage.has_enum(buffer_usage_e::element))
+	if (usage.hasEnum(BufferUsage::ELEMENT))
 	{
 		target = GL_ELEMENT_ARRAY_BUFFER;
 	}
@@ -288,16 +295,16 @@ katha::result_e katha::gl_t::create_buffer(
 	glGenBuffers(1, &gl_buffer);
 	if (0 == gl_buffer)
 	{
-		log_line("error-gl: failed to create buffer");
+		LogLine("error-gles: failed to create buffer");
 		return {};
 	}
-	if (check_error())
+	if (checkError())
 	{
-		result_e::error_gl;
+		Result::ERROR_GLES;
 	}
 
 	GLenum type = GL_STATIC_DRAW;
-	if (usage.has_enum(buffer_usage_e::stream))
+	if (usage.hasEnum(BufferUsage::STREAM))
 	{
 		type = GL_STREAM_DRAW;
 	}
@@ -305,47 +312,47 @@ katha::result_e katha::gl_t::create_buffer(
 	glBindBuffer(target, gl_buffer);
 	glBufferData(target, static_cast<GLsizeiptr>(size), data, type);
 
-	if (check_error())
+	if (checkError())
 	{
 		glDeleteBuffers(1, &gl_buffer);
-		result_e::error_gl;
+		Result::ERROR_GLES;
 	}
 
 	out_buffer->handle = gl_buffer;
 	out_buffer->size = size;
-	log_line("gl: buffer {u:x}, {u}", gl_buffer, size);
-	return result_e::success;
+	LogLine("gles: buffer {u:x}, {u}", gl_buffer, size);
+	return Result::SUCCESS;
 }
 
-katha::result_e katha::gl_t::create_texture(
-	texture_t* out_texture,
-	const format_e format,
+katha::Result katha::GLES::createTexture(
+	Texture* out_texture,
+	const Format format,
 	const uvec2 size,
 	const void* pixels
 )
 {
 	if (nullptr == out_texture)
 	{
-		log_line("error: gl::create_texture called with null `out_texture`");
-		return result_e::error_value_null;
+		LogLine("error: gles::create_texture called with null `out_texture`");
+		return Result::ERROR_VALUE_NULL;
 	}
 
-	const gl_format_t gl_format = format_to_gl_format(format);
+	const GLESFormat gl_format = FormatToGLESFormat(format);
 	if (0 == gl_format.internal)
 	{
-		return result_e::error_value_unexpected;
+		return Result::ERROR_VALUE_UNEXPECTED;
 	}
 
 	GLuint gl_texture = 0;
 	glGenTextures(1, &gl_texture);
 	if (0 == gl_texture)
 	{
-		log_line("error-gl: failed to create texture");
-		result_e::error_gl;
+		LogLine("error-gles: failed to create texture");
+		Result::ERROR_GLES;
 	}
-	if (check_error())
+	if (checkError())
 	{
-		result_e::error_gl;
+		Result::ERROR_GLES;
 	}
 
 	glBindTexture(GL_TEXTURE_2D, gl_texture);
@@ -360,7 +367,7 @@ katha::result_e katha::gl_t::create_texture(
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	if (should_mipmap(format))
+	if (ShouldMipmap(format))
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -371,7 +378,7 @@ katha::result_e katha::gl_t::create_texture(
 	}
 
 	// FIXME
-	if (format_e::depth24_stencil8 != format)
+	if (Format::DEPTH24_STENCIL8 != format)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, gl_format.swizzle.x);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, gl_format.swizzle.y);
@@ -379,25 +386,25 @@ katha::result_e katha::gl_t::create_texture(
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, gl_format.swizzle.w);
 	}
 
-	if (check_error())
+	if (checkError())
 	{
 		glDeleteTextures(1, &gl_texture);
-		return result_e::error_gl;
+		return Result::ERROR_GLES;
 	}
 
 	out_texture->handle = gl_texture;
 	out_texture->size = size;
 	out_texture->format = format;
-	log_line("gl: texture {u:x}, {u}x{u}, {s}",
+	LogLine("gles: texture {u:x}, {u}x{u}, {s}",
 		gl_texture,
 		size.x, size.y,
-		format_to_cstring(format)
+		FormatToCString(format)
 	);
-	return result_e::success;
+	return Result::SUCCESS;
 }
 
-void katha::gl_t::bind_vertex_buffer(
-	const buffer_t& buffer,
+void katha::GLES::bindVertexBuffer(
+	const Buffer& buffer,
 	uint32_t binding,
 	uint32_t stride,
 	uint32_t offset
@@ -411,7 +418,7 @@ void katha::gl_t::bind_vertex_buffer(
 	);
 }
 
-void katha::gl_t::bind_texture(const uint32_t slot, const texture_t& texture)
+void katha::GLES::bindTexture(const uint32_t slot, const Texture& texture)
 {
 	if (texture.handle)
 	{

@@ -20,7 +20,7 @@ namespace katha
 	};
 
 	template <typename T>
-	static bool write_checked(T* ptr, const T& value)
+	static bool WriteChecked(T* ptr, const T& value)
 	{
 		if (nullptr == ptr)
 		{
@@ -32,14 +32,60 @@ namespace katha
 	}
 
 	template <typename T>
-	static bool read_checked(const T* ptr, T* out_value)
+	static bool ReadChecked(const T* ptr, T* out_value)
 	{
 		if (nullptr == ptr)
 		{
 			return false;
 		}
 
-		return write_checked<T>(out_value, *ptr);
+		return WriteChecked<T>(out_value, *ptr);
+	}
+
+	constexpr static float PI = 3.14159265359f;
+	
+	template <typename T>
+	static constexpr T Abs(const T& v)
+	{
+		return (v < 0) ? -v : v;
+	}
+
+	template <typename T>
+	static constexpr T Min(const T& lhs, const T& rhs)
+	{
+		return lhs < rhs ? lhs : rhs;
+	}
+
+	template <typename T>
+	static constexpr T Max(const T& lhs, const T& rhs)
+	{
+		return lhs > rhs ? lhs : rhs;
+	}
+
+	template <typename T>
+	static constexpr T Clamp(const T& value, const T& lower, const T& upper)
+	{
+		return Max(lower, Min(value, upper));
+	}
+
+	template <typename T>
+	static constexpr T Lerp(const T& source, const T& target, const float step)
+	{
+		const T diff = target - source;
+		const T result = source + diff * step;
+		return result;
+	}
+
+	constexpr static inline float Radians(const float angle_in_degrees)
+	{
+		float result = angle_in_degrees * (PI / 180.0f);
+		return result;
+	}
+
+	constexpr static inline float Degrees(const float angle_in_radians)
+	{
+		float result = angle_in_radians * (180.0f / PI);
+		return result;
 	}
 }
 

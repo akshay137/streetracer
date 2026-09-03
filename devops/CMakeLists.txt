@@ -75,7 +75,6 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/config.hpp
 	${BUILD_ROOT}/source/config.cpp
 	${BUILD_ROOT}/source/constants.hpp
-	${BUILD_ROOT}/source/core.hpp
 	${BUILD_ROOT}/source/utility.hpp
 	${BUILD_ROOT}/source/utility.cpp
 
@@ -95,18 +94,18 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/game/world.hpp
 	${BUILD_ROOT}/source/game/world.cpp
 
-	${BUILD_ROOT}/source/graphics/gl.hpp
-	${BUILD_ROOT}/source/graphics/gl.cpp
-	${BUILD_ROOT}/source/graphics/gl.resource.cpp
-	${BUILD_ROOT}/source/graphics/gl.render.cpp
+	${BUILD_ROOT}/source/graphics/gles.hpp
+	${BUILD_ROOT}/source/graphics/gles.cpp
+	${BUILD_ROOT}/source/graphics/gles.resource.cpp
+	${BUILD_ROOT}/source/graphics/gles.render.cpp
 	${BUILD_ROOT}/source/graphics/glad.c
 	${BUILD_ROOT}/source/graphics/graphics.hpp
 	${BUILD_ROOT}/source/graphics/graphics.cpp
+	${BUILD_ROOT}/source/graphics/graphics.mesh.cpp
 	${BUILD_ROOT}/source/graphics/graphics.texture.cpp
 
 	${BUILD_ROOT}/source/math/matrix4.hpp
 	${BUILD_ROOT}/source/math/quaternion.hpp
-	${BUILD_ROOT}/source/math/utility.hpp
 	${BUILD_ROOT}/source/math/vector2.gen.hpp
 	${BUILD_ROOT}/source/math/vector2.hpp
 	${BUILD_ROOT}/source/math/vector3.gen.hpp
@@ -132,14 +131,13 @@ target_sources(${PROJECT_NAME} PUBLIC
 	${BUILD_ROOT}/source/type/gamepad.hpp
 	${BUILD_ROOT}/source/type/gamepad.cpp
 	${BUILD_ROOT}/source/type/matrix.hpp
+	${BUILD_ROOT}/source/type/mesh.hpp
 	${BUILD_ROOT}/source/type/primitive.hpp
 	${BUILD_ROOT}/source/type/quaternion.hpp
-	${BUILD_ROOT}/source/type/result.hpp
 	${BUILD_ROOT}/source/type/stack_string.hpp
 	${BUILD_ROOT}/source/type/string.hpp
 	${BUILD_ROOT}/source/type/string.cpp
 	${BUILD_ROOT}/source/type/texture.hpp
-	${BUILD_ROOT}/source/type/texture.cpp
 	${BUILD_ROOT}/source/type/transform.hpp
 	${BUILD_ROOT}/source/type/transform.cpp
 	${BUILD_ROOT}/source/type/vector.hpp

@@ -9,7 +9,6 @@
 */
 
 #include "../type/vector.hpp"
-#include "utility.hpp"
 
 #include <cmath>
 
@@ -17,43 +16,43 @@ namespace katha
 {
 
 	template <typename T>
-	constexpr vector2_t<T> operator - (const vector2_t<T>& v1)
+	constexpr Vector2<T> operator - (const Vector2<T>& v1)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = -v1.x;
 		result.y = -v1.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator ~ (const vector2_t<T>& v1)
+	constexpr Vector2<T> operator ~ (const Vector2<T>& v1)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = ~v1.x;
 		result.y = ~v1.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator + (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	constexpr Vector2<T> operator + (const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x + v2.x;
 		result.y = v1.y + v2.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator + (const vector2_t<T>& v1, const T& scalar)
+	constexpr Vector2<T> operator + (const Vector2<T>& v1, const T& scalar)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x + scalar;
 		result.y = v1.y + scalar;
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T>& operator += (vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T>& operator += (Vector2<T>& v1, const Vector2<T>& v2)
 	{
 		v1.x = v1.x + v2.x;
 		v1.y = v1.y + v2.y;
@@ -61,7 +60,7 @@ namespace katha
 	}
 
 	template <typename T>
-	vector2_t<T>& operator += (vector2_t<T>& v1, const T& scalar)
+	Vector2<T>& operator += (Vector2<T>& v1, const T& scalar)
 	{
 		v1.x = v1.x + scalar;
 		v1.y = v1.y + scalar;
@@ -69,25 +68,25 @@ namespace katha
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator - (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	constexpr Vector2<T> operator - (const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x - v2.x;
 		result.y = v1.y - v2.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator - (const vector2_t<T>& v1, const T& scalar)
+	constexpr Vector2<T> operator - (const Vector2<T>& v1, const T& scalar)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x - scalar;
 		result.y = v1.y - scalar;
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T>& operator -= (vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T>& operator -= (Vector2<T>& v1, const Vector2<T>& v2)
 	{
 		v1.x = v1.x - v2.x;
 		v1.y = v1.y - v2.y;
@@ -95,7 +94,7 @@ namespace katha
 	}
 
 	template <typename T>
-	vector2_t<T>& operator -= (vector2_t<T>& v1, const T& scalar)
+	Vector2<T>& operator -= (Vector2<T>& v1, const T& scalar)
 	{
 		v1.x = v1.x - scalar;
 		v1.y = v1.y - scalar;
@@ -103,25 +102,25 @@ namespace katha
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator * (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	constexpr Vector2<T> operator * (const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x * v2.x;
 		result.y = v1.y * v2.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator * (const vector2_t<T>& v1, const T& scalar)
+	constexpr Vector2<T> operator * (const Vector2<T>& v1, const T& scalar)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x * scalar;
 		result.y = v1.y * scalar;
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T>& operator *= (vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T>& operator *= (Vector2<T>& v1, const Vector2<T>& v2)
 	{
 		v1.x = v1.x * v2.x;
 		v1.y = v1.y * v2.y;
@@ -129,7 +128,7 @@ namespace katha
 	}
 
 	template <typename T>
-	vector2_t<T>& operator *= (vector2_t<T>& v1, const T& scalar)
+	Vector2<T>& operator *= (Vector2<T>& v1, const T& scalar)
 	{
 		v1.x = v1.x * scalar;
 		v1.y = v1.y * scalar;
@@ -137,25 +136,25 @@ namespace katha
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator / (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	constexpr Vector2<T> operator / (const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x / v2.x;
 		result.y = v1.y / v2.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator / (const vector2_t<T>& v1, const T& scalar)
+	constexpr Vector2<T> operator / (const Vector2<T>& v1, const T& scalar)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x / scalar;
 		result.y = v1.y / scalar;
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T>& operator /= (vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T>& operator /= (Vector2<T>& v1, const Vector2<T>& v2)
 	{
 		v1.x = v1.x / v2.x;
 		v1.y = v1.y / v2.y;
@@ -163,7 +162,7 @@ namespace katha
 	}
 
 	template <typename T>
-	vector2_t<T>& operator /= (vector2_t<T>& v1, const T& scalar)
+	Vector2<T>& operator /= (Vector2<T>& v1, const T& scalar)
 	{
 		v1.x = v1.x / scalar;
 		v1.y = v1.y / scalar;
@@ -171,25 +170,25 @@ namespace katha
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator % (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	constexpr Vector2<T> operator % (const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x % v2.x;
 		result.y = v1.y % v2.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator % (const vector2_t<T>& v1, const T& scalar)
+	constexpr Vector2<T> operator % (const Vector2<T>& v1, const T& scalar)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x % scalar;
 		result.y = v1.y % scalar;
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T>& operator %= (vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T>& operator %= (Vector2<T>& v1, const Vector2<T>& v2)
 	{
 		v1.x = v1.x % v2.x;
 		v1.y = v1.y % v2.y;
@@ -197,7 +196,7 @@ namespace katha
 	}
 
 	template <typename T>
-	vector2_t<T>& operator %= (vector2_t<T>& v1, const T& scalar)
+	Vector2<T>& operator %= (Vector2<T>& v1, const T& scalar)
 	{
 		v1.x = v1.x % scalar;
 		v1.y = v1.y % scalar;
@@ -205,25 +204,25 @@ namespace katha
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator | (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	constexpr Vector2<T> operator | (const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x | v2.x;
 		result.y = v1.y | v2.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator | (const vector2_t<T>& v1, const T& scalar)
+	constexpr Vector2<T> operator | (const Vector2<T>& v1, const T& scalar)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x | scalar;
 		result.y = v1.y | scalar;
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T>& operator |= (vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T>& operator |= (Vector2<T>& v1, const Vector2<T>& v2)
 	{
 		v1.x = v1.x | v2.x;
 		v1.y = v1.y | v2.y;
@@ -231,7 +230,7 @@ namespace katha
 	}
 
 	template <typename T>
-	vector2_t<T>& operator |= (vector2_t<T>& v1, const T& scalar)
+	Vector2<T>& operator |= (Vector2<T>& v1, const T& scalar)
 	{
 		v1.x = v1.x | scalar;
 		v1.y = v1.y | scalar;
@@ -239,25 +238,25 @@ namespace katha
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator & (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	constexpr Vector2<T> operator & (const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x & v2.x;
 		result.y = v1.y & v2.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator & (const vector2_t<T>& v1, const T& scalar)
+	constexpr Vector2<T> operator & (const Vector2<T>& v1, const T& scalar)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x & scalar;
 		result.y = v1.y & scalar;
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T>& operator &= (vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T>& operator &= (Vector2<T>& v1, const Vector2<T>& v2)
 	{
 		v1.x = v1.x & v2.x;
 		v1.y = v1.y & v2.y;
@@ -265,7 +264,7 @@ namespace katha
 	}
 
 	template <typename T>
-	vector2_t<T>& operator &= (vector2_t<T>& v1, const T& scalar)
+	Vector2<T>& operator &= (Vector2<T>& v1, const T& scalar)
 	{
 		v1.x = v1.x & scalar;
 		v1.y = v1.y & scalar;
@@ -273,25 +272,25 @@ namespace katha
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator ^ (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	constexpr Vector2<T> operator ^ (const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x ^ v2.x;
 		result.y = v1.y ^ v2.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator ^ (const vector2_t<T>& v1, const T& scalar)
+	constexpr Vector2<T> operator ^ (const Vector2<T>& v1, const T& scalar)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x ^ scalar;
 		result.y = v1.y ^ scalar;
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T>& operator ^= (vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T>& operator ^= (Vector2<T>& v1, const Vector2<T>& v2)
 	{
 		v1.x = v1.x ^ v2.x;
 		v1.y = v1.y ^ v2.y;
@@ -299,7 +298,7 @@ namespace katha
 	}
 
 	template <typename T>
-	vector2_t<T>& operator ^= (vector2_t<T>& v1, const T& scalar)
+	Vector2<T>& operator ^= (Vector2<T>& v1, const T& scalar)
 	{
 		v1.x = v1.x ^ scalar;
 		v1.y = v1.y ^ scalar;
@@ -307,25 +306,25 @@ namespace katha
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator << (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	constexpr Vector2<T> operator << (const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x << v2.x;
 		result.y = v1.y << v2.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator << (const vector2_t<T>& v1, const T& scalar)
+	constexpr Vector2<T> operator << (const Vector2<T>& v1, const T& scalar)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x << scalar;
 		result.y = v1.y << scalar;
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T>& operator <<= (vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T>& operator <<= (Vector2<T>& v1, const Vector2<T>& v2)
 	{
 		v1.x = v1.x << v2.x;
 		v1.y = v1.y << v2.y;
@@ -333,7 +332,7 @@ namespace katha
 	}
 
 	template <typename T>
-	vector2_t<T>& operator <<= (vector2_t<T>& v1, const T& scalar)
+	Vector2<T>& operator <<= (Vector2<T>& v1, const T& scalar)
 	{
 		v1.x = v1.x << scalar;
 		v1.y = v1.y << scalar;
@@ -341,25 +340,25 @@ namespace katha
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator >> (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	constexpr Vector2<T> operator >> (const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x >> v2.x;
 		result.y = v1.y >> v2.y;
 		return result;
 	}
 
 	template <typename T>
-	constexpr vector2_t<T> operator >> (const vector2_t<T>& v1, const T& scalar)
+	constexpr Vector2<T> operator >> (const Vector2<T>& v1, const T& scalar)
 	{
-		vector2_t<T> result = {};
+		Vector2<T> result = {};
 		result.x = v1.x >> scalar;
 		result.y = v1.y >> scalar;
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T>& operator >>= (vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T>& operator >>= (Vector2<T>& v1, const Vector2<T>& v2)
 	{
 		v1.x = v1.x >> v2.x;
 		v1.y = v1.y >> v2.y;
@@ -367,7 +366,7 @@ namespace katha
 	}
 
 	template <typename T>
-	vector2_t<T>& operator >>= (vector2_t<T>& v1, const T& scalar)
+	Vector2<T>& operator >>= (Vector2<T>& v1, const T& scalar)
 	{
 		v1.x = v1.x >> scalar;
 		v1.y = v1.y >> scalar;
@@ -375,140 +374,140 @@ namespace katha
 	}
 
 	template <typename T>
-	vector2_t<T> abs (const vector2_t<T>& v)
+	Vector2<T> Abs(const Vector2<T>& v)
 	{
-		vector2_t<T> result = {};
-		result.x = abs(v.x);
-		result.y = abs(v.y);
+		Vector2<T> result = {};
+		result.x = Abs(v.x);
+		result.y = Abs(v.y);
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T> radians (const vector2_t<T>& v)
+	Vector2<T> Radians(const Vector2<T>& v)
 	{
-		vector2_t<T> result = {};
-		result.x = radians(v.x);
-		result.y = radians(v.y);
+		Vector2<T> result = {};
+		result.x = Radians(v.x);
+		result.y = Radians(v.y);
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T> degrees (const vector2_t<T>& v)
+	Vector2<T> Degrees(const Vector2<T>& v)
 	{
-		vector2_t<T> result = {};
-		result.x = degrees(v.x);
-		result.y = degrees(v.y);
+		Vector2<T> result = {};
+		result.x = Degrees(v.x);
+		result.y = Degrees(v.y);
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T> sin (const vector2_t<T>& v)
+	Vector2<T> Sin(const Vector2<T>& v)
 	{
-		vector2_t<T> result = {};
-		result.x = sin(v.x);
-		result.y = sin(v.y);
+		Vector2<T> result = {};
+		result.x = std::sin(v.x);
+		result.y = std::sin(v.y);
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T> cos (const vector2_t<T>& v)
+	Vector2<T> Cos(const Vector2<T>& v)
 	{
-		vector2_t<T> result = {};
-		result.x = cos(v.x);
-		result.y = cos(v.y);
+		Vector2<T> result = {};
+		result.x = std::cos(v.x);
+		result.y = std::cos(v.y);
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T> tan (const vector2_t<T>& v)
+	Vector2<T> Tan(const Vector2<T>& v)
 	{
-		vector2_t<T> result = {};
-		result.x = tan(v.x);
-		result.y = tan(v.y);
+		Vector2<T> result = {};
+		result.x = std::tan(v.x);
+		result.y = std::tan(v.y);
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T> acos (const vector2_t<T>& v)
+	Vector2<T> ACos(const Vector2<T>& v)
 	{
-		vector2_t<T> result = {};
-		result.x = acos(v.x);
-		result.y = acos(v.y);
+		Vector2<T> result = {};
+		result.x = std::acos(v.x);
+		result.y = std::acos(v.y);
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T> asin (const vector2_t<T>& v)
+	Vector2<T> ASin(const Vector2<T>& v)
 	{
-		vector2_t<T> result = {};
-		result.x = asin(v.x);
-		result.y = asin(v.y);
+		Vector2<T> result = {};
+		result.x = std::asin(v.x);
+		result.y = std::asin(v.y);
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T> min (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T> ATan2(const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
-		result.x = min(v1.x, v2.x);
-		result.y = min(v1.y, v2.y);
+		Vector2<T> result = {};
+		result.x = std::atan2(v1.x, v2.x);
+		result.y = std::atan2(v1.y, v2.y);
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T> max (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T> Min(const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
-		result.x = max(v1.x, v2.x);
-		result.y = max(v1.y, v2.y);
+		Vector2<T> result = {};
+		result.x = Min(v1.x, v2.x);
+		result.y = Min(v1.y, v2.y);
 		return result;
 	}
 
 	template <typename T>
-	vector2_t<T> atan2 (const vector2_t<T>& v1, const vector2_t<T>& v2)
+	Vector2<T> Max(const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		vector2_t<T> result = {};
-		result.x = atan2(v1.x, v2.x);
-		result.y = atan2(v1.y, v2.y);
+		Vector2<T> result = {};
+		result.x = Max(v1.x, v2.x);
+		result.y = Max(v1.y, v2.y);
 		return result;
 	}
 
 	template <typename T>
-	T horizontal_sum(const vector2_t<T>& v)
+	T HorizontalSum(const Vector2<T>& v)
 	{
 		T result = v.x + v.y;
 		return result;
 	}
 
 	template <typename T>
-	T dot(const vector2_t<T>& v1, const vector2_t<T>& v2)
+	T Dot(const Vector2<T>& v1, const Vector2<T>& v2)
 	{
-		const vector2_t<T>& vv = v1 * v2;
-		const T result = horizontal_sum(vv);
+		const Vector2<T>& vv = v1 * v2;
+		const T result = HorizontalSum(vv);
 		return result;
 	}
 
 	template <typename T>
-	T squared_length(const vector2_t<T>& v)
+	T SquaredLength(const Vector2<T>& v)
 	{
-		const T slen = dot(v, v);
-		return slen;
+		const T squared_length = Dot(v, v);
+		return squared_length;
 	}
 
 	template <typename T, typename RT=float>
-	RT length(const vector2_t<T>& v)
+	RT Length(const Vector2<T>& v)
 	{
-		const T slen = dot(v, v);
-		const RT len = std::sqrt(slen);
-		return len;
+		const T squared_length = Dot(v, v);
+		const RT length = std::sqrt(squared_length);
+		return length;
 	}
 
 	template <typename T, typename LT=float>
-	vector2_t<T> normalize(const vector2_t<T>& v)
+	Vector2<T> Normalize(const Vector2<T>& v)
 	{
-		const LT len = length<LT>(v);
-		const vector2_t<T> norm = v / len;
-		return norm;
+		const LT length = Length<LT>(v);
+		const Vector2<T> normalized = v / length;
+		return normalized;
 	}
 
 }

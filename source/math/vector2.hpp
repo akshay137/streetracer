@@ -7,7 +7,7 @@
 namespace katha
 {
 	template <typename T, typename ResultType=float>
-	ResultType aspect_xy(const vector2_t<T>& v)
+	ResultType AspectXY(const Vector2<T>& v)
 	{
 		ResultType aspect = static_cast<ResultType>(v.x)
 			/ static_cast<ResultType>(v.y);

@@ -9,13 +9,13 @@
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_error.h>
 
-uint32_t katha::log_line(const string_t format, ...)
+uint32_t katha::LogLine(const String format, ...)
 {
 #if KATHA_PRINT_LOG_DIAGNOSTICS
-	const uint64_t start = now();
+	const uint64_t start = Now();
 #endif
 
-	string_format_t formatter = {};
+	StringFormat formatter = {};
 	formatter.format = format;
 	va_start(formatter.args, format);
 
@@ -33,7 +33,7 @@ uint32_t katha::log_line(const string_t format, ...)
 			buffer_index = 0;
 		}
 		
-		uint32_t bytes = string_t::write_utf8(code, buffer + buffer_index);
+		uint32_t bytes = String::WriteUTF8(code, buffer + buffer_index);
 		buffer_index += bytes;
 	}
 	va_end(formatter.args);
@@ -49,7 +49,7 @@ uint32_t katha::log_line(const string_t format, ...)
 	const int32_t bw = snprintf(buffer, BUFFER_SIZE,
 		" [bytes: %" PRIu32 ", time: %.2f \xce\xbcs]\n",
 		bytes_written,
-		(now() - start) / 1000.0f
+		(Now() - start) / 1000.0f
 	);
 	fwrite(buffer, 1, bw, stdout);
 	bytes_written += static_cast<uint32_t>(bw);
@@ -61,31 +61,31 @@ uint32_t katha::log_line(const string_t format, ...)
 	return bytes_written;
 }
 
-void* katha::allocate(const uint32_t size, const source_t& source)
+void* katha::Allocate(const uint32_t size, const source_t& source)
 {
 	void* memory = SDL_malloc(size);
 	if (nullptr == memory)
 	{
-		log_line("error: alloc({u64}) at {src}, {s}",
+		LogLine("error: alloc({u64}) at {src}, {s}",
 			&source, SDL_GetError()
 		);
-		platform_t::get()->force_exit();
+		Platform::Get()->forceExit();
 	}
 
-	log_line("memory-allocate: {p}, {u64} bytes, in {src}",
+	LogLine("memory-allocate: {p}, {u64} bytes, in {src}",
 		memory, size, &source
 	);
 	return memory;
 }
 
-void katha::release(void* memory, const source_t& source)
+void katha::Release(void* memory, const source_t& source)
 {
 	if (nullptr == memory)
 	{
-		log_line("warning: release(0) called in {src}", &source);
+		LogLine("warning: release(0) called in {src}", &source);
 		return;
 	}
 
-	log_line("memory-free: {p}, in {src}", memory, &source);
+	LogLine("memory-free: {p}, in {src}", memory, &source);
 	SDL_free(memory);
 }

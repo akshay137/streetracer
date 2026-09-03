@@ -7,42 +7,42 @@
 namespace katha
 {
 	template <typename T>
-	struct quaternion_t
+	struct Quaternion
 	{
 		T x = {};
 		T y = {};
 		T z = {};
 		T w = {};
 
-		quaternion_t() = default;
-		constexpr quaternion_t(const T& value)
+		Quaternion() = default;
+		constexpr Quaternion(const T& value)
 			: x{value}, y{value}, z{value}, w{value}
 		{}
-		constexpr quaternion_t(
+		constexpr Quaternion(
 			const T& x, const T& y, const T& z, const T& w
 		) : x{x}, y{y}, z{z}, w{w}
 		{}
 
-		constexpr quaternion_t(const vector3_t<T> v, const T& w)
+		constexpr Quaternion(const Vector3<T> v, const T& w)
 			: x{v.x}, y{v.y}, z{v.z}, w{w}
 		{}
 
 		T* array() { return &x; }
 		const T* array() const { return &x; }
 
-		static quaternion_t<T> identity()
+		static Quaternion<T> Identity()
 		{
-			quaternion_t<T> i(0, 0, 0, 1);
+			Quaternion<T> i(0, 0, 0, 1);
 			return i;
 		}
 
-		vector3_t<T> vector() const
+		Vector3<T> vector() const
 		{
-			vector3_t<T> v(x, y, z);
+			Vector3<T> v(x, y, z);
 			return v;
 		}
 
-		quaternion_t<T>& vector(const vector3_t<T>& v)
+		Quaternion<T>& vector(const Vector3<T>& v)
 		{
 			x = v.x;
 			y = v.y;
@@ -55,14 +55,14 @@ namespace katha
 			return w;
 		}
 
-		quaternion_t<T>& scalar(const T& s)
+		Quaternion<T>& scalar(const T& s)
 		{
 			w = s;
 			return *this;
 		}
 	};
 
-	using quat_t = quaternion_t<float>;
+	using quat = Quaternion<float>;
 }
 
 #endif

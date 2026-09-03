@@ -6,14 +6,14 @@
 
 namespace katha
 {
-	struct version_t
+	struct Version
 	{
 		uint32_t major:8 = 0;
 		uint32_t minor:8 = 0;
 		uint32_t patch:16 = 0;
 
-		constexpr version_t() = default;
-		constexpr version_t(
+		constexpr Version() = default;
+		constexpr Version(
 			const uint32_t major,
 			const uint32_t minor,
 			const uint32_t patch
@@ -26,24 +26,24 @@ namespace katha
 			return result;
 		}
 
-		constexpr version_t(const uint32_t version)
+		constexpr Version(const uint32_t version)
 		{
 			major = version >> 24;
 			minor = (version >> 16) & 0xFF;
 			patch = version & 0xFFFF;
 		}
 
-		constexpr bool operator < (const version_t& rhs) const
+		constexpr bool operator < (const Version& rhs) const
 		{
 			return packed() < rhs.packed();
 		}
 
-		constexpr bool operator > (const version_t& rhs) const
+		constexpr bool operator > (const Version& rhs) const
 		{
 			return packed() > rhs.packed();
 		}
 
-		constexpr bool operator == (const version_t& rhs) const
+		constexpr bool operator == (const Version& rhs) const
 		{
 			return packed() == rhs.packed();
 		}

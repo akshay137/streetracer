@@ -1,16 +1,16 @@
 #include "gamepad.hpp"
 #include "../math/vector2.hpp"
 
-void katha::gamepad_t::clamp()
+void katha::GamePad::clamp()
 {
-	stick_left = katha::clamp<vec2>(stick_left, -1.0f, 1.0f);
-	stick_right = katha::clamp<vec2>(stick_right, -1.0f, 1.0f);
+	stick_left = katha::Clamp<vec2>(stick_left, -1.0f, 1.0f);
+	stick_right = katha::Clamp<vec2>(stick_right, -1.0f, 1.0f);
 
-	trigger_left = katha::clamp(trigger_left, 0.0f, 1.0f);
-	trigger_right = katha::clamp(trigger_right, 0.0f, 1.0f);
+	trigger_left = katha::Clamp<float>(trigger_left, 0.0f, 1.0f);
+	trigger_right = katha::Clamp<float>(trigger_right, 0.0f, 1.0f);
 }
 
-void katha::gamepad_t::merge(const gamepad_t& gp)
+void katha::GamePad::merge(const GamePad& gp)
 {
 	stick_left += gp.stick_left;
 	stick_right += gp.stick_right;

@@ -7,30 +7,33 @@
 namespace katha
 {
 	// Default vertex for a 3D mesh
-	struct vertex_t
+	struct Vertex
 	{
-		using unorm_vec2 = vector2_t<uint16_t>;
-		using snorm_vec2 = vector2_t<int16_t>;
+		using UNormVec3 = Vector3<uint16_t>;
+		using SNormVec3 = Vector3<int16_t>;
 
 		vec3 position;
-		unorm_vec2 uv;
+		UNormVec3 uv;
+		SNormVec3 normal;
 
 		// `v` must be in range 0, 1
-		static constexpr unorm_vec2 unorm(const vec2 v)
+		static constexpr UNormVec3 UNorm(const vec2 v)
 		{
-			unorm_vec2 result(
+			UNormVec3 result(
 				static_cast<uint16_t>(v.x * UINT16_MAX),
-				static_cast<uint16_t>(v.y * UINT16_MAX)
+				static_cast<uint16_t>(v.y * UINT16_MAX),
+				0
 			);
 			return result;
 		}
 
 		// `v` must be in range -1, 1
-		static constexpr snorm_vec2 snorm(const vec2 v)
+		static constexpr SNormVec3 SNorm(const vec3 v)
 		{
-			snorm_vec2 result(
+			SNormVec3 result(
 				static_cast<int16_t>(v.x * INT16_MAX),
-				static_cast<int16_t>(v.y * INT16_MAX)
+				static_cast<int16_t>(v.y * INT16_MAX),
+				static_cast<int16_t>(v.z * INT16_MAX)
 			);
 			return result;
 		}

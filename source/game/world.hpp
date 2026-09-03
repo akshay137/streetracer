@@ -4,16 +4,17 @@
 
 #include "../enum/result.hpp"
 #include "../type/buffer.hpp"
+#include "../type/mesh.hpp"
 #include "../type/texture.hpp"
 
 namespace katha
 {
-	struct world_t
+	struct World
 	{
-		buffer_t mesh_buffer = {};
-		texture_t texture = {};
+		Mesh mesh = {};
+		Texture texture = {};
 
-		result_e load();
+		Result load();
 		void clear();
 	};
 }

@@ -8,15 +8,15 @@ namespace katha
 {
 	// view if capacity is zero and size & buffer have non-zero values
 	// owns buffer if capacity is non-zero, and caller must free
-	struct string_t
+	struct String
 	{
 		char* buffer = nullptr;
 		uint32_t size = 0;
 		uint32_t capacity = 0;
 
-		string_t() = default;
+		String() = default;
 
-		constexpr static uint32_t length(const char* cstring)
+		constexpr static uint32_t Length(const char* cstring)
 		{
 			if (nullptr == cstring)
 			{
@@ -28,15 +28,15 @@ namespace katha
 			return count - 1;
 		}
 
-		constexpr string_t(const char* cstring)
-			: buffer{(char*)cstring}, size{length(cstring)}, capacity{0}
+		constexpr String(const char* cstring)
+			: buffer{(char*)cstring}, size{Length(cstring)}, capacity{0}
 		{}
 
-		constexpr string_t(const char* cstring, const uint32_t size)
+		constexpr String(const char* cstring, const uint32_t size)
 			: buffer{(char*)cstring}, size{size}, capacity{0}
 		{}
 
-		static string_t copy_from_cstring(
+		static String CopyFromCString(
 			const char* cstring,
 			uint32_t size = 0,
 			const source_t& source = source_t::current()
@@ -54,31 +54,37 @@ namespace katha
 			return buffer[index];
 		}
 
-		bool equals(const string_t& rhs) const;
-		bool find(const string_t& pattern, uint32_t* out_index) const;
+		bool equals(const String& rhs) const;
+		bool find(const String& pattern, uint32_t* out_index) const;
 
-		static int32_t read_utf8(const char* buffer, uint32_t* out_bytes);
-		static uint32_t write_utf8(const int32_t code, char* buffer);
+		static int32_t ReadUTF8(const char* buffer, uint32_t* out_bytes);
+		static uint32_t WriteUTF8(const int32_t code, char* buffer);
 
 		// some cstring function helpers
 
-		static void cstring_copy(
+		static void CStringCopy(
 			const char* source,
 			char* destination,
 			const uint32_t max_bytes
 		);
 
-		static bool cstring_starts_with(
+		static bool CStringStartsWith(
 			const char* source,
 			const char* prefix
 		);
 
 		// path helpers
 
-		static string_t join_path(
-			const string_t& base,
-			const string_t& suffix,
+		static String JoinPath(
+			const String& base,
+			const String& suffix,
 			const source_t& source = source_t::current()
+		);
+		static bool JoinPath(
+			const String& base,
+			const String& suffix,
+			char* buffer,
+			const uint32_t buffer_length
 		);
 	};
 }

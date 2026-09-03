@@ -1,23 +1,22 @@
 #include "types.hpp"
-#include "../math/utility.hpp"
 
 #include <cstdio>
 
 constexpr const char* DIGIT_STRING = "0123456789ABCDEF";
 
-inline const char* get_base_prefix_reversed(const katha::base_e base)
+inline const char* GetBasePrefixReversed(const katha::Base base)
 {
 	switch (base)
 	{
-		case katha::base_e::binary: return "b0";
-		case katha::base_e::octal: return "o0";
-		case katha::base_e::decimal: return "";
-		case katha::base_e::hexadecimal: return "x0";
+		case katha::Base::BINARY: return "b0";
+		case katha::Base::OCTAL: return "o0";
+		case katha::Base::DECIMAL: return "";
+		case katha::Base::HEXADECIMAL: return "x0";
 	}
 	return "";
 }
 
-uint32_t katha::int_to_string(const int32_t number, char* buffer, const base_e base)
+uint32_t katha::IntToString(const int32_t number, char* buffer, const Base base)
 {
 	if (0 == number)
 	{
@@ -33,7 +32,7 @@ uint32_t katha::int_to_string(const int32_t number, char* buffer, const base_e b
 	int32_t v = number;
 	while (v)
 	{
-		const int digit = abs(v % FACTOR);
+		const int digit = Abs(v % FACTOR);
 		v /= FACTOR;
 		temp[--index] = DIGIT_STRING[digit];
 	}
@@ -42,7 +41,7 @@ uint32_t katha::int_to_string(const int32_t number, char* buffer, const base_e b
 		temp[--index] = '-';
 	}
 	
-	const char* prefix = get_base_prefix_reversed(base);
+	const char* prefix = GetBasePrefixReversed(base);
 	while (*prefix)
 	{
 		temp[--index] = *prefix;
@@ -57,7 +56,7 @@ uint32_t katha::int_to_string(const int32_t number, char* buffer, const base_e b
 	return BUFFER_SIZE - index;
 }
 
-uint32_t katha::uint_to_string(const uint32_t number, char* buffer, const base_e base)
+uint32_t katha::UIntToString(const uint32_t number, char* buffer, const Base base)
 {
 	if (0 == number)
 	{
@@ -78,7 +77,7 @@ uint32_t katha::uint_to_string(const uint32_t number, char* buffer, const base_e
 		temp[--index] = DIGIT_STRING[digit];
 	}
 
-	const char* prefix = get_base_prefix_reversed(base);
+	const char* prefix = GetBasePrefixReversed(base);
 	while (*prefix)
 	{
 		temp[--index] = *prefix;
@@ -93,7 +92,7 @@ uint32_t katha::uint_to_string(const uint32_t number, char* buffer, const base_e
 	return BUFFER_SIZE - index;
 }
 
-uint32_t katha::int64_to_string(const int64_t number, char* buffer, const base_e base)
+uint32_t katha::Int64ToString(const int64_t number, char* buffer, const Base base)
 {
 	if (0 == number)
 	{
@@ -109,7 +108,7 @@ uint32_t katha::int64_to_string(const int64_t number, char* buffer, const base_e
 	int64_t v = number;
 	while (v)
 	{
-		const int digit = abs(v % FACTOR);
+		const int digit = Abs(v % FACTOR);
 		v /= FACTOR;
 		temp[--index] = DIGIT_STRING[digit];
 	}
@@ -118,7 +117,7 @@ uint32_t katha::int64_to_string(const int64_t number, char* buffer, const base_e
 		temp[--index] = '-';
 	}
 
-	const char* prefix = get_base_prefix_reversed(base);
+	const char* prefix = GetBasePrefixReversed(base);
 	while (*prefix)
 	{
 		temp[--index] = *prefix;
@@ -133,7 +132,7 @@ uint32_t katha::int64_to_string(const int64_t number, char* buffer, const base_e
 	return BUFFER_SIZE - index;
 }
 
-uint32_t katha::uint64_to_string(const uint64_t number, char* buffer, const base_e base)
+uint32_t katha::UInt64ToString(const uint64_t number, char* buffer, const Base base)
 {
 	if (0 == number)
 	{
@@ -154,7 +153,7 @@ uint32_t katha::uint64_to_string(const uint64_t number, char* buffer, const base
 		temp[--index] = DIGIT_STRING[digit];
 	}
 
-	const char* prefix = get_base_prefix_reversed(base);
+	const char* prefix = GetBasePrefixReversed(base);
 	while (*prefix)
 	{
 		temp[--index] = *prefix;
@@ -169,13 +168,13 @@ uint32_t katha::uint64_to_string(const uint64_t number, char* buffer, const base
 	return BUFFER_SIZE - index;
 }
 
-uint32_t katha::float_to_string(const float number, char* buffer)
+uint32_t katha::FloatToString(const float number, char* buffer)
 {
 	int len = snprintf(buffer, 16, "%g", number);
 	return static_cast<uint32_t>(len);
 }
 
-uint32_t katha::double_to_string(const double number, char* buffer)
+uint32_t katha::DoubleToString(const double number, char* buffer)
 {
 	int len = snprintf(buffer, 16, "%g", number);
 	return static_cast<uint32_t>(len);

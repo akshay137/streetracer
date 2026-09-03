@@ -1,32 +1,41 @@
 #include "graphics.hpp"
 #include "../platform/platform.hpp"
 
-katha::result_e katha::create_buffer(
-	buffer_t* out_buffer,
-	efield_t<buffer_usage_e> usage,
+katha::Result katha::CreateBuffer(
+	Buffer* out_buffer,
+	EField<BufferUsage> usage,
 	const uint32_t size,
 	const void* data
 )
 {
-	return platform_t::get()->gl.create_buffer(out_buffer, usage, size, data);
+	return Platform::Get()->gles.createBuffer(out_buffer, usage, size, data);
 }
 
-void katha::delete_buffer(const buffer_t& buffer)
+void katha::DeleteBuffer(const Buffer& buffer)
 {
-	platform_t::get()->gl.delete_buffer(buffer);
+	Platform::Get()->gles.deleteBuffer(buffer);
 }
 
-katha::result_e katha::create_texture(
-	texture_t* out_texture,
-	const format_e format,
+katha::Result katha::CreateTexture(
+	Texture* out_texture,
+	const Format format,
 	const uvec2 size,
 	const void* pixels
 )
 {
-	return platform_t::get()->gl.create_texture(out_texture, format, size, pixels);
+	return Platform::Get()->gles.createTexture(out_texture, format, size, pixels);
 }
 
-void katha::delete_texture(const texture_t& texture)
+void katha::DeleteTexture(const Texture& texture)
 {
-	platform_t::get()->gl.delete_texture(texture);
+	Platform::Get()->gles.deleteTexture(texture);
+}
+
+void katha::DeleteMesh(const Mesh& mesh)
+{
+	for (uint8_t i = 0; i < mesh.mesh_count; i++)
+	{
+		DeleteBuffer(mesh.data[i].vertices);
+		DeleteBuffer(mesh.data[i].indices);
+	}
 }

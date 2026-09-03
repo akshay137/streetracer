@@ -9,19 +9,19 @@
 
 namespace katha
 {
-	struct input_t
+	struct Input
 	{
-		bitfield_t<512, uint64_t> keyboard;
+		BitField<512, uint64_t> keyboard;
 		ivec2 cursor = {};
-		gamepad_t gamepad = {};
-		bitfield_t<3> mouse;
+		GamePad gamepad = {};
+		BitField<3> mouse;
 
-		bool get_key(const int key) const
+		bool getKey(const int key) const
 		{
 			return keyboard.has(key);
 		}
 
-		void set_key(const int key, bool pressed)
+		void setKey(const int key, bool pressed)
 		{
 			if (pressed)
 			{

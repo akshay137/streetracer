@@ -61,8 +61,12 @@ def get_assignment_operator_string(n: int, operator: str, op_exp: str):
 	pass
 
 def get_function_string(n: int, fn: str):
+	if fn in [ 'sin', 'cos', 'tan', 'acos', 'asin' ]:
+		mfn = f'std::{fn}'
+	else:
+		mfn = fn
 	vt = f'vector{n}_t<T>'
-	fn_exp = f'result.{{0}} = {fn}(v.{{0}});'
+	fn_exp = f'result.{{0}} = {mfn}(v.{{0}});'
 	res = f'''
 	template <typename T>
 	{vt} {fn} (const {vt}& v)

@@ -4,44 +4,44 @@
 
 #include <SDL2/SDL.h>
 
-katha::platform_t* katha::platform_t::get()
+katha::Platform* katha::Platform::Get()
 {
-	static platform_t platform = {};
+	static Platform platform = {};
 	return &platform;
 }
 
-katha::result_e katha::platform_t::init(int argc, char** args)
+katha::Result katha::Platform::init(int argc, char** args)
 {
-	command_line::parse(argc, args);
-	command_line::log();
+	CommandLine::Parse(argc, args);
+	CommandLine::Log();
 
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0)
 	{
-		log_line("error-sdl: SDL_Init {s}", SDL_GetError());
-		return result_e::error_sdl;
+		LogLine("error-sdl: SDL_Init {s}", SDL_GetError());
+		return Result::ERROR_SDL;
 	}
 
 	base_path = SDL_GetBasePath();
 	if (nullptr == base_path)
 	{
-		log_line("error-sdl: SDL_GetBasePath {s}", SDL_GetError());
-		return result_e::error_sdl;
+		LogLine("error-sdl: SDL_GetBasePath {s}", SDL_GetError());
+		return Result::ERROR_SDL;
 	}
-	log_line("base_path: {s}", base_path);
-	asset_root = command_line::get_asset_root(base_path);
+	LogLine("base_path: {s}", base_path);
+	asset_root = CommandLine::GetAssetRoot(base_path);
 
-	result_e result = init_graphics();
-	if (!check_result(result, "platform::init_graphics"))
+	Result result = initGraphics();
+	if (!CheckResult(result, "platform::init_graphics"))
 	{
 		return result;
 	}
 
-	return result_e::success;
+	return Result::SUCCESS;
 }
 
-void katha::platform_t::clear()
+void katha::Platform::clear()
 {
-	gl.clear();
+	gles.clear();
 	
 	if (window)
 	{
@@ -53,9 +53,10 @@ void katha::platform_t::clear()
 	SDL_Quit();
 }
 
-katha::result_e katha::platform_t::init_graphics()
+katha::Result katha::Platform::initGraphics()
 {
-	if (command_line::has(command_line::command::force_opengl_es))
+	// TODO
+	if (true)
 	{
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -68,7 +69,7 @@ katha::result_e katha::platform_t::init_graphics()
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
 	}
 
-	int display = command_line::get_display_index(0);
+	int display = CommandLine::GetDisplayIndex(0);
 	int pos = SDL_WINDOWPOS_UNDEFINED_DISPLAY(display);
 	int width = 1280;
 	int height = 720;
@@ -76,23 +77,23 @@ katha::result_e katha::platform_t::init_graphics()
 	window = SDL_CreateWindow("StreetRacer", pos, pos, width, height, SDL_WINDOW_OPENGL);
 	if (nullptr == window)
 	{
-		log_line("error-sdl: SDL_CreateWindow {s}", SDL_GetError());
-		return result_e::error_sdl;
+		LogLine("error-sdl: SDL_CreateWindow {s}", SDL_GetError());
+		return Result::ERROR_SDL;
 	}
-	log_line("window: {p}", window);
+	LogLine("window: {p}", window);
 
-	result_e result = gl.init(this);
-	if (!check_result(result, "gl::init"))
+	Result result = gles.init();
+	if (!CheckResult(result, "gl::init"))
 	{
 		return result;
 	}
 
-	return result_e::success;
+	return Result::SUCCESS;
 }
 
-void katha::platform_t::force_exit(const source_t& source)
+void katha::Platform::forceExit(const source_t& source)
 {
-	log_line("force_exit called from {src}", &source);
+	LogLine("force_exit called from {src}", &source);
 	
 	if (on_force_exit)
 	{
@@ -103,15 +104,22 @@ void katha::platform_t::force_exit(const source_t& source)
 	exit(0);
 }
 
-void katha::platform_t::set_force_exit_callback(pfn_on_force_exit callback)
+void katha::Platform::setForceExitCallback(PFN_OnForceExit callback)
 {
 	on_force_exit = callback;
 }
 
-katha::result_t<katha::file_t> katha::platform_t::open_file_read(const char* file)
+katha::File katha::Platform::openFileRead(const char* file)
 {
-	string_t path = string_t::join_path(asset_root, file);
-	file_t f = file_t::open_read(path.buffer);
+	char full_path[1024] = {};
+	if (String::JoinPath(asset_root, file, full_path, 1024))
+	{
+		File _file = File::OpenRead(full_path);
+		return _file;
+	}
+
+	String path = String::JoinPath(asset_root, file);
+	File _file = File::OpenRead(path.buffer);
 	path.clear();
-	return f;
+	return _file;
 }

@@ -3,12 +3,12 @@
 #define KATHA_PLATFORM_DESKTOP_H__ 1
 
 #include "../config.hpp"
+#include "../enum/result.hpp"
 #include "../type/action_map.hpp"
 #include "../type/file.hpp"
 #include "../type/gamepad.hpp"
-#include "../type/result.hpp"
 #include "../type/string.hpp"
-#include "../graphics/gl.hpp"
+#include "../graphics/gles.hpp"
 #include "input.hpp"
 
 #include <SDL2/SDL_video.h>
@@ -16,30 +16,30 @@
 
 namespace katha
 {
-	typedef void (*pfn_on_force_exit)();
+	typedef void (*PFN_OnForceExit)();
 
-	struct platform_t
+	struct Platform
 	{
-		static platform_t* get();
+		static Platform* Get();
 
-		pfn_on_force_exit on_force_exit = nullptr;
+		PFN_OnForceExit on_force_exit = nullptr;
 		char* base_path = nullptr;
-		string_t asset_root = {};
+		String asset_root = {};
 
 		SDL_Window* window = nullptr;
-		gl_t gl = {};
+		GLES gles = {};
 
-		result_e init(int argc, char** args);
+		Result init(int argc, char** args);
 		void clear();
 
-		result_e init_graphics();
+		Result initGraphics();
 
 		[[noreturn]]
-		void force_exit(const source_t& source = source_t::current());
-		void set_force_exit_callback(pfn_on_force_exit callback);
+		void forceExit(const source_t& source = source_t::current());
+		void setForceExitCallback(PFN_OnForceExit callback);
 
 		[[nodiscard]]
-		result_t<file_t> open_file_read(const char* file);
+		File openFileRead(const char* file);
 	};
 }
 

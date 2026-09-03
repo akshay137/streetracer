@@ -1,33 +1,33 @@
 #include "result.hpp"
 #include "../utility.hpp"
 
-const char* katha::result_to_cstring(const result_e result)
+const char* katha::ResultToCString(const Result result)
 {
 	switch (result)
 	{
-		case result_e::success: return "result_e::success";
-		case result_e::error: return "result_e::error";
+		case Result::SUCCESS: return "Result::SUCCESS";
+		case Result::ERROR: return "Result::ERROR";
 		
-		case result_e::error_sdl: return "result_e::error_sdl";
-		case result_e::error_gl: return "result_e::error_gl";
-		case result_e::error_vulkan: return "result_e::error_vulkan";
-		case result_e::error_xr: return "result_e::error_xr";
+		case Result::ERROR_SDL: return "Result::ERROR_SDL";
+		case Result::ERROR_GLES: return "Result::ERROR_GLES";
+		case Result::ERROR_VULKAN: return "Result::ERROR_VULKAN";
+		case Result::ERROR_XR: return "Result::ERROR_XR";
 
-		case result_e::error_value_null: return "result_e::error_value_null";
-		case result_e::error_value_unexpected: return "result_e::error_value_unexpected";
+		case Result::ERROR_VALUE_NULL: return "Result::ERROR_VALUE_NULL";
+		case Result::ERROR_VALUE_UNEXPECTED: return "Result::ERROR_VALUE_UNEXPECTED";
 
-		case result_e::request_skip: return "result_e::request_skip";
-		case result_e::request_exit: return "result_e::request_exit";
+		case Result::REQUEST_SKIP: return "Result::REQUEST_SKIP";
+		case Result::REQUEST_EXIT: return "Result::REQUEST_EXIT";
 	}
 
-	return "unknown result";
+	return "Error: Unknown Result";
 }
 
-bool katha::check_result(const result_e result, const char* message)
+bool katha::CheckResult(const Result result, const char* message)
 {
-	if (result_e::success != result)
+	if (Result::SUCCESS != result)
 	{
-		log_line("{s}: {s}", message, result_to_cstring(result));
+		LogLine("{s}: {s}", message, ResultToCString(result));
 		return false;
 	}
 

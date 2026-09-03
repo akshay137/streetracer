@@ -7,49 +7,48 @@
 
 namespace katha
 {
-	struct command_line
+	struct CommandLine
 	{
-		static command_line __instance;
+		static CommandLine __instance;
 		
-		enum class command : uint32_t
+		enum class Command : uint32_t
 		{
-			display_index,
-			debug_graphics,
-			asset_root,
-			force_opengl_es,
+			DISPLAY_INDEX,
+			DEBUG_GRAPHICS,
+			ASSET_ROOT,
 	
-			__max
+			__MAX
 		};
-		efield_t<command> commands = {};
+		EField<Command> commands = {};
 		int display_index = 0;
 		const char* asset_root = nullptr;
 
-		void parse_impl(int argc, char** args);
-		static void parse(int argc, char** args)
+		void parseImpl(int argc, char** args);
+		static void Parse(int argc, char** args)
 		{
-			__instance.parse_impl(argc, args);
+			__instance.parseImpl(argc, args);
 		}
 
-		void log_impl();
-		static void log() { __instance.log_impl(); }
+		void logImpl();
+		static void Log() { __instance.logImpl(); }
 
-		static bool has(const command command)
+		static bool Has(const Command command)
 		{
-			return __instance.commands.has_enum(command);
+			return __instance.commands.hasEnum(command);
 		}
 
-		static int get_display_index(const int default_index)
+		static int GetDisplayIndex(const int default_index)
 		{
-			if (has(command::display_index))
+			if (Has(Command::DISPLAY_INDEX))
 			{
 				return __instance.display_index;
 			}
 			return default_index;
 		}
 
-		static const char* get_asset_root(const char* default_asset_root = "./")
+		static const char* GetAssetRoot(const char* default_asset_root = "./")
 		{
-			if (has(command::asset_root))
+			if (Has(Command::ASSET_ROOT))
 			{
 				return __instance.asset_root;
 			}

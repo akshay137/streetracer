@@ -4,47 +4,43 @@
 
 #include <cstdlib>
 
-katha::command_line katha::command_line::__instance = {};
+katha::CommandLine katha::CommandLine::__instance = {};
 
-void katha::command_line::parse_impl(int argc, char** args)
+void katha::CommandLine::parseImpl(int argc, char** args)
 {
-	log_line("parsing {i} command line arguments", argc);
+	LogLine("parsing {i} command line arguments", argc);
 
 	for (int i = 1; i < argc; i++)
 	{
-		const string_t arg = args[i];
+		const String arg = args[i];
 		const bool has_next = i < (argc - 1);
 
 		if (arg.equals("-display_index") && has_next)
 		{
-			commands.set_enum(command::display_index);
+			commands.setEnum(Command::DISPLAY_INDEX);
 			display_index = atoi(args[i + 1]);
 			i++;
 		}
 		else if (arg.equals("--debug_graphics"))
 		{
-			commands.set_enum(command::debug_graphics);
+			commands.setEnum(Command::DEBUG_GRAPHICS);
 		}
 		else if (arg.equals("-asset_root") && has_next)
 		{
-			commands.set_enum(command::asset_root);
+			commands.setEnum(Command::ASSET_ROOT);
 			asset_root = args[i + 1];
 			i++;
 		}
-		else if (arg.equals("--force_opengl_es"))
-		{
-			commands.set_enum(command::force_opengl_es);
-		}
 		else
 		{
-			log_line("couldn't parse: {s}", args[i]);
+			LogLine("couldn't parse: {s}", args[i]);
 		}
 	}
 }
 
-void katha::command_line::log_impl()
+void katha::CommandLine::logImpl()
 {
-	log_line("display_index: {b} {i}", has(command::display_index), display_index);
-	log_line("debug_graphics: {b}", has(command::debug_graphics));
-	log_line("force_opengl_es: {b}", has(command::force_opengl_es));
+	LogLine("display_index: {b} {i}", Has(Command::DISPLAY_INDEX), display_index);
+	LogLine("debug_graphics: {b}", Has(Command::DEBUG_GRAPHICS));
+	LogLine("asset_root: {b} {s}", Has(Command::ASSET_ROOT), asset_root);
 }

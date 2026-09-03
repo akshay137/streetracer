@@ -1,13 +1,13 @@
 #include "base.hpp"
 
-const char* katha::base_to_cstring(const base_e base)
+const char* katha::BaseToCString(const Base base)
 {
 	switch (base)
 	{
-		case base_e::binary: return "base_e::binary";
-		case base_e::octal: return "base_e::octal";
-		case base_e::decimal: return "base_e::decimal";
-		case base_e::hexadecimal: return "base_e::hexadecimal";
+		case Base::BINARY: return "Base::BINARY";
+		case Base::OCTAL: return "Base::OCTAL";
+		case Base::DECIMAL: return "Base::DECIMAL";
+		case Base::HEXADECIMAL: return "Base::HEXADECIMAL";
 	}
 
 	return "unknown base";

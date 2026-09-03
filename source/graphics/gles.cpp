@@ -1,4 +1,4 @@
-#include "gl.hpp"
+#include "gles.hpp"
 #include "../type/command_line.hpp"
 #include "../type/string.hpp"
 #include "../platform/platform.hpp"
@@ -7,7 +7,7 @@
 #include <glad/glad.h>
 #include <SDL2/SDL_video.h>
 
-APIENTRY void gl_debug_callback(
+APIENTRY void GLESDebugCallback(
 	GLenum source,
 	GLenum type,
 	GLuint id,
@@ -52,71 +52,75 @@ APIENTRY void gl_debug_callback(
 		case GL_DEBUG_SEVERITY_NOTIFICATION: severity_str = "severity:notification"; break;
 	}
 
-	katha::log_line("debug-gl: [ id:{u} | {s} | {s} | {s} ] {s}",
+	katha::LogLine("debug-gles: [ id:{u} | {s} | {s} | {s} ] {s}",
 		id, source_str, type_str, severity_str, message
 	);
 }
 
-katha::result_e katha::gl_t::init(platform_t* platform)
+katha::Result katha::GLES::init()
 {
-	context = SDL_GL_CreateContext(platform->window);
+	window = Platform::Get()->window;
+	context = SDL_GL_CreateContext(window);
 	if (nullptr == context)
 	{
-		log_line("error-sdl: SDL_GL_CreateContext {s}", SDL_GetError());
-		return result_e::error_sdl;
+		LogLine("error-sdl: SDL_GL_CreateContext {s}", SDL_GetError());
+		return Result::ERROR_SDL;
 	}
-	log_line("gl_context: {p}", context);
-	window = platform->window;
+	LogLine("gl_context: {p}", context);
 
 	if (0 == gladLoadGLES2Loader(SDL_GL_GetProcAddress))
 	{
-		log_line("error-glad: failed to load procs");
-		return result_e::error_gl;
+		LogLine("error-glad: failed to load procs");
+		return Result::ERROR_GLES;
 	}
-	if (!check_version())
+	if (!checkVersion())
 	{
-		return result_e::error_value_unexpected;
+		return Result::ERROR_VALUE_UNEXPECTED;
 	}
 
-	query_extensions();
-	query_limits();
+	queryExtensions();
+	queryLimits();
 
 	if (
-		command_line::has(command_line::command::debug_graphics)
-		&& extensions.has_enum(extension_e::gl_khr_debug)
+		CommandLine::Has(CommandLine::Command::DEBUG_GRAPHICS)
+		&& extensions.hasEnum(Extension::gl_khr_debug)
 	)
 	{
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		glDebugMessageCallback(gl_debug_callback, nullptr);
+		glDebugMessageCallback(GLESDebugCallback, nullptr);
 		glEnable(0xffff);
-		check_error();
+		checkError();
 	}
 
-	log_line("{s}", glGetString(GL_VERSION));
+	LogLine("{s}", glGetString(GL_VERSION));
 
-	if (!create_resources())
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CCW);
+	glCullFace(GL_BACK);
+
+	if (!createResources())
 	{
-		return result_e::error_gl;
+		return Result::ERROR_GLES;
 	}
 
-	return result_e::success;
+	return Result::SUCCESS;
 }
 
-void katha::gl_t::clear()
+void katha::GLES::clear()
 {
 	if (nullptr == context)
 	{
 		return;
 	}
 
-	clear_resources();
+	clearResources();
 
 	SDL_GL_DeleteContext(context);
 	context = nullptr;
 }
 
-bool katha::gl_t::check_error(const source_t& source)
+bool katha::GLES::checkError(const source_t& source)
 {
 	GLenum error = glGetError();
 	bool has_error = false;
@@ -126,27 +130,27 @@ bool katha::gl_t::check_error(const source_t& source)
 		{
 			case GL_INVALID_ENUM:
 				has_error = true;
-				log_line("error-gl: GL_INVALID_ENUM at {src}", &source);
+				LogLine("error-gles: GL_INVALID_ENUM at {src}", &source);
 				break;
 			
 			case GL_INVALID_VALUE:
 				has_error = true;
-				log_line("error-gl: GL_INVALID_VALUE at {src}", &source);
+				LogLine("error-gles: GL_INVALID_VALUE at {src}", &source);
 				break;
 
 			case GL_INVALID_OPERATION:
 				has_error = true;
-				log_line("error-gl: GL_INVALID_OPERATION at {src}", &source);
+				LogLine("error-gles: GL_INVALID_OPERATION at {src}", &source);
 				break;
 
 			case GL_INVALID_FRAMEBUFFER_OPERATION:
 				has_error = true;
-				log_line("error-gl: GL_INVALID_FRAMEBUFFER_OPERATION at {src}", &source);
+				LogLine("error-gles: GL_INVALID_FRAMEBUFFER_OPERATION at {src}", &source);
 				break;
 			
 			case GL_OUT_OF_MEMORY:
 				has_error = true;
-				log_line("error-gl: GL_OUT_OF_MEMORY at {src}", &source);
+				LogLine("error-gles: GL_OUT_OF_MEMORY at {src}", &source);
 				break;
 		}
 
@@ -156,24 +160,24 @@ bool katha::gl_t::check_error(const source_t& source)
 	return has_error;
 }
 
-bool katha::gl_t::check_version()
+bool katha::GLES::checkVersion()
 {
 	const char* version_string = (const char*)glGetString(GL_VERSION);
-	is_es_context = string_t::cstring_starts_with(version_string, "OpenGL ES");
+	is_es_context = String::CStringStartsWith(version_string, "OpenGL ES");
 
 	GLint major = 0;
 	GLint minor = 0;
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
 	glGetIntegerv(GL_MINOR_VERSION, &minor);
 
-	version = version_t(major, minor, 0);
+	version = Version(major, minor, 0);
 
 	if (is_es_context)
 	{
-		constexpr version_t min_es_version = version_t(3, 1, 0);
+		constexpr Version min_es_version = Version(3, 1, 0);
 		if (version < min_es_version)
 		{
-			log_line("error-gl: version mismatch: required {version}, has {version}",
+			LogLine("error-gles: version mismatch: required {version}, has {version}",
 				&min_es_version, &version
 			);
 			return false;
@@ -181,10 +185,10 @@ bool katha::gl_t::check_version()
 		return true;
 	}
 
-	constexpr version_t min_core_version = version_t(4, 5, 0);
+	constexpr Version min_core_version = Version(4, 5, 0);
 	if (version < min_core_version)
 	{
-		log_line("error-gl: version mismatch: required {version}, has {version}",
+		LogLine("error-gles: version mismatch: required {version}, has {version}",
 			&min_core_version, &version
 		);
 		return false;
@@ -192,37 +196,37 @@ bool katha::gl_t::check_version()
 	return true;
 }
 
-void katha::gl_t::query_extensions()
+void katha::GLES::queryExtensions()
 {
 	GLint count = 0;
 	glGetIntegerv(GL_NUM_EXTENSIONS, &count);
 	if (0 == count)
 	{
-		log_line("warn-gl: no extensions found");
+		LogLine("warn-gles: no extensions found");
 		return;
 	}
 
 	for (GLint i = 0; i < count; i++)
 	{
-		const string_t ext = (const char*)glGetStringi(GL_EXTENSIONS, i);
+		const String ext = (const char*)glGetStringi(GL_EXTENSIONS, i);
 
 		if (ext.equals("GL_KHR_debug"))
 		{
-			extensions.set_enum(extension_e::gl_khr_debug);
+			extensions.setEnum(Extension::gl_khr_debug);
 		}
 	}
 }
 
-void katha::gl_t::query_limits()
+void katha::GLES::queryLimits()
 {}
 
-katha::gl_format_t katha::gl_t::format_to_gl_format(const format_e format)
+katha::GLESFormat katha::GLES::FormatToGLESFormat(const Format format)
 {
 	switch (format)
 	{
-		case format_e::none: return {};
+		case Format::NONE: return {};
 
-		case format_e::greyscale8:
+		case Format::GREYSCALE8:
 			return {
 				.internal = GL_R8,
 				.channel = GL_RED,
@@ -230,7 +234,7 @@ katha::gl_format_t katha::gl_t::format_to_gl_format(const format_e format)
 				.swizzle = ivec4(GL_RED, GL_RED, GL_RED, GL_ONE)
 			};
 
-		case format_e::rgba8:
+		case Format::RGBA8:
 			return {
 				.internal = GL_RGBA8,
 				.channel = GL_RGBA,
@@ -238,7 +242,7 @@ katha::gl_format_t katha::gl_t::format_to_gl_format(const format_e format)
 				.swizzle = ivec4(GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA)
 			};
 		
-		case format_e::rgb8:
+		case Format::RGB8:
 			return {
 				.internal = GL_RGB8,
 				.channel = GL_RGB,
@@ -246,7 +250,7 @@ katha::gl_format_t katha::gl_t::format_to_gl_format(const format_e format)
 				.swizzle = ivec4(GL_RED, GL_GREEN, GL_BLUE, GL_ONE)
 			};
 
-		case format_e::srgba8:
+		case Format::SRGBA8:
 			return {
 				.internal = GL_SRGB8_ALPHA8,
 				.channel = GL_RGBA,
@@ -254,7 +258,7 @@ katha::gl_format_t katha::gl_t::format_to_gl_format(const format_e format)
 				.swizzle = ivec4(GL_RED, GL_GREEN, GL_BLUE, GL_ALPHA)
 			};
 
-		case format_e::depth24_stencil8:
+		case Format::DEPTH24_STENCIL8:
 			return {
 				.internal = GL_DEPTH24_STENCIL8,
 				.channel = GL_DEPTH_STENCIL,
@@ -263,8 +267,8 @@ katha::gl_format_t katha::gl_t::format_to_gl_format(const format_e format)
 			};
 	}
 
-	log_line("gl: unsupported format {s}|{i}",
-		format_to_cstring(format),
+	LogLine("gles: unsupported format {s}|{i}",
+		FormatToCString(format),
 		static_cast<int>(format)
 	);
 	return {};

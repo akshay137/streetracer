@@ -6,7 +6,7 @@
 
 namespace katha
 {
-	struct buffer_t
+	struct Buffer
 	{
 		uint64_t handle = 0;
 

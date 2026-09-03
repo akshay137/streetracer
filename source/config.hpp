@@ -4,7 +4,7 @@
 
 namespace katha
 {
-	struct config_t
+	struct Config
 	{
 	};
 }

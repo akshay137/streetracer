@@ -7,7 +7,7 @@
 #include <windows.h>
 #endif
 
-uint64_t katha::now()
+uint64_t katha::Now()
 {
 #if KATHA_LINUX == KATHA_PLATFORM
 	struct timespec ts = {};
