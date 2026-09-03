@@ -10,5 +10,5 @@ const char* katha::BaseToCString(const Base base)
 		case Base::HEXADECIMAL: return "Base::HEXADECIMAL";
 	}
 
-	return "unknown base";
+	return "Unknown Base";
 }

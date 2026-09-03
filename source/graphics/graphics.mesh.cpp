@@ -30,12 +30,12 @@ katha::Result katha::LoadMesh(
 		}
 	}
 
-	uint8_t vertex_layout = 0;
-	if (!file.read<uint8_t>(&vertex_layout))
-	{
-		LogLine("error-kbm: failed to read vertex layout");
-		return Result::ERROR_VALUE_NULL;
-	}
+	// uint8_t vertex_layout = 0;
+	// if (!file.read<uint8_t>(&vertex_layout))
+	// {
+	// 	LogLine("error-kbm: failed to read vertex layout");
+	// 	return Result::ERROR_VALUE_NULL;
+	// }
 
 	uint8_t mesh_count = 0;
 	if (!file.read<uint8_t>(&mesh_count))
@@ -58,27 +58,19 @@ katha::Result katha::LoadMesh(
 			DeleteMesh(*out_mesh);
 			return Result::ERROR_VALUE_NULL;
 		}
-		uint32_t index_count = 0;
-		if (!file.read<uint32_t>(&index_count))
-		{
-			LogLine("error-kbm: failed to read index count");
-			DeleteMesh(*out_mesh);
-			return Result::ERROR_VALUE_NULL;
-		}
 
-		LogLine("kbm: v {u}, i {u}", vertex_count, index_count);
+		LogLine("kbm: v {u}", vertex_count);
 
 		const uint32_t vbuffer_size = sizeof(Vertex) * vertex_count;
-		const uint32_t ibuffer_size = sizeof(uint32_t) * index_count;
 		
 		if (nullptr == buffer)
 		{
-			buffer_size = vbuffer_size + ibuffer_size;
+			buffer_size = vbuffer_size;
 			buffer = Alloc<uint8_t>(buffer_size);
 		}
-		if (buffer_size < vbuffer_size + ibuffer_size)
+		if (buffer_size < vbuffer_size)
 		{
-			buffer_size = vbuffer_size + ibuffer_size;
+			buffer_size = vbuffer_size;
 			Release(buffer);
 			buffer = Alloc<uint8_t>(buffer_size);
 		}
@@ -90,34 +82,14 @@ katha::Result katha::LoadMesh(
 			DeleteMesh(*out_mesh);
 			return Result::ERROR_VALUE_NULL;
 		}
-		if (ibuffer_size != file.read(buffer + vbuffer_size, ibuffer_size))
-		{
-			LogLine("error-kbm: failed to read indices");
-			Release(buffer);
-			DeleteMesh(*out_mesh);
-			return Result::ERROR_VALUE_NULL;
-		}
 
 		Result result = CreateBuffer(
-			&(out_mesh->data[i].vertices),
-			{},
+			out_mesh->vertex_buffers + i,
+			EField<BufferUsage>::FromEnum(BufferUsage::STREAM, BufferUsage::ELEMENT),
 			vbuffer_size,
 			buffer
 		);
 		if (!CheckResult(result, "mesh::create_vertex_buffer"))
-		{
-			Release(buffer);
-			DeleteMesh(*out_mesh);
-			return result;
-		}
-
-		result = CreateBuffer(
-			&(out_mesh->data[i].indices),
-			EField<BufferUsage>::FromEnum(BufferUsage::ELEMENT),
-			ibuffer_size,
-			buffer + vbuffer_size
-		);
-		if (!CheckResult(result, "mesh::create_index_buffer"))
 		{
 			Release(buffer);
 			DeleteMesh(*out_mesh);

@@ -11,10 +11,9 @@ constexpr const char* MESH_VERTEX_SHADER = ""
 "out vec2 uv;\n"
 "void main()\n"
 "{\n"
-	"vec3 pos = position * vec3(9.0 / 16.0, -1, 1);\n"
-	"gl_Position = vec4(pos.xzy + vec3(0, -0.55, 0), 1.0);\n"
+	"vec3 pos = position * vec3(9.0 / 16.0, 1, 1) * 0.5;\n"
+	"gl_Position = vec4(pos, 1.0);\n"
 	"uv = vec2(tex_coords.x, 1.0 - tex_coords.y);\n"
-	"uv = normal.xy;\n"
 "}"
 ;
 
@@ -24,7 +23,7 @@ constexpr const char* MESH_FRAGMENT_SHADER = ""
 "layout (binding = 0) uniform sampler2D diffuse;\n"
 "void main()\n"
 "{\n"
-	"color = vec4(1, 1, 1, 1);"
+	"color = texture(diffuse, uv);\n"
 "}"
 ;
 

@@ -19,37 +19,39 @@ namespace katha
 	
 			__MAX
 		};
+		
 		EField<Command> commands = {};
 		int display_index = 0;
 		const char* asset_root = nullptr;
 
-		void parseImpl(int argc, char** args);
-		static void Parse(int argc, char** args)
+		void parse(int argc, char** args);
+		static inline void Parse(int argc, char** args)
 		{
-			__instance.parseImpl(argc, args);
+			__instance.parse(argc, args);
 		}
 
-		void logImpl();
-		static void Log() { __instance.logImpl(); }
+		void log();
+		static inline void Log()
+		{
+			__instance.log();
+		}
 
-		static bool Has(const Command command)
+		static inline bool Has(const Command command)
 		{
 			return __instance.commands.hasEnum(command);
 		}
 
-		static int GetDisplayIndex(const int default_index)
+		static inline int GetDisplayIndex(const int default_index)
 		{
-			if (Has(Command::DISPLAY_INDEX))
-			{
+			if (Has(Command::DISPLAY_INDEX)) {
 				return __instance.display_index;
 			}
 			return default_index;
 		}
 
-		static const char* GetAssetRoot(const char* default_asset_root = "./")
+		static inline const char* GetAssetRoot(const char* default_asset_root = "./")
 		{
-			if (Has(Command::ASSET_ROOT))
-			{
+			if (Has(Command::ASSET_ROOT)) {
 				return __instance.asset_root;
 			}
 			return default_asset_root;

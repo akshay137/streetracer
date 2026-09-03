@@ -6,7 +6,7 @@
 
 katha::CommandLine katha::CommandLine::__instance = {};
 
-void katha::CommandLine::parseImpl(int argc, char** args)
+void katha::CommandLine::parse(int argc, char** args)
 {
 	LogLine("parsing {i} command line arguments", argc);
 
@@ -15,7 +15,7 @@ void katha::CommandLine::parseImpl(int argc, char** args)
 		const String arg = args[i];
 		const bool has_next = i < (argc - 1);
 
-		if (arg.equals("-display_index") && has_next)
+		if (arg.equals("--display_index") && has_next)
 		{
 			commands.setEnum(Command::DISPLAY_INDEX);
 			display_index = atoi(args[i + 1]);
@@ -25,7 +25,7 @@ void katha::CommandLine::parseImpl(int argc, char** args)
 		{
 			commands.setEnum(Command::DEBUG_GRAPHICS);
 		}
-		else if (arg.equals("-asset_root") && has_next)
+		else if (arg.equals("--asset_root") && has_next)
 		{
 			commands.setEnum(Command::ASSET_ROOT);
 			asset_root = args[i + 1];
@@ -38,7 +38,7 @@ void katha::CommandLine::parseImpl(int argc, char** args)
 	}
 }
 
-void katha::CommandLine::logImpl()
+void katha::CommandLine::log()
 {
 	LogLine("display_index: {b} {i}", Has(Command::DISPLAY_INDEX), display_index);
 	LogLine("debug_graphics: {b}", Has(Command::DEBUG_GRAPHICS));

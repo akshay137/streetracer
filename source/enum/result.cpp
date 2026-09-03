@@ -20,16 +20,15 @@ const char* katha::ResultToCString(const Result result)
 		case Result::REQUEST_EXIT: return "Result::REQUEST_EXIT";
 	}
 
-	return "Error: Unknown Result";
+	return "Unknown Result";
 }
 
 bool katha::CheckResult(const Result result, const char* message)
 {
-	if (Result::SUCCESS != result)
-	{
-		LogLine("{s}: {s}", message, ResultToCString(result));
-		return false;
+	if (Result::SUCCESS == result) {
+		return true;
 	}
-
-	return true;
+	
+	LogLine("{s}: {s}", message, ResultToCString(result));
+	return false;
 }

@@ -36,8 +36,7 @@ uint32_t katha::IntToString(const int32_t number, char* buffer, const Base base)
 		v /= FACTOR;
 		temp[--index] = DIGIT_STRING[digit];
 	}
-	if (number < 0)
-	{
+	if (number < 0) {
 		temp[--index] = '-';
 	}
 	
@@ -48,8 +47,7 @@ uint32_t katha::IntToString(const int32_t number, char* buffer, const Base base)
 		prefix++;
 	}
 
-	for (uint32_t i = 0; i < BUFFER_SIZE - index; i++)
-	{
+	for (uint32_t i = 0; i < BUFFER_SIZE - index; i++) {
 		buffer[i] = temp[index + i];
 	}
 
@@ -84,8 +82,7 @@ uint32_t katha::UIntToString(const uint32_t number, char* buffer, const Base bas
 		prefix++;
 	}
 
-	for (uint32_t i = 0; i < BUFFER_SIZE - index; i++)
-	{
+	for (uint32_t i = 0; i < BUFFER_SIZE - index; i++) {
 		buffer[i] = temp[index + i];
 	}
 
@@ -112,8 +109,7 @@ uint32_t katha::Int64ToString(const int64_t number, char* buffer, const Base bas
 		v /= FACTOR;
 		temp[--index] = DIGIT_STRING[digit];
 	}
-	if (number < 0)
-	{
+	if (number < 0) {
 		temp[--index] = '-';
 	}
 
@@ -124,8 +120,7 @@ uint32_t katha::Int64ToString(const int64_t number, char* buffer, const Base bas
 		prefix++;
 	}
 
-	for (uint32_t i = 0; i < BUFFER_SIZE - index; i++)
-	{
+	for (uint32_t i = 0; i < BUFFER_SIZE - index; i++) {
 		buffer[i] = temp[index + i];
 	}
 
@@ -160,8 +155,7 @@ uint32_t katha::UInt64ToString(const uint64_t number, char* buffer, const Base b
 		prefix++;
 	}
 	
-	for (uint32_t i = 0; i < BUFFER_SIZE - index; i++)
-	{
+	for (uint32_t i = 0; i < BUFFER_SIZE - index; i++) {
 		buffer[i] = temp[index + i];
 	}
 

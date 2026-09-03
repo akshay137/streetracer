@@ -13,7 +13,7 @@ const char* katha::FormatToCString(const Format format)
 		case Format::DEPTH24_STENCIL8: return "Format::DEPTH24_STENCIL8";
 	}
 	
-	return "Errro: Unknown Format";
+	return "Unknown Format";
 }
 
 bool katha::ShouldMipmap(const Format format)

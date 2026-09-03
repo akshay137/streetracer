@@ -46,14 +46,14 @@ int32_t katha::StringFormat::next()
 	if (param_str)
 	{
 		const int32_t code = ReadNextCode(param_str, &pbuffer_index);
-		if (code)
-		{
+		if (code) {
 			return code;
 		}
 
 		param_str = nullptr;
 		pbuffer_index = 0;
 	}
+	
 	if (param_buffer.size)
 	{
 		const int32_t code = ReadNextCode(param_buffer.buffer, &pbuffer_index);
@@ -65,31 +65,28 @@ int32_t katha::StringFormat::next()
 		return code;
 	}
 
-	if (format_index >= format.size)
-	{
-		// end of format string
+	// end of format string
+	if (format_index >= format.size) {
 		return 0;
 	}
 
 	int32_t code = ReadNextCode(format.buffer, &format_index);
-	if (0 == code)
-	{
+	if (0 == code) {
 		return 0;
 	}
-	if ('{' != code)
-	{
+	if ('{' != code) {
 		return code;
 	}
 
 	const uint32_t spec_start = format_index;
 	code = ReadNextCode(format.buffer, &format_index);
 
-	if ((0 == code) || ('{' == code))
-	{
+	if ((0 == code) || ('{' == code)) {
 		return code;
 	}
-	if ('}' == code) // empty specifier, move forward
-	{
+
+	// empty specifier, move forward
+	if ('}' == code) {
 		return next();
 	}
 
@@ -98,12 +95,10 @@ int32_t katha::StringFormat::next()
 	while ('}' != code)
 	{
 		code = ReadNextCode(format.buffer, &format_index, &bytes_read);
-		if ((0 == code) || (format_index > format.size))
-		{
+		if ((0 == code) || (format_index > format.size)) {
 			return 0;
 		}
-		if ((':' == code) && (0 == prop_start))
-		{
+		if ((':' == code) && (0 == prop_start)) {
 			prop_start = format_index;
 		}
 	}
@@ -125,79 +120,64 @@ int32_t katha::StringFormat::next()
 		prop_start ? (full_spec_length - spec_id_length - 1) : 0
 	);
 
-	if (spec_id.equals(SPEC_INT))
-	{
+	if (spec_id.equals(SPEC_INT)) {
 		return __parseNextInt(spec_props);
 	}
-	if (spec_id.equals(SPEC_UINT))
-	{
+	if (spec_id.equals(SPEC_UINT)) {
 		return __parseNextUInt(spec_props);
 	}
-	if (spec_id.equals(SPEC_FLOAT))
-	{
+	if (spec_id.equals(SPEC_FLOAT)) {
 		return __parseNextFloat(spec_props);
 	}
-	if (spec_id.equals(SPEC_INT64))
-	{
+	if (spec_id.equals(SPEC_INT64)) {
 		return __parseNextInt64(spec_props);
 	}
-	if (spec_id.equals(SPEC_UINT64))
-	{
+	if (spec_id.equals(SPEC_UINT64)) {
 		return __parseNextUInt64(spec_props);
 	}
-	if (spec_id.equals(SPEC_POINTER))
-	{
+	if (spec_id.equals(SPEC_POINTER)) {
 		return __parseNextPointer(spec_props);
 	}
-	if (spec_id.equals(SPEC_CSTRING))
-	{
+	if (spec_id.equals(SPEC_CSTRING)) {
 		return __parseNextCString(spec_props);
 	}
-	if (spec_id.equals(SPEC_BOOL))
-	{
+	if (spec_id.equals(SPEC_BOOL)) {
 		return __parseNextBool(spec_props);
 	}
-	if (spec_id.equals(SPEC_VEC3))
-	{
+	if (spec_id.equals(SPEC_VEC3)) {
 		return __parseNextVec3(spec_props);
 	}
-	if (spec_id.equals(SPEC_IVEC2))
-	{
+	if (spec_id.equals(SPEC_IVEC2)) {
 		return __parseNextIVec2(spec_props);
 	}
-	if (spec_id.equals(SPEC_UVEC2))
-	{
+	if (spec_id.equals(SPEC_UVEC2)) {
 		return __parseNextUVec2(spec_props);
 	}
-	if (spec_id.equals(SPEC_VEC2))
-	{
+	if (spec_id.equals(SPEC_VEC2)) {
 		return __parseNextVec2(spec_props);
 	}
-	if (spec_id.equals(SPEC_QUATERNION))
-	{
+	if (spec_id.equals(SPEC_QUATERNION)) {
 		return __parseNextQuaternion(spec_props);
 	}
-	if (spec_id.equals(SPEC_MAT4))
-	{
+	if (spec_id.equals(SPEC_MAT4)) {
 		return __parseNextMat4(spec_props);
 	}
-	if (spec_id.equals(SPEC_TIMEDIFF))
-	{
+	if (spec_id.equals(SPEC_TIMEDIFF)) {
 		return __parseNextTimeDiff(spec_props);
 	}
-	if (spec_id.equals(SPEC_VERSION))
-	{
+	if (spec_id.equals(SPEC_VERSION)) {
 		return __parseNextVersion(spec_props);
 	}
-	if (spec_id.equals(SPEC_SOURCE))
-	{
+	if (spec_id.equals(SPEC_SOURCE)) {
 		return __parseNextSource(spec_props);
 	}
 
 	param_buffer.append("{unknown specifier: ");
 	param_buffer.append(spec_id);
 	param_buffer.append(" }");
-	return next(); // unknown specifier, return next token
+
+	// unknown specifier, return next token
+	return next();
 }
 
 int32_t katha::StringFormat::__parseNextInt(const String& props)
@@ -499,9 +479,8 @@ int32_t katha::StringFormat::__parseNextSource(const String& props)
 			{
 				// linux absolute path, we need path from `source/`
 				uint32_t offset = 0;
-				if (String(filename).find("source/", &offset))
-				{
-					return offset + 7u;
+				if (String(filename).find("source/", &offset)) {
+					return offset;
 				}
 			}
 
@@ -515,5 +494,6 @@ int32_t katha::StringFormat::__parseNextSource(const String& props)
 		param_buffer.append(":");
 		param_buffer.size += UIntToString(line, param_buffer.tail());
 	}
+
 	return next();
 }

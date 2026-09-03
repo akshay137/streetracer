@@ -21,7 +21,7 @@ def get_operator_expression(operator: str, param_count: int, retval: str = 'resu
 	pass
 
 def get_operator_string(n: int, operator: str, op_exp: str):
-	vt = f'vector{n}_t<T>'
+	vt = f'Vector{n}<T>'
 	param_str = f'const {vt}& v1'
 	if 'v2' in op_exp:
 		param_str += f', const {vt}& v2'
@@ -42,7 +42,7 @@ def get_operator_string(n: int, operator: str, op_exp: str):
 	pass
 
 def get_assignment_operator_string(n: int, operator: str, op_exp: str):
-	vt = f'vector{n}_t<T>'
+	vt = f'Vector{n}<T>'
 	param_str = f'{vt}& v1'
 	if 'v2' in op_exp:
 		param_str += f', const {vt}& v2'
@@ -61,15 +61,15 @@ def get_assignment_operator_string(n: int, operator: str, op_exp: str):
 	pass
 
 def get_function_string(n: int, fn: str):
-	if fn in [ 'sin', 'cos', 'tan', 'acos', 'asin' ]:
-		mfn = f'std::{fn}'
+	if fn in [ 'Sin', 'Cos', 'Tan', 'ACos', 'ASin' ]:
+		mfn = f'std::{fn.lower()}'
 	else:
 		mfn = fn
-	vt = f'vector{n}_t<T>'
+	vt = f'Vector{n}<T>'
 	fn_exp = f'result.{{0}} = {mfn}(v.{{0}});'
 	res = f'''
 	template <typename T>
-	{vt} {fn} (const {vt}& v)
+	{vt} {fn}(const {vt}& v)
 	{{
 		{vt} result = {{}};
 		{repeat_expression(n, fn_exp)}
@@ -80,11 +80,14 @@ def get_function_string(n: int, fn: str):
 	pass
 
 def get_binary_function_string(n: int, fn: str):
-	vt = f'vector{n}_t<T>'
-	fn_exp = f'result.{{0}} = {fn}(v1.{{0}}, v2.{{0}});'
+	mfn = fn
+	if fn in [ 'ATan2']:
+		mfn = f"std::{fn.lower()}"
+	vt = f'Vector{n}<T>'
+	fn_exp = f'result.{{0}} = {mfn}(v1.{{0}}, v2.{{0}});'
 	res = f'''
 	template <typename T>
-	{vt} {fn} (const {vt}& v1, const {vt}& v2)
+	{vt} {fn}(const {vt}& v1, const {vt}& v2)
 	{{
 		{vt} result = {{}};
 		{repeat_expression(n, fn_exp)}
@@ -95,46 +98,46 @@ def get_binary_function_string(n: int, fn: str):
 	pass
 
 def get_misc_string(n: int):
-	vt = f'vector{n}_t<T>'
+	vt = f'Vector{n}<T>'
 	components = 'xyzw'
 
 	res = f'''
 	template <typename T>
-	T horizontal_sum(const {vt}& v)
+	T HorizontalSum(const {vt}& v)
 	{{
 		T result = {' + '.join([ f'v.{components[i]}' for i in range(n) ])};
 		return result;
 	}}
 
 	template <typename T>
-	T dot(const {vt}& v1, const {vt}& v2)
+	T Dot(const {vt}& v1, const {vt}& v2)
 	{{
 		const {vt}& vv = v1 * v2;
-		const T result = horizontal_sum(vv);
+		const T result = HorizontalSum(vv);
 		return result;
 	}}
 
 	template <typename T>
-	T squared_length(const {vt}& v)
+	T SquaredLength(const {vt}& v)
 	{{
-		const T slen = dot(v, v);
-		return slen;
+		const T squared_length = Dot(v, v);
+		return squared_length;
 	}}
 
 	template <typename T, typename RT=float>
-	RT length(const {vt}& v)
+	RT Length(const {vt}& v)
 	{{
-		const T slen = dot(v, v);
-		const RT len = std::sqrt(slen);
-		return len;
+		const T squared_length = Dot(v, v);
+		const RT length = std::sqrt(squared_length);
+		return length;
 	}}
 
 	template <typename T, typename LT=float>
-	{vt} normalize(const {vt}& v)
+	{vt} Normalize(const {vt}& v)
 	{{
-		const LT len = length<LT>(v);
-		const {vt} norm = v / len;
-		return norm;
+		const LT length = Length<LT>(v);
+		const {vt} normalized = v / length;
+		return normalized;
 	}}
 	'''
 	return res.strip()
@@ -153,7 +156,6 @@ def generate_vector_operations(n: int, root: str):
 */
 
 #include "../type/vector.hpp"
-#include "utility.hpp"
 
 #include <cmath>
 
@@ -164,8 +166,8 @@ namespace katha
 	footer = '}\n#endif'
 	binary_operators = [ '+', '-', '*', '/', '%', '|', '&', '^', '<<', '>>' ]
 	unary_operators = '-~'
-	binary_functions = [ 'min', 'max', 'atan2' ]
-	unary_functions = [ 'abs', 'radians', 'degrees', 'sin', 'cos', 'tan', 'acos', 'asin' ]
+	unary_functions = [ 'Abs', 'Radians', 'Degrees', 'Sin', 'Cos', 'Tan', 'ACos', 'ASin' ]
+	binary_functions = [ 'ATan2', 'Min', 'Max', ]
 	try:
 		with open(file_path, 'wt') as out:
 			out.write(header)

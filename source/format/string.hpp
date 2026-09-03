@@ -9,6 +9,7 @@
 
 namespace katha
 {
+	// FIXME: bool next(int32_t* out_code)
 	struct StringFormat
 	{
 		String format = {};

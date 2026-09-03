@@ -66,15 +66,15 @@ katha::Result katha::GLES::init()
 		LogLine("error-sdl: SDL_GL_CreateContext {s}", SDL_GetError());
 		return Result::ERROR_SDL;
 	}
-	LogLine("gl_context: {p}", context);
+	LogLine("gles: context {p}", context);
 
 	if (0 == gladLoadGLES2Loader(SDL_GL_GetProcAddress))
 	{
 		LogLine("error-glad: failed to load procs");
 		return Result::ERROR_GLES;
 	}
-	if (!checkVersion())
-	{
+	
+	if (!checkVersion()) {
 		return Result::ERROR_VALUE_UNEXPECTED;
 	}
 
@@ -93,14 +93,13 @@ katha::Result katha::GLES::init()
 		checkError();
 	}
 
-	LogLine("{s}", glGetString(GL_VERSION));
+	LogLine("gles: {s}", glGetString(GL_VERSION));
 
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
 	glCullFace(GL_BACK);
 
-	if (!createResources())
-	{
+	if (!createResources()) {
 		return Result::ERROR_GLES;
 	}
 
@@ -109,8 +108,7 @@ katha::Result katha::GLES::init()
 
 void katha::GLES::clear()
 {
-	if (nullptr == context)
-	{
+	if (nullptr == context) {
 		return;
 	}
 
@@ -126,30 +124,26 @@ bool katha::GLES::checkError(const source_t& source)
 	bool has_error = false;
 	while (GL_NO_ERROR != error)
 	{
+		has_error = has_error || (GL_NO_ERROR != error);
 		switch (error)
 		{
 			case GL_INVALID_ENUM:
-				has_error = true;
 				LogLine("error-gles: GL_INVALID_ENUM at {src}", &source);
 				break;
 			
 			case GL_INVALID_VALUE:
-				has_error = true;
 				LogLine("error-gles: GL_INVALID_VALUE at {src}", &source);
 				break;
 
 			case GL_INVALID_OPERATION:
-				has_error = true;
 				LogLine("error-gles: GL_INVALID_OPERATION at {src}", &source);
 				break;
 
 			case GL_INVALID_FRAMEBUFFER_OPERATION:
-				has_error = true;
 				LogLine("error-gles: GL_INVALID_FRAMEBUFFER_OPERATION at {src}", &source);
 				break;
 			
 			case GL_OUT_OF_MEMORY:
-				has_error = true;
 				LogLine("error-gles: GL_OUT_OF_MEMORY at {src}", &source);
 				break;
 		}
@@ -202,6 +196,7 @@ void katha::GLES::queryExtensions()
 	glGetIntegerv(GL_NUM_EXTENSIONS, &count);
 	if (0 == count)
 	{
+		checkError();
 		LogLine("warn-gles: no extensions found");
 		return;
 	}
@@ -210,8 +205,7 @@ void katha::GLES::queryExtensions()
 	{
 		const String ext = (const char*)glGetStringi(GL_EXTENSIONS, i);
 
-		if (ext.equals("GL_KHR_debug"))
-		{
+		if (ext.equals("GL_KHR_debug")) {
 			extensions.setEnum(Extension::gl_khr_debug);
 		}
 	}
@@ -224,8 +218,6 @@ katha::GLESFormat katha::GLES::FormatToGLESFormat(const Format format)
 {
 	switch (format)
 	{
-		case Format::NONE: return {};
-
 		case Format::GREYSCALE8:
 			return {
 				.internal = GL_R8,

@@ -4,15 +4,13 @@
 
 katha::Result katha::World::load()
 {
-	Result result = LoadMesh(&mesh, "lara.kbm");
-	if (!CheckResult(result, "world::load_mesh"))
-	{
+	Result result = LoadMesh(&mesh, "out.kbm");
+	if (!CheckResult(result, "world::load_mesh")) {
 		return result;
 	}
 
 	result = LoadTexture(&texture, "logo.kbt");
-	if (!CheckResult(result, "world::load_texture"))
-	{
+	if (!CheckResult(result, "world::load_texture")) {
 		return result;
 	}
 

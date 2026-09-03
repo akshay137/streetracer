@@ -33,9 +33,7 @@ void katha::DeleteTexture(const Texture& texture)
 
 void katha::DeleteMesh(const Mesh& mesh)
 {
-	for (uint8_t i = 0; i < mesh.mesh_count; i++)
-	{
-		DeleteBuffer(mesh.data[i].vertices);
-		DeleteBuffer(mesh.data[i].indices);
+	for (uint8_t i = 0; i < mesh.mesh_count; i++) {
+		DeleteBuffer(mesh.vertex_buffers[i]);
 	}
 }
