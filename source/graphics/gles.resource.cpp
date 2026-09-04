@@ -29,18 +29,13 @@ constexpr const char* MESH_FRAGMENT_SHADER = ""
 
 bool katha::GLES::createResources()
 {
-	mesh_shader_program = createShaderProgram(
-		MESH_VERTEX_SHADER,
-		MESH_FRAGMENT_SHADER
-	);
-	if (0 == mesh_shader_program)
-	{
+	mesh_shader_program = createShaderProgram(MESH_VERTEX_SHADER, MESH_FRAGMENT_SHADER);
+	if (0 == mesh_shader_program) {
 		return false;
 	}
 
 	mesh_vertex_array = createVertexArrayMesh();
-	if (0 == mesh_vertex_array)
-	{
+	if (0 == mesh_vertex_array) {
 		return false;
 	}
 
@@ -255,7 +250,7 @@ uint32_t katha::GLES::createVertexArrayMesh()
 	glVertexAttribBinding(1, 0);
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribFormat(1, 3, GL_UNSIGNED_SHORT, GL_TRUE, offsetof(Vertex, normal));
+	glVertexAttribFormat(2, 3, GL_SHORT, GL_TRUE, offsetof(Vertex, normal));
 	glVertexAttribBinding(2, 0);
 	glEnableVertexAttribArray(2);
 
@@ -273,7 +268,7 @@ uint32_t katha::GLES::createVertexArrayMesh()
 
 katha::Result katha::GLES::createBuffer(
 	Buffer* out_buffer,
-	EField<BufferUsage> usage,
+	EnumField<BufferUsage> usage,
 	const uint32_t size,
 	const void* data
 )

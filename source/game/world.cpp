@@ -4,13 +4,8 @@
 
 katha::Result katha::World::load()
 {
-	Result result = LoadMesh(&mesh, "out.kbm");
+	Result result = LoadMesh(&mesh, "cube.kbm");
 	if (!CheckResult(result, "world::load_mesh")) {
-		return result;
-	}
-
-	result = LoadTexture(&texture, "logo.kbt");
-	if (!CheckResult(result, "world::load_texture")) {
 		return result;
 	}
 
@@ -19,6 +14,5 @@ katha::Result katha::World::load()
 
 void katha::World::clear()
 {
-	DeleteTexture(texture);
 	DeleteMesh(mesh);
 }

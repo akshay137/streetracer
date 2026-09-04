@@ -13,15 +13,11 @@ void katha::GLES::renderWorld(const World& world)
 	glUseProgram(mesh_shader_program);
 	glBindVertexArray(mesh_vertex_array);
 	
-	bindTexture(0, world.texture);
+	Buffer vbuffer = world.mesh.vertex_buffer;
+	bindVertexBuffer<Vertex>(vbuffer, 0);
+	bindTexture(0, world.mesh.texture_diffuse);
 
-	for (uint8_t i = 0; i < world.mesh.mesh_count; i++)
-	{
-		Buffer vbuffer = world.mesh.vertex_buffers[i];
-		bindVertexBuffer<Vertex>(vbuffer, 0);
-	
-		glDrawArrays(GL_TRIANGLES, 0, vbuffer.size / sizeof(Vertex));
-	}
+	glDrawArrays(GL_TRIANGLES, 0, vbuffer.size / sizeof(Vertex));
 
 	SDL_GL_SwapWindow(window);
 }

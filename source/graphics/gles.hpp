@@ -38,7 +38,7 @@ namespace katha
 
 			__MAX
 		};
-		EField<Extension> extensions = {};
+		EnumField<Extension> extensions = {};
 
 		uint32_t mesh_shader_program = 0;
 		uint32_t mesh_vertex_array = 0;
@@ -74,7 +74,7 @@ namespace katha
 
 		Result createBuffer(
 			Buffer* out_buffer,
-			EField<BufferUsage> usage,
+			EnumField<BufferUsage> usage,
 			const uint32_t size,
 			const void* data
 		);

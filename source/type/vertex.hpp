@@ -9,20 +9,19 @@ namespace katha
 	// Default vertex for a 3D mesh
 	struct Vertex
 	{
-		using UNormVec3 = Vector3<uint16_t>;
+		using UNormVec2 = Vector2<uint16_t>;
 		using SNormVec3 = Vector3<int16_t>;
 
 		vec3 position;
-		UNormVec3 uv;
+		UNormVec2 uv;
 		SNormVec3 normal;
 
 		// `v` must be in range 0, 1
-		static constexpr UNormVec3 UNorm(const vec2 v)
+		static constexpr UNormVec2 UNorm(const vec2 v)
 		{
-			UNormVec3 result(
+			UNormVec2 result(
 				static_cast<uint16_t>(v.x * UINT16_MAX),
-				static_cast<uint16_t>(v.y * UINT16_MAX),
-				0
+				static_cast<uint16_t>(v.y * UINT16_MAX)
 			);
 			return result;
 		}

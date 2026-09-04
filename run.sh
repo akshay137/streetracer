@@ -1,3 +1,3 @@
-build-desktop/host/dist/sracer $@
+build-desktop/host/dist/sracer "$@"
 
 echo "exit code: $?"

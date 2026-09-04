@@ -3,7 +3,7 @@
 
 katha::Result katha::CreateBuffer(
 	Buffer* out_buffer,
-	EField<BufferUsage> usage,
+	EnumField<BufferUsage> usage,
 	const uint32_t size,
 	const void* data
 )
@@ -33,7 +33,6 @@ void katha::DeleteTexture(const Texture& texture)
 
 void katha::DeleteMesh(const Mesh& mesh)
 {
-	for (uint8_t i = 0; i < mesh.mesh_count; i++) {
-		DeleteBuffer(mesh.vertex_buffers[i]);
-	}
+	DeleteBuffer(mesh.vertex_buffer);
+	DeleteTexture(mesh.texture_diffuse);
 }

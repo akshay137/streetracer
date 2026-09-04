@@ -54,6 +54,13 @@ namespace katha
 			WriteChecked<T>(out_value, temp);
 			return true;
 		}
+
+		template <typename T>
+		bool readN(T* out_buffer, const uint32_t n)
+		{
+			const uint32_t bytes_read = read(out_buffer, n * sizeof(T));
+			return bytes_read == (n * sizeof(T));
+		}
 	};
 }
 

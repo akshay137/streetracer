@@ -30,74 +30,59 @@ katha::Result katha::LoadMesh(
 		}
 	}
 
-	// uint8_t vertex_layout = 0;
-	// if (!file.read<uint8_t>(&vertex_layout))
-	// {
-	// 	LogLine("error-kbm: failed to read vertex layout");
-	// 	return Result::ERROR_VALUE_NULL;
-	// }
-
-	uint8_t mesh_count = 0;
-	if (!file.read<uint8_t>(&mesh_count))
+	uint32_t vertex_count = 0;
+	if (!file.read<uint32_t>(&vertex_count))
 	{
-		LogLine("error-kbm: failed to read mesh count");
+		LogLine("error-kbm: failed to read vertex count");
 		return Result::ERROR_VALUE_NULL;
 	}
+	LogLine("kbm: vertex_count {u}", vertex_count);
 
-	LogLine("kbm: mesh_count: {u}", mesh_count);
-	out_mesh->mesh_count = mesh_count;
-
-	uint8_t* buffer = nullptr;
-	uint32_t buffer_size = 0;
-	for (uint8_t i = 0; i < mesh_count; i++)
+	Vertex* vertices = Alloc<Vertex>(vertex_count);
+	for (uint32_t i = 0; i < vertex_count; i++)
 	{
-		uint32_t vertex_count = 0;
-		if (!file.read<uint32_t>(&vertex_count))
+		Vertex& vertex = vertices[i];
+		if (!file.readN(vertex.position.array(), 3))
 		{
-			LogLine("error-kbm: failed to read vertex count");
-			DeleteMesh(*out_mesh);
+			Release(vertices);
+			LogLine("error-kbm: failed to read vertex position at {u}", i);
 			return Result::ERROR_VALUE_NULL;
 		}
-
-		LogLine("kbm: v {u}", vertex_count);
-
-		const uint32_t vbuffer_size = sizeof(Vertex) * vertex_count;
-		
-		if (nullptr == buffer)
+		if (!file.readN(vertex.uv.array(), 2))
 		{
-			buffer_size = vbuffer_size;
-			buffer = Alloc<uint8_t>(buffer_size);
-		}
-		if (buffer_size < vbuffer_size)
-		{
-			buffer_size = vbuffer_size;
-			Release(buffer);
-			buffer = Alloc<uint8_t>(buffer_size);
-		}
-
-		if (vbuffer_size != file.read(buffer, vbuffer_size))
-		{
-			LogLine("error-kbm: failed to read vertices");
-			Release(buffer);
-			DeleteMesh(*out_mesh);
+			Release(vertices);
+			LogLine("error-kbm: failed to read vertex uv at {u}", i);
 			return Result::ERROR_VALUE_NULL;
 		}
-
-		Result result = CreateBuffer(
-			out_mesh->vertex_buffers + i,
-			EField<BufferUsage>::FromEnum(BufferUsage::STREAM, BufferUsage::ELEMENT),
-			vbuffer_size,
-			buffer
-		);
-		if (!CheckResult(result, "mesh::create_vertex_buffer"))
+		if (!file.readN(vertex.normal.array(), 3))
 		{
-			Release(buffer);
-			DeleteMesh(*out_mesh);
-			return result;
+			Release(vertices);
+			LogLine("error-kbm: failed to read vertex normal at {u}", i);
+			return Result::ERROR_VALUE_NULL;
 		}
 	}
 
-	Release(buffer);
+	Result result = CreateBuffer(
+		&(out_mesh->vertex_buffer),
+		EnumField<BufferUsage>::None(),
+		vertex_count * sizeof(Vertex),
+		vertices
+	);
+	if (!CheckResult(result, "Mesh::CreateBufferVertex"))
+	{
+		Release(vertices);
+		return result;
+	}
+	Release(vertices);
+
+	result = LoadTexture(&(out_mesh->texture_diffuse), file);
+	if (!CheckResult(result, "Mesh::LoadTextureDiffuse"))
+	{
+		DeleteBuffer(out_mesh->vertex_buffer);
+		*out_mesh = {};
+		return result;
+	}
+
 	return Result::SUCCESS;
 }
 
@@ -106,14 +91,12 @@ katha::Result katha::LoadMesh(
 	const char* filename
 )
 {
-	if (nullptr == out_mesh)
-	{
+	if (nullptr == out_mesh) {
 		return Result::ERROR_VALUE_NULL;
 	}
 
 	File file = Platform::Get()->openFileRead(filename);
-	if (!file)
-	{
+	if (!file) {
 		return Result::ERROR;
 	}
 

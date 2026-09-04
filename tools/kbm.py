@@ -2,7 +2,11 @@ import bpy
 import bmesh
 
 from datetime import datetime
+
+import argparse
 import struct
+import subprocess
+import sys
 
 def log(msg, *args, **kwargs):
 	prefix = '[katha-binary-mesh]'
@@ -52,9 +56,9 @@ class Vertex:
 		f.write(struct.pack('<fff', self.position.x, self.position.y, self.position.z))
 		
 		U16_MAX = 65535
-		s = int(self.uv.x * U16_MAX) % U16_MAX
-		t = int(self.uv.y * U16_MAX) % U16_MAX
-		f.write(struct.pack('<HHH', s, t, 0))
+		s = int(self.uv.x * U16_MAX) % (U16_MAX + 1)
+		t = int(self.uv.y * U16_MAX) % (U16_MAX + 1)
+		f.write(struct.pack('<HH', s, t))
 
 		I16_MAX = 32767
 		nx = int(self.normal.x * I16_MAX)
@@ -83,6 +87,7 @@ def triangulate_mesh(obj):
 	face_count = 0
 	max_faces = len(obj.data.loop_triangles)
 	for face in obj.data.loop_triangles:
+		face_count += 1
 		log(f"triangle {face_count}/{max_faces}", end='\r')
 		for i, u in zip(face.vertices, face.loops):
 			if has_uv:
@@ -92,8 +97,7 @@ def triangulate_mesh(obj):
 			v = bv_to_vertex(mesh_verts[i], uv, face.normal)
 			vertices.append(v)
 			pass
-		face_count += 1
-	
+	print('')
 	return vertices
 	pass
 
@@ -105,13 +109,32 @@ def process_mesh(obj, kbm):
 	for v in vertices:
 		v.write(kbm)
 		pass
+
+	if not obj.data.materials:
+		return None
+	mat = obj.data.materials[0]
+	if not mat.node_tree:
+		log("no exportable material")
+		return None
+		
+	for node in mat.node_tree.nodes:
+		if not 'BSDF_PRINCIPLED' == node.type:
+			continue
+		base_color = node.inputs.get('Base Color')
+		if not base_color or not base_color.is_linked:
+			continue
+		linked = base_color.links[0].from_node
+		if 'TEX_IMAGE' != linked.type:
+			continue
+		return bpy.path.abspath(linked.image.filepath)
+	return None
 	pass
 
 def process_object(obj, kbm):
 	log(f"{obj.type} {obj.name} {obj.location}")
 
 	if 'MESH' == obj.type:
-		process_mesh(obj, kbm)
+		return process_mesh(obj, kbm)
 	pass
 
 def export(dst):
@@ -119,23 +142,33 @@ def export(dst):
 	for obj in bpy.context.scene.objects:
 		if should_export(obj):
 			objects.append(obj)
-	if len(objects) >= 128:
-		log("individual meshes must be less than 128")
+	if len(objects) > 1:
+		log("only 1 mesh is supported")
 		return False
 	
+	texture = None
 	with open(dst, 'wb') as kbm:
 		for c in '\0KBM\0':
 			kbm.write(struct.pack('<B', ord(c)))
-		kbm.write(struct.pack('<B', len(objects)))
 
 		log(f'objects: {len(objects)}')
 		for obj in objects:
-			process_object(obj, kbm)
+			texture = process_object(obj, kbm)
 			pass # for objects
 		pass # open(.kbm)
+	if texture:
+		command = [ 'python3', 'tools/kbt.py', '-i', texture, '-o', dst, '--append' ]
+		log(command)
+		subprocess.run(command)
 	return True
 	pass # def export
 
 if '__main__' == __name__:
 	log('source', bpy.data.filepath)
-	measure(export, 'out.kbm')
+	try:
+		dst = sys.argv[sys.argv.index('--') + 1]
+	except Exception as e:
+		dst = 'out.kbm'
+		pass
+
+	measure(export, dst)

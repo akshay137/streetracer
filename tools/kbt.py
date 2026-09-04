@@ -12,12 +12,12 @@ class Format(Enum):
 	RGB8 = 3
 	SRGBA8 = 4
 	SRGB8 = 5
-	DEPTH24_STENCIL8 = 6
 
 class Options:
 	def __init__(self):
 		self.source = ''
 		self.dest = ''
+		self.append = False
 		pass
 
 	def __str__(self):
@@ -43,6 +43,7 @@ def parse_command_line():
 	parser.add_argument('-i', action='store', type=str, help='input image', required=True)
 	parser.add_argument('-o', action='store', type=str, help='output texture', required=False)
 	parser.add_argument('--mipmaps', action='store_true', help='generate mipmaps', required=False)
+	parser.add_argument('--append', action='store_true', help='append to existing file', required=False)
 
 	args = parser.parse_args()
 	opts = Options()
@@ -51,6 +52,7 @@ def parse_command_line():
 		opts.dest = args.o
 	else:
 		opts.set_dest_from_source()
+	opts.append = args.append
 	return opts
 	pass
 
@@ -81,44 +83,49 @@ def get_row_size(width, format: Format):
 	return (size + padding, padding)
 	pass
 
+def write_image_to_file(img: Image, out):
+	format = get_image_format(img)
+	if Format.NONE == format:
+		print('unsupported image format')
+		return False
+	print('format:', format)
+	row_size, padding = get_row_size(img.size[0], format)
+	print('padding:', padding, 'row_size:', row_size)
+
+	for c in '\0KBT\0':
+		out.write(struct.pack('<B', ord(c)))
+		pass
+	out.write(struct.pack('<B', format.value))
+	out.write(struct.pack('<II', *img.size))
+	out.write(struct.pack('<I', row_size))
+
+	data = img.load()
+	for y in range(img.size[1]):
+		for x in range(img.size[0]):
+			pix = data[x, y]
+			if type(pix) == int:
+				out.write(struct.pack('<B', pix))
+				pass
+			else:
+				for c in pix:
+					out.write(struct.pack('<B', c))
+				pass
+			for p in range(padding):
+				out.write(struct.pack('<B', 0))
+				pass
+			pass # x
+		pass # y
+	pass # write_image_to_file
+
 def convert(src: str, dst: str, opt: Options):
 	try:
 		print(f'converting {src}')
 		img = Image.open(src)
-		print(img.size)
-		format = get_image_format(img)
-		if Format.NONE == format:
-			print('unsupported image format')
-			return False
-		print('format:', format)
-		size, padding = get_row_size(img.size[0], format)
-		print('padding:', padding, 'size:', size)
-
-		with open(dst, 'wb') as out:
-			for c in '\0KBT\0':
-				out.write(struct.pack('<B', ord(c)))
-				pass
-			out.write(struct.pack('<B', format.value))
-			out.write(struct.pack('<II', *img.size))
-			out.write(struct.pack('<I', size)) # row size
-
-			data = img.load()
-			for y in range(img.size[1]):
-				for x in range(img.size[0]):
-					pix = data[x, y]
-					if type(pix) == int:
-						out.write(struct.pack('<B', pix))
-						pass
-					else:
-						for c in pix:
-							out.write(struct.pack('<B', c))
-						pass
-					for p in range(padding):
-						out.write(struct.pack('<B', 0))
-						pass
-					pass
-				pass
-			pass
+		file_mode = 'wb'
+		if opts.append:
+			file_mode = 'ab'
+		with open(dst, file_mode) as out:
+			write_image_to_file(img, out)
 		pass
 	except Exception as e:
 		print(f'exception for: convert({src}, {dst})')

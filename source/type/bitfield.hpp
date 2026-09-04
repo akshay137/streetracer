@@ -124,7 +124,7 @@ namespace katha
 	// all values must be positive
 	// otherwise behavior is undefined
 	template <typename E, typename FieldType = uint8_t>
-	using EField = BitField<static_cast<uint16_t>(E::__MAX), FieldType>;
+	using EnumField = BitField<static_cast<uint16_t>(E::__MAX), FieldType>;
 }
 
 #endif

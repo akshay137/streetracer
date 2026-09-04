@@ -12,7 +12,6 @@ namespace katha
 	struct World
 	{
 		Mesh mesh = {};
-		Texture texture = {};
 
 		Result load();
 		void clear();

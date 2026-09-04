@@ -13,7 +13,7 @@ namespace katha
 {
 	extern Result CreateBuffer(
 		Buffer* out_buffer,
-		EField<BufferUsage> usage,
+		EnumField<BufferUsage> usage,
 		const uint32_t size,
 		const void* data
 	);

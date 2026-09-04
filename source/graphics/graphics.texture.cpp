@@ -96,9 +96,12 @@ katha::Result katha::LoadTexture(Texture* out_texture, File& file)
 
 katha::Result katha::LoadTexture(Texture* out_texture, const char* filename)
 {
+	if (nullptr == out_texture) {
+		return Result::ERROR_VALUE_NULL;
+	}
+	
 	File file = Platform::Get()->openFileRead(filename);
-	if (!file)
-	{
+	if (!file) {
 		return Result::ERROR;
 	}
 

@@ -20,7 +20,7 @@ namespace katha
 			__MAX
 		};
 		
-		EField<Command> commands = {};
+		EnumField<Command> commands = {};
 		int display_index = 0;
 		const char* asset_root = nullptr;
 
